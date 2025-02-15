@@ -29,8 +29,6 @@ class AbstractServiceManagerTest extends TestCase
     private MapperInterface|MockObject $mockMapper;
     private ServiceManagerStub $service;
 
-    // @phpcs:ignore
-
     /**
      * @throws Exception
      */
@@ -285,7 +283,8 @@ class AbstractServiceManagerTest extends TestCase
         $this->mockMapper->expects($this->once())
             ->method('map')
             ->with('my-service')
-            ->willReturn(null);
+            ->willReturn(null)
+        ;
 
         $this->service->setServiceConfig($this->mockHandlerConfig);
         $this->service->setHasServiceConfig(true);
