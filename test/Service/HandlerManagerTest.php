@@ -33,8 +33,6 @@ class HandlerManagerTest extends TestCase
     private FormatterManager|MockObject $mockFormatterManager;
     private MockObject|ProcessorManager $mockProcessorManager;
 
-    // @phpcs:ignore
-
     /**
      * @throws Exception
      */
@@ -458,17 +456,21 @@ class HandlerManagerTest extends TestCase
 
         $this->mockServiceConfig->expects($this->once())
             ->method('getFormatter')
-            ->willReturn('');
+            ->willReturn('')
+        ;
 
         $expected->expects($this->never())
-            ->method('setFormatter');
+            ->method('setFormatter')
+        ;
 
         $this->mockServiceConfig->expects($this->once())
             ->method('getProcessors')
-            ->willReturn(['my-processor']);
+            ->willReturn(['my-processor'])
+        ;
 
         $expected->expects($this->never())
-            ->method('pushProcessor');
+            ->method('pushProcessor')
+        ;
 
         $result = $this->service->get('my-service');
         $this->assertEquals($expected, $result);

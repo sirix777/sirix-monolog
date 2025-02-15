@@ -159,7 +159,8 @@ class WebProcessorFactoryTest extends TestCase
         ;
 
         $this->mockContainer->expects($this->never())
-            ->method('get');
+            ->method('get')
+        ;
 
         $this->factory->getServerDataService($options);
     }

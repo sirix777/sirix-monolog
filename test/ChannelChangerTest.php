@@ -454,12 +454,14 @@ class ChannelChangerTest extends TestCase
         $this->mockProcessorManager->expects($this->once())
             ->method('get')
             ->with('myProcessor')
-            ->willReturn($this->mockProcessor);
+            ->willReturn($this->mockProcessor)
+        ;
 
         // Name
         $this->mockChannelConfig->expects($this->once())
             ->method('getName')
-            ->willReturn('customName');
+            ->willReturn('customName')
+        ;
 
         /** @var Logger $result */
         $result = $this->service->get('myChannel');
