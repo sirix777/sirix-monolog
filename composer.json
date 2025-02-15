@@ -1,0 +1,59 @@
+{
+  "name": "sirix/monolog",
+  "description": "Monolog PSR-11 Factories for Mezzio",
+  "license": "BSD-2-Clause",
+  "type": "library",
+  "require": {
+    "php": "~8.1.0 || ~8.2.0 || ~8.3.0 || ~8.4.0",
+    "ext-json": "*",
+    "psr/container": "^1.0 || ^2.0",
+    "monolog/monolog": "^3.0"
+  },
+  "require-dev": {
+    "ext-amqp": "*",
+    "aws/aws-sdk-php": "^3.185",
+    "doctrine/couchdb": "^1.0.0-beta4",
+    "ergebnis/composer-normalize": "^2.39",
+    "graylog2/gelf-php": "^2.0.0-beta.1",
+    "mongodb/mongodb": "^1.13",
+    "php-amqplib/php-amqplib": "^3.0",
+    "phpunit/phpunit": "^12.0",
+    "predis/predis": "^2.0",
+    "ruflin/elastica": "^7.2",
+    "swiftmailer/swiftmailer": "^6.2"
+  },
+  "autoload": {
+    "psr-4": {
+      "Sirix\\Monolog\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Sirix\\Test\\Monolog\\": "test/"
+    }
+  },
+  "config": {
+    "allow-plugins": {
+      "ergebnis/composer-normalize": true
+    }
+  },
+  "scripts": {
+    "post-install-cmd": [
+      "if [ ! -d \"tools/php-cs-fixer/vendor\" ]; then composer install --working-dir=tools/php-cs-fixer; fi",
+      "if [ ! -d \"tools/phpstan/vendor\" ]; then composer install --working-dir=tools/phpstan; fi"
+    ],
+    "post-update-cmd": [
+      "composer update --working-dir=tools/php-cs-fixer",
+      "composer update --working-dir=tools/phpstan"
+    ],
+    "check": [
+      "@cs-check",
+      "@phpstan",
+      "@test"
+    ],
+    "cs-check": "export PHP_CS_FIXER_IGNORE_ENV=1 && php tools/php-cs-fixer/vendor/bin/php-cs-fixer fix -vvv --dry-run --diff",
+    "cs-fix": "export PHP_CS_FIXER_IGNORE_ENV=1 && php tools/php-cs-fixer/vendor/bin/php-cs-fixer fix -vvv",
+    "phpstan": "php tools/phpstan/vendor/bin/phpstan",
+    "test": "phpunit --testdox --colors=always"
+  }
+}
