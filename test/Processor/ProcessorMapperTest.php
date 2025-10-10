@@ -15,6 +15,7 @@ use Sirix\Monolog\Processor\ProcessIdProcessorFactory;
 use Sirix\Monolog\Processor\ProcessorMapper;
 use Sirix\Monolog\Processor\PsrLogMessageProcessorFactory;
 use Sirix\Monolog\Processor\PushoverDeviceProcessorFactory;
+use Sirix\Monolog\Processor\RedactorProcessorFactory;
 use Sirix\Monolog\Processor\TagProcessorFactory;
 use Sirix\Monolog\Processor\UidProcessorFactory;
 use Sirix\Monolog\Processor\WebProcessorFactory;
@@ -23,7 +24,6 @@ class ProcessorMapperTest extends TestCase
 {
     private ProcessorMapper $mapper;
 
-    // @phpcs:ignore
     public function setUp(): void
     {
         $this->mapper = new ProcessorMapper();
@@ -110,6 +110,13 @@ class ProcessorMapperTest extends TestCase
     {
         $expected = PushoverDeviceProcessorFactory::class;
         $result = $this->mapper->map('pushoverdevice');
+        $this->assertEquals($expected, $result);
+    }
+
+    public function testRedactorProcessor()
+    {
+        $expected = RedactorProcessorFactory::class;
+        $result = $this->mapper->map('redactor');
         $this->assertEquals($expected, $result);
     }
 
