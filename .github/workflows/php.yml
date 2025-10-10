@@ -21,7 +21,7 @@ jobs:
         run: composer validate --strict
 
       - name: Install dependencies
-        run: composer install --prefer-dist --no-progress
+        run: composer install --prefer-dist --no-progress --ignore-platform-req=ext-mongodb
 
       - name: Install php-cs-fixer
         run: composer install --working-dir=tools/php-cs-fixer
