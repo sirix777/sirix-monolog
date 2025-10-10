@@ -98,6 +98,7 @@ This package is built upon the **[`blazon/psr11-monolog`](https://github.com/bla
         - [TagProcessor](#tagprocessor)
         - [HostnameProcessor](#hostnameprocessor)
         - [PushoverDeviceProcessor](#pushoverdeviceprocessor)
+        - [RedactorProcessor](#redactorprocessor)
 - [Upgrades](#upgrades)
 
 # Installation
@@ -2217,3 +2218,59 @@ return [
     ],
 ];
 ```
+
+
+### RedactorProcessor
+Redacts sensitive values in the log record context using pluggable masking rules.
+
+Note: This processor is provided by the optional package sirix/monolog-redaction. Install it in your project if you intend to use redaction.
+
+Install:
+
+```bash
+composer require sirix/monolog-redaction
+```
+
+Usage in configuration:
+
+```php
+<?php
+
+use Sirix\Monolog\Redaction\Rule\StartEndRule;
+use Sirix\Monolog\Redaction\Rule\EmailRule;
+use Sirix\Monolog\Redaction\Rule\NameRule;
+
+return [
+    'monolog' => [
+        'processors' => [
+            'redactor' => [
+                'type' => 'redactor',
+                'options' => [
+                    // Whether to load the built-in default rules (card data, emails, names, phone, IPs, etc.)
+                    'useDefaultRules' => true, // Optional, default: true
+
+                    // Optional: customize the mask appearance
+                    'replacement' => '*',      // Optional, default: '*'
+                    'template'    => '%s',     // Optional, default: '%s' (e.g. '[%s]' to wrap)
+                    'lengthLimit' => null,     // Optional, default: null (no limit)
+
+                    // Add/override rules per key (nested structures supported).
+                    // IMPORTANT: Provide instantiated rule objects in PHP config.
+                    'rules' => [
+                        'card_number' => new StartEndRule(6, 4),
+                        'user' => [
+                            'email' => new EmailRule(),
+                            'name'  => new NameRule(),
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+];
+```
+
+- The rules map is recursive. You can target nested keys by using nested arrays.
+- If you prefer to use only your own rules and skip the defaults, set 'useDefaultRules' to false.
+
+For the complete list of built-in rule types and advanced usage, see the sirix/monolog-redaction README: https://github.com/sirix777/monolog-redaction

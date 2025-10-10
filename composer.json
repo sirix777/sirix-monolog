@@ -15,12 +15,16 @@
     "doctrine/couchdb": "^1.0.0-beta4",
     "ergebnis/composer-normalize": "^2.39",
     "graylog2/gelf-php": "^2.0.0-beta.1",
-    "mongodb/mongodb": "^1.13",
+    "mongodb/mongodb": "^2.1.1",
     "php-amqplib/php-amqplib": "^3.0",
     "phpunit/phpunit": "^12.0",
     "predis/predis": "^2.0",
     "ruflin/elastica": "^7.2",
-    "swiftmailer/swiftmailer": "^6.2"
+    "swiftmailer/swiftmailer": "^6.2",
+    "sirix/monolog-redaction": "^1.0"
+  },
+  "suggest": {
+    "sirix/monolog-redaction": "Required to use RedactorProcessor for sensitive data redaction"
   },
   "autoload": {
     "psr-4": {
@@ -39,21 +43,29 @@
   },
   "scripts": {
     "post-install-cmd": [
-      "if [ ! -d \"tools/php-cs-fixer/vendor\" ]; then composer install --working-dir=tools/php-cs-fixer; fi",
-      "if [ ! -d \"tools/phpstan/vendor\" ]; then composer install --working-dir=tools/phpstan; fi"
+      "@tools-update"
     ],
     "post-update-cmd": [
-      "composer update --working-dir=tools/php-cs-fixer",
-      "composer update --working-dir=tools/phpstan"
+      "@tools-update"
     ],
     "check": [
       "@cs-check",
+      "@rector",
       "@phpstan",
       "@test"
     ],
-    "cs-check": "export PHP_CS_FIXER_IGNORE_ENV=1 && php tools/php-cs-fixer/vendor/bin/php-cs-fixer fix -vvv --dry-run --diff",
-    "cs-fix": "export PHP_CS_FIXER_IGNORE_ENV=1 && php tools/php-cs-fixer/vendor/bin/php-cs-fixer fix -vvv",
-    "phpstan": "php tools/phpstan/vendor/bin/phpstan",
-    "test": "phpunit --testdox --colors=always"
+    "cs-check": "php tools/php-cs-fixer/vendor/bin/php-cs-fixer fix -vvv --dry-run --diff",
+    "cs-fix": "php tools/php-cs-fixer/vendor/bin/php-cs-fixer fix -vvv",
+    "phpstan": "php tools/phpstan/vendor/bin/phpstan analyse -c phpstan.neon --memory-limit=1G",
+    "rector": "php tools/rector/vendor/bin/rector process --dry-run --xdebug --memory-limit=1G",
+    "test": "phpunit --testdox --colors=always",
+    "tools-update": [
+      "@tools-update-csfix",
+      "@tools-update-phpstan",
+      "@tools-update-rector"
+    ],
+    "tools-update-csfix": "composer update -W --working-dir=tools/php-cs-fixer",
+    "tools-update-phpstan": "composer update -W --working-dir=tools/phpstan",
+    "tools-update-rector": "composer update -W --working-dir=tools/rector"
   }
 }

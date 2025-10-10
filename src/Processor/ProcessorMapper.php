@@ -27,6 +27,7 @@ class ProcessorMapper implements MapperInterface
             'tags' => TagProcessorFactory::class,
             'hostname' => HostnameProcessorFactory::class,
             'pushoverdevice' => PushoverDeviceProcessorFactory::class,
+            'redactor' => RedactorProcessorFactory::class,
             default => null,
         };
     }

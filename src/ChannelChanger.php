@@ -83,7 +83,7 @@ class ChannelChanger implements ContainerInterface
      */
     protected function getHandler(string $id): HandlerInterface
     {
-        if (null === $this->handlerManager) {
+        if (! $this->handlerManager instanceof HandlerManager) {
             throw new UnknownServiceException(
                 'Processor manager is not configured.'
             );
@@ -104,7 +104,7 @@ class ChannelChanger implements ContainerInterface
      */
     protected function getProcessor(string $id): ProcessorInterface
     {
-        if (null === $this->processorManager) {
+        if (! $this->processorManager instanceof ProcessorManager) {
             throw new UnknownServiceException(
                 'Processor manager is not configured.'
             );

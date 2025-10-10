@@ -6,6 +6,8 @@ namespace Sirix\Monolog\Handler;
 
 use Monolog\Handler\MandrillHandler;
 use Monolog\Level;
+use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\NotFoundExceptionInterface;
 use Sirix\Monolog\ContainerAwareInterface;
 use Sirix\Monolog\FactoryInterface;
 
@@ -13,6 +15,10 @@ class MandrillHandlerFactory implements FactoryInterface, ContainerAwareInterfac
 {
     use SwiftMessageTrait;
 
+    /**
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     */
     public function __invoke(array $options): MandrillHandler
     {
         $apiKey = (string) ($options['apiKey'] ?? '');

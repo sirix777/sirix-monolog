@@ -11,17 +11,13 @@ return static function (RectorConfig $rectorConfig): void {
 
     $rectorConfig->paths([
         __DIR__ . '/src',
-        __DIR__ . '/tests',
-    ]);
-
-    $rectorConfig->skip([
-        __DIR__ . '/tests/Support',
+        __DIR__ . '/test',
     ]);
 
     $rectorConfig->sets([
         SetList::CODE_QUALITY,
         SetList::DEAD_CODE,
         SetList::EARLY_RETURN,
-        LevelSetList::UP_TO_PHP_82,
+        LevelSetList::UP_TO_PHP_81,
     ]);
 };
