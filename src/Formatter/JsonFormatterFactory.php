@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Sirix\Monolog\Formatter;
 
+use Monolog\Formatter\JsonFormatter;
 use Sirix\Monolog\FactoryInterface;
 
 class JsonFormatterFactory implements FactoryInterface
@@ -14,14 +15,12 @@ class JsonFormatterFactory implements FactoryInterface
         $appendNewline = (bool) ($options['appendNewline'] ?? true);
         $ignoreEmptyContextAndExtra = (bool) ($options['ignoreEmptyContextAndExtra'] ?? false);
         $includeStacktraces = (bool) ($options['includeStacktraces'] ?? false);
-        $maskKeys = (array) ($options['maskKeys'] ?? []);
 
         return new JsonFormatter(
             $batchMode,
             $appendNewline,
             $ignoreEmptyContextAndExtra,
             $includeStacktraces,
-            $maskKeys,
         );
     }
 }
