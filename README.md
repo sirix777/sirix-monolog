@@ -2253,6 +2253,7 @@ return [
                     'replacement' => '*',      // Optional, default: '*'
                     'template'    => '%s',     // Optional, default: '%s' (e.g. '[%s]' to wrap)
                     'lengthLimit' => null,     // Optional, default: null (no limit)
+                    'processObjects' => true,  // Optional, default: true - controls whether objects in log data are processed
 
                     // Add/override rules per key (nested structures supported).
                     // IMPORTANT: Provide instantiated rule objects in PHP config.

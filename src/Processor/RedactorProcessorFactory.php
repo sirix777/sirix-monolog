@@ -9,6 +9,7 @@ use Sirix\Monolog\Redaction\RedactorProcessor;
 
 use function array_key_exists;
 use function is_array;
+use function is_bool;
 use function is_int;
 use function is_string;
 
@@ -34,6 +35,10 @@ class RedactorProcessorFactory implements FactoryInterface
 
         if (isset($options['template']) && is_string($options['template'])) {
             $processor->setTemplate($options['template']);
+        }
+
+        if (isset($options['processObjects']) && is_bool($options['processObjects'])) {
+            $processor->setProcessObjects($options['processObjects']);
         }
 
         if (array_key_exists('lengthLimit', $options)) {
