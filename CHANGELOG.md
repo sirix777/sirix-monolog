@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.4] — 17/10/2025
+
+Changed
+- Enhanced RedactorProcessorFactory with advanced object processing options:
+  - Added objectViewMode configuration for controlling how objects are processed
+  - Added maxDepth option to limit recursion depth in nested structures
+  - Added maxItemsPerContainer to limit items per array/object
+  - Added maxTotalNodes to limit total nodes processed
+  - Added onLimitExceededCallback for custom handling when limits are exceeded
+  - Added overflowPlaceholder configuration for truncated data
+- Updated sirix/monolog-redaction dependency to ^1.3 to support new features
+- Reorganized developer tooling: replaced ergebnis/composer-normalize with bamarni/composer-bin-plugin
+- Added composer-dependency-analyser and composer-normalize as bin tools
+- Updated documentation in README with new object processing configuration options
+
 ## [1.1.3] — 13/10/2025
 
 Changed

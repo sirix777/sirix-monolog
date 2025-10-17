@@ -2236,6 +2236,7 @@ Usage in configuration:
 ```php
 <?php
 
+use Sirix\Monolog\Redaction\Enum\ObjectViewModeEnum;
 use Sirix\Monolog\Redaction\Rule\StartEndRule;
 use Sirix\Monolog\Redaction\Rule\EmailRule;
 use Sirix\Monolog\Redaction\Rule\NameRule;
@@ -2254,6 +2255,14 @@ return [
                     'template'    => '%s',     // Optional, default: '%s' (e.g. '[%s]' to wrap)
                     'lengthLimit' => null,     // Optional, default: null (no limit)
                     'processObjects' => true,  // Optional, default: true - controls whether objects in log data are processed
+
+                    // Optional: object processing configuration
+                    'objectViewMode' => ObjectViewModeEnum::PublicArray, // Optional, default: ObjectViewModeEnum::Copy
+                    'maxDepth' => null,              // Optional, default: null (no limit) - maximum depth for nested structures
+                    'maxItemsPerContainer' => null,  // Optional, default: null (no limit) - max items per array/object
+                    'maxTotalNodes' => null,         // Optional, default: null (no limit) - total nodes to process
+                    'onLimitExceededCallback' => null, // Optional, default: null - callback when limits exceeded
+                    'overflowPlaceholder' => '...',  // Optional, default: '...' - placeholder for truncated data
 
                     // Add/override rules per key (nested structures supported).
                     // IMPORTANT: Provide instantiated rule objects in PHP config.

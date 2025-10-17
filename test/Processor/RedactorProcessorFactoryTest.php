@@ -9,6 +9,7 @@ use Monolog\Level;
 use Monolog\LogRecord;
 use PHPUnit\Framework\TestCase;
 use Sirix\Monolog\Processor\RedactorProcessorFactory;
+use Sirix\Monolog\Redaction\Enum\ObjectViewModeEnum;
 use Sirix\Monolog\Redaction\RedactorProcessor;
 
 class RedactorProcessorFactoryTest extends TestCase
@@ -24,24 +25,47 @@ class RedactorProcessorFactoryTest extends TestCase
     public function testInvokeWithOptionsSetsProperties(): void
     {
         $factory = new RedactorProcessorFactory();
+        $callback = fn () => 'overflow';
+
         $processor = $factory([
             'rules' => ['email' => []], // shape does not matter here as we do not inspect internal rules
             'useDefaultRules' => false,
             'replacement' => '#',
             'template' => '<%s>',
             'lengthLimit' => 10,
+            'processObjects' => false,
+            'objectViewMode' => ObjectViewModeEnum::PublicArray,
+            'maxDepth' => 5,
+            'maxItemsPerContainer' => 20,
+            'maxTotalNodes' => 100,
+            'onLimitExceededCallback' => $callback,
+            'overflowPlaceholder' => '...',
         ]);
 
         $this->assertInstanceOf(RedactorProcessor::class, $processor);
         $this->assertSame('#', $processor->getReplacement());
         $this->assertSame('<%s>', $processor->getTemplate());
         $this->assertSame(10, $processor->getLengthLimit());
+        $this->assertFalse($processor->isProcessObjects());
+        $this->assertSame(ObjectViewModeEnum::PublicArray, $processor->getObjectViewMode());
+        $this->assertSame(5, $processor->getMaxDepth());
+        $this->assertSame(20, $processor->getMaxItemsPerContainer());
+        $this->assertSame(100, $processor->getMaxTotalNodes());
+        $this->assertSame($callback, $processor->getOnLimitExceededCallback());
+        $this->assertSame('...', $processor->getOverflowPlaceholder());
 
-        // also check that null is allowed for lengthLimit and overrides previous value
         $processor2 = $factory([
             'lengthLimit' => null,
+            'maxDepth' => null,
+            'maxItemsPerContainer' => null,
+            'maxTotalNodes' => null,
+            'onLimitExceededCallback' => null,
         ]);
         $this->assertNull($processor2->getLengthLimit());
+        $this->assertNull($processor2->getMaxDepth());
+        $this->assertNull($processor2->getMaxItemsPerContainer());
+        $this->assertNull($processor2->getMaxTotalNodes());
+        $this->assertNull($processor2->getOnLimitExceededCallback());
     }
 
     public function testInvokeWithInvalidRulesDoesNotError(): void
