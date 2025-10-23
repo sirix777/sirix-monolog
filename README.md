@@ -2223,23 +2223,40 @@ return [
 ### RedactorProcessor
 Redacts sensitive values in the log record context using pluggable masking rules.
 
-Note: This processor is provided by the optional package sirix/monolog-redaction. Install it in your project if you intend to use redaction.
+Note: This processor is provided by the optional package sirix/redaction. Install it in your project if you intend to use redaction.
+
+Resolution logic:
+- First, the factory looks in your PSR-11 container for a service implementing Sirix\Redaction\RedactorInterface. If found, that instance is used.
+- Only if the container does not provide RedactorInterface, a new Redactor is created from the provided options (see below).
 
 Install:
 
 ```bash
-composer require sirix/monolog-redaction
+composer require sirix/redaction
 ```
+
+Providing a Redactor via the container (preferred when you need full control):
+
+```php
+<?php
+use Sirix\Redaction\Redactor;
+use Sirix\Redaction\RedactorInterface;
+
+// Example: register in your container configuration so that it can return RedactorInterface
+$container->set(RedactorInterface::class, new Redactor(/* custom rules here */, /* useDefaultRules */ true));
+```
+
+If the container does not have RedactorInterface, you can configure options and the factory will create one for you:
 
 Usage in configuration:
 
 ```php
 <?php
 
-use Sirix\Monolog\Redaction\Enum\ObjectViewModeEnum;
-use Sirix\Monolog\Redaction\Rule\StartEndRule;
-use Sirix\Monolog\Redaction\Rule\EmailRule;
-use Sirix\Monolog\Redaction\Rule\NameRule;
+use Sirix\Redaction\Enum\ObjectViewModeEnum;
+use Sirix\Redaction\Rule\StartEndRule;
+use Sirix\Redaction\Rule\EmailRule;
+use Sirix\Redaction\Rule\NameRule;
 
 return [
     'monolog' => [
@@ -2254,7 +2271,6 @@ return [
                     'replacement' => '*',      // Optional, default: '*'
                     'template'    => '%s',     // Optional, default: '%s' (e.g. '[%s]' to wrap)
                     'lengthLimit' => null,     // Optional, default: null (no limit)
-                    'processObjects' => true,  // Optional, default: true - controls whether objects in log data are processed
 
                     // Optional: object processing configuration
                     'objectViewMode' => ObjectViewModeEnum::PublicArray, // Optional, default: ObjectViewModeEnum::Copy
@@ -2283,4 +2299,4 @@ return [
 - The rules map is recursive. You can target nested keys by using nested arrays.
 - If you prefer to use only your own rules and skip the defaults, set 'useDefaultRules' to false.
 
-For the complete list of built-in rule types and advanced usage, see the sirix/monolog-redaction README: https://github.com/sirix777/monolog-redaction
+For the complete list of built-in rule types and advanced usage, see the sirix/redaction README: https://github.com/sirix777/redaction

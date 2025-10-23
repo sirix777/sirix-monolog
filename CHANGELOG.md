@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.5] — 23/10/2025
+
+Changed
+- Migrated from package sirix/monolog-redaction to sirix/redaction (new namespaces: Sirix\Redaction\*).
+- RedactorProcessorFactory now prefers a RedactorInterface from the PSR-11 container; only creates a Redactor if the container does not provide one.
+- Updated README with new package name, namespace changes, container resolution logic, and revised configuration examples.
+- Updated composer.json suggest and dependency to sirix/redaction ^1.1.
+- PHPUnit config: enable display_errors and error_reporting in phpunit.xml.dist.
+
+Removed
+- processObjects configuration option (object processing is now governed by objectViewMode and related limits in sirix/redaction).
+
+Notes
+- If you previously referenced Sirix\Monolog\Redaction classes, update imports to Sirix\Redaction\... (e.g., Bridge\Monolog\RedactorProcessor, Enum\ObjectViewModeEnum).
+
 ## [1.1.4] — 17/10/2025
 
 Changed

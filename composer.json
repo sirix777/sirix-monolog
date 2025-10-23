@@ -21,11 +21,11 @@
     "phpunit/phpunit": "^12.0",
     "predis/predis": "^2.0",
     "ruflin/elastica": "^7.2",
-    "sirix/monolog-redaction": "^1.3",
+    "sirix/redaction": "^1.1",
     "swiftmailer/swiftmailer": "^6.2"
   },
   "suggest": {
-    "sirix/monolog-redaction": "Required to use RedactorProcessor for sensitive data redaction"
+    "sirix/redaction": "Required to use RedactorProcessor for sensitive data redaction"
   },
   "autoload": {
     "psr-4": {

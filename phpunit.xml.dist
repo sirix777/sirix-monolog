@@ -6,6 +6,10 @@
     colors="true"
     cacheDirectory="build/.phpunit.cache"
 >
+    <php>
+        <ini name="display_errors" value="1"/>
+        <ini name="error_reporting" value="1"/>
+    </php>
     <testsuites>
         <testsuite name="Config">
             <directory>./test</directory>
