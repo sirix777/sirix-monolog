@@ -1,5 +1,5 @@
 {
     "require-dev": {
-        "sirix/php-cs-fixer-config": "^1.0"
+        "sirix/php-cs-fixer-config": "^1.1"
     }
 }

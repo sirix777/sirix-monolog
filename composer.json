@@ -4,25 +4,25 @@
   "license": "BSD-2-Clause",
   "type": "library",
   "require": {
-    "php": "~8.1.0 || ~8.2.0 || ~8.3.0 || ~8.4.0",
+    "php": "~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",
     "ext-json": "*",
-    "monolog/monolog": "^3.0",
-    "psr/container": "^1.0 || ^2.0",
-    "psr/log": "^2.0 || ^3.0"
+    "monolog/monolog": "^3.9",
+    "psr/container": "^1.0 || ^2.0.2",
+    "psr/log": "^2.0 || ^3.0.2"
   },
   "require-dev": {
     "ext-amqp": "*",
-    "aws/aws-sdk-php": "^3.185",
-    "bamarni/composer-bin-plugin": "^1.8",
+    "aws/aws-sdk-php": "^3.363",
+    "bamarni/composer-bin-plugin": "^1.8.2",
     "doctrine/couchdb": "^1.0.0-beta4",
     "graylog2/gelf-php": "^2.0.0-beta.1",
-    "mongodb/mongodb": "^2.1.1",
-    "php-amqplib/php-amqplib": "^3.0",
-    "phpunit/phpunit": "^12.0",
-    "predis/predis": "^2.0",
-    "ruflin/elastica": "^7.2",
-    "sirix/redaction": "^1.1",
-    "swiftmailer/swiftmailer": "^6.2"
+    "mongodb/mongodb": "^2.1.2",
+    "php-amqplib/php-amqplib": "^3.7.3",
+    "phpunit/phpunit": "^11.5.44",
+    "predis/predis": "^2.4.1",
+    "ruflin/elastica": "^7.3.2",
+    "sirix/redaction": "^1.3",
+    "swiftmailer/swiftmailer": "^6.3"
   },
   "suggest": {
     "sirix/redaction": "Required to use RedactorProcessor for sensitive data redaction"

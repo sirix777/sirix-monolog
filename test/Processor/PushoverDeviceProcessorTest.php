@@ -33,7 +33,7 @@ final class PushoverDeviceProcessorTest extends TestCase
 
     public function testDoesNotAddDeviceWhenNotProvided(): void
     {
-        $processor = new PushoverDeviceProcessor(null);
+        $processor = new PushoverDeviceProcessor();
 
         $record = new LogRecord(
             datetime: new DateTimeImmutable('2025-10-10T00:00:00Z'),

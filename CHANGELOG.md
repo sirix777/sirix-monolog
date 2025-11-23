@@ -5,7 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.1.5] — 23/10/2025
+## [1.1.6] — 2025-11-23
+
+### Changed
+- PHP platform: raise minimum to 8.2 and add 8.5 support (`composer.json` `php` constraint now `~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0`).
+- `StreamHandlerFactory`: use explicit octal literal `0o644` for the default `filePermission` (requires PHP ≥ 8.1; aligns with new minimum 8.2).
+- Coding standards: enable `@PHP8x2Migration` rule set and `setUnsupportedPhpVersionAllowed(true)` in `.php-cs-fixer.dist.php`; update tool package `sirix/php-cs-fixer-config` to `^1.1`.
+- Rector config: raise level to `LevelSetList::UP_TO_PHP_82`.
+- Tests: refine `RedactorProcessorFactoryTest` to verify that a rule applies to all matching keys across nested structures; clarify intent in test name.
+- Documentation maintenance: normalize all changelog dates to ISO format (YYYY-MM-DD).
+
+### Removed
+- Drop support for PHP 8.1.
+
+### Notes
+- Ensure your project uses `sirix/redaction` `^1.3` when relying on the redaction processor. No functional changes are expected in factories besides the PHP version requirement and dependency range updates.
+
+## [1.1.5] — 2025-10-23
 
 Changed
 - Migrated from package sirix/monolog-redaction to sirix/redaction (new namespaces: Sirix\Redaction\*).
@@ -20,7 +36,7 @@ Removed
 Notes
 - If you previously referenced Sirix\Monolog\Redaction classes, update imports to Sirix\Redaction\... (e.g., Bridge\Monolog\RedactorProcessor, Enum\ObjectViewModeEnum).
 
-## [1.1.4] — 17/10/2025
+## [1.1.4] — 2025-10-17
 
 Changed
 - Enhanced RedactorProcessorFactory with advanced object processing options:
@@ -35,24 +51,24 @@ Changed
 - Added composer-dependency-analyser and composer-normalize as bin tools
 - Updated documentation in README with new object processing configuration options
 
-## [1.1.3] — 13/10/2025
+## [1.1.3] — 2025-10-13
 
 Changed
 - Added processObjects setting for RedactorProcessor to control whether objects in log data are processed.
 
-## [1.1.2] — 13/10/2025
+## [1.1.2] — 2025-10-13
 
 Changed
 - Updated JsonFormatterFactory to match Monolog 3.x JsonFormatter interface (removed maskKeys parameter).
 
-## [1.1.1] — 10/10/2025
+## [1.1.1] — 2025-10-10
 
 Added
 - Tests: add coverage for PushoverDeviceProcessor behavior.
 - Tests: add test for RedactorProcessorFactory to to ProcessorMapperTest
 
 
-## [1.1.0] — 10/10/2025
+## [1.1.0] — 2025-10-10
 
 Added
 - RedactorProcessor integration:
@@ -70,6 +86,6 @@ Removed
 - Legacy tests and scaffolding under `tests/` in favor of PHPUnit tests under `test/`.
 
 
-## [1.0.0] — 16/02/2025
+## [1.0.0] — 2025-02-16
 
 First release.

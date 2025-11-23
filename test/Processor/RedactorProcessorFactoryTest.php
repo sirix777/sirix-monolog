@@ -110,19 +110,22 @@ final class RedactorProcessorFactoryTest extends TestCase
         $this->assertSame('######', $processed->context['password']);
     }
 
-    public function testNestedRulesAreApplied(): void
+    public function testAppliesRuleToAllMatchingKeys(): void
     {
         $processor = $this->factory->__invoke([
             'rules' => [
-                'user' => [
-                    'password' => new FullMaskRule(),
-                ],
+                'password' => new FullMaskRule(),
             ],
+            'useDefaultRules' => false,
         ]);
 
         $context = [
             'user' => [
                 'name' => 'John',
+                'password' => 'topsecret',
+            ],
+            'account' => [
+                'full_name' => 'John Doe',
                 'password' => 'topsecret',
             ],
         ];
@@ -139,6 +142,7 @@ final class RedactorProcessorFactoryTest extends TestCase
         $processed = $processor($record);
 
         $this->assertSame('*********', $processed->context['user']['password']);
+        $this->assertSame('*********', $processed->context['account']['password']);
         $this->assertSame('John', $processed->context['user']['name']);
     }
 

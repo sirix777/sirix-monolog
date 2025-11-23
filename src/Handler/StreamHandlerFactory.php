@@ -32,7 +32,7 @@ class StreamHandlerFactory implements FactoryInterface, ContainerAwareInterface
 
         $level = $options['level'] ?? Level::Debug;
         $bubble = (bool) ($options['bubble'] ?? true);
-        $filePermission = (int) ($options['filePermission'] ?? 0644);
+        $filePermission = (int) ($options['filePermission'] ?? 0o644);
         $useLocking = (bool) ($options['useLocking'] ?? true);
 
         return new StreamHandler($stream, $level, $bubble, $filePermission, $useLocking);
