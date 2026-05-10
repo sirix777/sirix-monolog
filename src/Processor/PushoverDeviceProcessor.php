@@ -13,7 +13,7 @@ class PushoverDeviceProcessor implements ProcessorInterface
 
     public function __invoke(LogRecord $record): LogRecord
     {
-        if (isset($this->device)) {
+        if (null !== $this->device) {
             $record->extra['device'] = $this->device;
         }
 

@@ -17,6 +17,10 @@ class SlackWebhookHandlerFactory implements FactoryInterface
     public function __invoke(array $options): SlackWebhookHandler
     {
         $webhookUrl = (string) ($options['webhookUrl'] ?? '');
+
+        if ('' === $webhookUrl) {
+            throw new MissingExtensionException('webhookUrl must not be empty');
+        }
         $channel = $options['channel'] ?? null;
         $userName = $options['userName'] ?? null;
         $useAttachment = (bool) ($options['useAttachment'] ?? true);
