@@ -1,6 +1,7 @@
 # Sirix Monolog PSR-11 Factories
+[![Latest Stable Version](http://poser.pugx.org/sirix/monolog/v)](https://packagist.org/packages/sirix/monolog) [![Total Downloads](http://poser.pugx.org/sirix/monolog/downloads)](https://packagist.org/packages/sirix/monolog) [![Latest Unstable Version](http://poser.pugx.org/sirix/monolog/v/unstable)](https://packagist.org/packages/sirix/monolog) [![License](http://poser.pugx.org/sirix/monolog/license)](https://packagist.org/packages/sirix/monolog) [![PHP Version Require](http://poser.pugx.org/sirix/monolog/require/php)](https://packagist.org/packages/sirix/monolog)
 
-This package is built upon the **[`blazon/psr11-monolog`](https://github.com/blazon/psr11-monolog)** project, extending its features and adding additional functionality for more specialized use cases.
+This package is built upon the **[`blazon/psr11-monolog`](https://gitlab.com/blazon/psr11-monolog)** project, extending its features and adding additional functionality for more specialized use cases.
 
 
 #### Table of Contents
