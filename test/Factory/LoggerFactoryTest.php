@@ -44,7 +44,7 @@ final class LoggerFactoryTest extends TestCase
         $container = ArrayContainer::fromConfigProvider([
             C::Root->value => [
                 C::LoggerServices->value => [
-                    'logger.default' => 'default',
+                    'logger' => 'default',
                 ],
                 C::Channels->value => [
                     'default' => [
@@ -90,13 +90,13 @@ final class LoggerFactoryTest extends TestCase
     public function testRequestedNameSelectsConfiguredChannel(): void
     {
         $providerConfig = (new ConfigProvider())();
-        $providerConfig['dependencies']['factories']['logger.audit'] = LoggerFactory::class;
+        $providerConfig['dependencies']['factories']['logger_audit'] = LoggerFactory::class;
 
         $container = ArrayContainer::fromConfigProvider([
             C::Root->value => [
                 C::LoggerServices->value => [
-                    'logger.default' => 'default',
-                    'logger.audit' => 'audit',
+                    'logger' => 'default',
+                    'logger_audit' => 'audit',
                 ],
                 C::Channels->value => [
                     'default' => [
@@ -118,7 +118,7 @@ final class LoggerFactoryTest extends TestCase
             ],
         ], $providerConfig);
 
-        $logger = $container->get('logger.audit');
+        $logger = $container->get('logger_audit');
 
         $this->assertInstanceOf(Logger::class, $logger);
         $this->assertSame('audit', $logger->getName());

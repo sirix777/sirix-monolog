@@ -25,8 +25,9 @@ return [
 
 If no configuration is provided, the package creates a safe default logger:
 
+- service `logger` → channel `default`
+- service `Monolog\Logger` → channel `default`
 - service `Psr\Log\LoggerInterface` → channel `default`
-- service `logger.default` → channel `default`
 - channel `default` uses name `app`
 - channel `default` uses a `noop` handler
 
@@ -39,21 +40,25 @@ This means an unconfigured logger is safe to request and will discard records.
 ```php
 <?php
 
+use Monolog\Logger;
 use Psr\Log\LoggerInterface;
 use Sirix\Monolog\Enum\ConfigKey;
 
 return [
     ConfigKey::Root->value => [
         ConfigKey::LoggerServices->value => [
+            'logger' => 'default',
+            'logger_audit' => 'audit',
+            Logger::class => 'default',
             LoggerInterface::class => 'default',
-            'logger.default' => 'default',
-            'logger.audit' => 'audit',
         ],
     ],
 ];
 ```
 
-`ConfigProvider` registers `Psr\Log\LoggerInterface` and `logger.default`. If you add custom logger service ids, register them with `Sirix\Monolog\Factory\LoggerFactory` in your container.
+`ConfigProvider` registers `logger`, `Monolog\Logger`, and `Psr\Log\LoggerInterface`. If you add custom logger service ids, register them with `Sirix\Monolog\Factory\LoggerFactory` in your container.
+
+Prefer service ids without dots, such as `logger_audit`, because some containers treat dots as path separators.
 
 ## Channels
 
@@ -177,6 +182,7 @@ Register custom type strings by mapping them to factory class names.
 <?php
 
 use App\Logging\AuditHandlerFactory;
+use App\Logging\CryptoJsonFormatterFactory;
 use Sirix\Monolog\Enum\ConfigKey;
 
 return [
@@ -184,9 +190,14 @@ return [
         ConfigKey::HandlerFactories->value => [
             'audit' => AuditHandlerFactory::class,
         ],
+        ConfigKey::FormatterFactories->value => [
+            'crypto_json' => CryptoJsonFormatterFactory::class,
+        ],
     ],
 ];
 ```
+
+The configured type string is then used in the matching definition section, for example `ConfigKey::Type->value => 'crypto_json'` under `ConfigKey::Formatters`.
 
 Factory classes must exist and implement the matching strict interface:
 

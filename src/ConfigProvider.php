@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Sirix\Monolog;
 
+use Monolog\Logger;
 use Psr\Log\LoggerInterface;
 use Sirix\Monolog\Builder\FormatterBuilder;
 use Sirix\Monolog\Builder\HandlerBuilder;
@@ -38,10 +39,11 @@ final class ConfigProvider
     {
         return [
             'aliases' => [
-                LoggerInterface::class => 'logger.default',
+                Logger::class => 'logger',
+                LoggerInterface::class => 'logger',
             ],
             'factories' => [
-                'logger.default' => LoggerFactory::class,
+                'logger' => LoggerFactory::class,
                 MonologConfig::class => MonologConfigFactory::class,
                 ChannelRegistry::class => ChannelRegistryFactory::class,
                 HandlerRegistry::class => HandlerRegistryFactory::class,

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Sirix\Test\Monolog\Config;
 
+use Monolog\Logger;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Sirix\Monolog\Config\MonologConfigReader;
@@ -21,8 +22,9 @@ final class MonologConfigReaderTest extends TestCase
     {
         $config = (new MonologConfigReader())->read([]);
 
+        $this->assertSame('default', $config->channelForLoggerService(Logger::class));
         $this->assertSame('default', $config->channelForLoggerService(LoggerInterface::class));
-        $this->assertSame('default', $config->channelForLoggerService('logger.default'));
+        $this->assertSame('default', $config->channelForLoggerService('logger'));
         $this->assertSame('app', $config->channel('default')->name);
         $this->assertSame(['default'], $config->channel('default')->handlers);
         $this->assertSame(HandlerType::Noop->value, $config->handler('default')->type);
@@ -34,7 +36,7 @@ final class MonologConfigReaderTest extends TestCase
         $config = (new MonologConfigReader())->read([
             C::Root->value => [
                 C::LoggerServices->value => [
-                    'logger.default' => 'default',
+                    'logger' => 'default',
                 ],
                 C::Channels->value => [
                     'default' => [

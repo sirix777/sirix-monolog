@@ -37,7 +37,7 @@ return [
 ];
 ```
 
-The provider registers `Psr\Log\LoggerInterface` as an alias for `logger.default`.
+The provider registers `logger`, `Monolog\Logger`, and `Psr\Log\LoggerInterface` for the default logger service. Dotted service ids are intentionally avoided because some containers treat dots as path separators.
 
 ## Minimal configuration
 
@@ -47,6 +47,7 @@ Create `config/autoload/monolog.global.php`:
 <?php
 
 use Monolog\Level;
+use Monolog\Logger;
 use Psr\Log\LoggerInterface;
 use Sirix\Monolog\Enum\ConfigKey;
 use Sirix\Monolog\Enum\FormatterType;
@@ -56,8 +57,9 @@ use Sirix\Monolog\Enum\ProcessorType;
 return [
     ConfigKey::Root->value => [
         ConfigKey::LoggerServices->value => [
+            'logger' => 'default',
+            Logger::class => 'default',
             LoggerInterface::class => 'default',
-            'logger.default' => 'default',
         ],
         ConfigKey::Channels->value => [
             'default' => [
@@ -119,7 +121,7 @@ use Sirix\Monolog\Enum\HandlerType;
 return [
     ConfigKey::Root->value => [
         ConfigKey::LoggerServices->value => [
-            'logger.audit' => 'audit',
+            'logger_audit' => 'audit',
         ],
         ConfigKey::Channels->value => [
             'audit' => [

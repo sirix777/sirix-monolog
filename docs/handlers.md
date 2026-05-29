@@ -2,6 +2,8 @@
 
 Built-in handlers are configured under `monolog.handlers`. Handler option names use `snake_case`.
 
+A handler entry is a configured handler instance identified by a local id. Channels reference handler ids through their `handlers` list. The handler `type` selects either a built-in handler factory or a custom handler factory registered under `monolog.handler_factories`.
+
 Common optional options where supported:
 
 - `level`: `Monolog\Level`, level name, or level value depending on enum parsing
@@ -599,6 +601,84 @@ Options:
 Creates `Monolog\Handler\NoopHandler`.
 
 No options.
+
+## Custom handlers
+
+Register custom handler factories under `monolog.handler_factories`. A custom handler factory must implement `Sirix\Monolog\Handler\HandlerFactoryInterface` and return an instance of `Monolog\Handler\HandlerInterface`.
+
+```php
+<?php
+
+use App\Logging\AuditHandlerFactory;
+use Monolog\Level;
+use Sirix\Monolog\Enum\ConfigKey;
+use Sirix\Monolog\Enum\FormatterType;
+
+return [
+    ConfigKey::Root->value => [
+        ConfigKey::HandlerFactories->value => [
+            'audit' => AuditHandlerFactory::class,
+        ],
+        ConfigKey::Handlers->value => [
+            'audit_file' => [
+                ConfigKey::Type->value => 'audit',
+                ConfigKey::Formatter->value => 'json',
+                ConfigKey::Options->value => [
+                    'path' => 'data/log/audit.log',
+                    'level' => Level::Info,
+                ],
+            ],
+        ],
+        ConfigKey::Formatters->value => [
+            'json' => [
+                ConfigKey::Type->value => FormatterType::Json,
+            ],
+        ],
+        ConfigKey::Channels->value => [
+            'audit' => [
+                ConfigKey::Name->value => 'audit',
+                ConfigKey::Handlers->value => ['audit_file'],
+            ],
+        ],
+    ],
+];
+```
+
+In this example:
+
+- `audit` is the custom handler type mapped to a factory class.
+- `audit_file` is the configured handler id.
+- The `audit` channel references `audit_file` through `ConfigKey::Handlers`.
+
+A minimal custom factory looks like this:
+
+```php
+<?php
+
+namespace App\Logging;
+
+use Monolog\Handler\HandlerInterface;
+use Monolog\Handler\StreamHandler;
+use Monolog\Level;
+use Psr\Container\ContainerInterface;
+use Sirix\Monolog\Config\HandlerDefinition;
+use Sirix\Monolog\Handler\HandlerFactoryInterface;
+
+final class AuditHandlerFactory implements HandlerFactoryInterface
+{
+    public function create(ContainerInterface $container, HandlerDefinition $definition): HandlerInterface
+    {
+        return new StreamHandler(
+            $definition->options['path'] ?? 'data/log/audit.log',
+            $definition->options['level'] ?? Level::Debug,
+        );
+    }
+}
+```
+
+If the returned handler supports `setFormatter()`, the configured `formatter` is applied automatically. If it supports `pushProcessor()`, handler-local processors are applied automatically.
+
+Factories that need to resolve other configured handlers, such as wrapper handlers, may also implement `Sirix\Monolog\Handler\HandlerRegistryAwareInterface` to receive the `HandlerRegistry`.
 
 ## Wrapper handlers
 

@@ -37,9 +37,9 @@ After:
 Sirix\Monolog\ConfigProvider::class,
 ```
 
-`ConfigProvider` registers `Psr\Log\LoggerInterface` as an alias to `logger.default`.
+`ConfigProvider` registers `logger`, `Monolog\Logger`, and `Psr\Log\LoggerInterface` for the default logger service.
 
-For extra logger services, register `Sirix\Monolog\Factory\LoggerFactory` and map the service id to a channel id via `logger_services`.
+For extra logger services, register `Sirix\Monolog\Factory\LoggerFactory` and map the service id to a channel id via `logger_services`. Prefer service ids without dots, such as `logger_audit`, because some containers treat dots as path separators.
 
 ### Type names
 

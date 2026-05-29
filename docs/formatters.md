@@ -2,6 +2,8 @@
 
 Built-in formatters are configured under `monolog.formatters`. Formatter option names use `snake_case`.
 
+A formatter entry is a configured formatter instance identified by a local id. Handlers reference that id through their `formatter` option. The formatter `type` selects either a built-in formatter factory or a custom formatter factory registered under `monolog.formatter_factories`.
+
 ## `line`
 
 Creates `Monolog\Formatter\LineFormatter`.
@@ -180,3 +182,69 @@ Creates `Monolog\Formatter\SyslogFormatter`.
 Options:
 
 - `application_name` default: `-`
+
+## Custom formatters
+
+Register custom formatter factories under `monolog.formatter_factories`. A custom formatter factory must implement `Sirix\Monolog\Formatter\FormatterFactoryInterface` and return an instance of `Monolog\Formatter\FormatterInterface`.
+
+```php
+<?php
+
+use App\Logging\CryptoJsonFormatterFactory;
+use Monolog\Formatter\JsonFormatter;
+use Sirix\Monolog\Enum\ConfigKey;
+use Sirix\Monolog\Enum\HandlerType;
+
+return [
+    ConfigKey::Root->value => [
+        ConfigKey::FormatterFactories->value => [
+            'crypto_json' => CryptoJsonFormatterFactory::class,
+        ],
+        ConfigKey::Formatters->value => [
+            'main_json' => [
+                ConfigKey::Type->value => 'crypto_json',
+                ConfigKey::Options->value => [
+                    'batch_mode' => JsonFormatter::BATCH_MODE_JSON,
+                    'append_newline' => true,
+                ],
+            ],
+        ],
+        ConfigKey::Handlers->value => [
+            'default' => [
+                ConfigKey::Type->value => HandlerType::Stream,
+                ConfigKey::Formatter->value => 'main_json',
+                ConfigKey::Options->value => [
+                    'stream' => 'php://stderr',
+                ],
+            ],
+        ],
+    ],
+];
+```
+
+In this example:
+
+- `crypto_json` is the custom formatter type mapped to a factory class.
+- `main_json` is the configured formatter id.
+- The `default` handler references `main_json` through `ConfigKey::Formatter`.
+
+A minimal custom factory looks like this:
+
+```php
+<?php
+
+namespace App\Logging;
+
+use Monolog\Formatter\FormatterInterface;
+use Psr\Container\ContainerInterface;
+use Sirix\Monolog\Config\FormatterDefinition;
+use Sirix\Monolog\Formatter\FormatterFactoryInterface;
+
+final class CryptoJsonFormatterFactory implements FormatterFactoryInterface
+{
+    public function create(ContainerInterface $container, FormatterDefinition $definition): FormatterInterface
+    {
+        return new CryptoJsonFormatter($definition->options);
+    }
+}
+```

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Sirix\Monolog\Config;
 
 use BackedEnum;
+use Monolog\Logger;
 use Psr\Log\LoggerInterface;
 use Sirix\ContainerResolver\ConfigReader;
 use Sirix\Monolog\Enum\ConfigKey;
@@ -61,8 +62,9 @@ final class MonologConfigReader
     private function readLoggerServices(ConfigReader $reader): array
     {
         $services = $reader->map(ConfigKey::LoggerServices->value, [
+            Logger::class => 'default',
             LoggerInterface::class => 'default',
-            'logger.default' => 'default',
+            'logger' => 'default',
         ]);
 
         /** @var array<non-empty-string, non-empty-string> $result */
@@ -134,7 +136,10 @@ final class MonologConfigReader
 
             $result[$id] = new HandlerDefinition(
                 id: $id,
-                type: $this->typeValue($handlerReader->required(ConfigKey::Type->value), ConfigKey::Handlers->value . '.' . $id),
+                type: $this->typeValue(
+                    $handlerReader->required(ConfigKey::Type->value),
+                    ConfigKey::Handlers->value . '.' . $id,
+                ),
                 options: $handlerReader->map(ConfigKey::Options->value, []),
                 formatter: $handlerReader->optionalNonEmptyString(ConfigKey::Formatter->value),
                 processors: $handlerReader->nonEmptyStringList(ConfigKey::Processors->value, []),
@@ -163,7 +168,10 @@ final class MonologConfigReader
 
             $result[$id] = new FormatterDefinition(
                 id: $id,
-                type: $this->typeValue($formatterReader->required(ConfigKey::Type->value), ConfigKey::Formatters->value . '.' . $id),
+                type: $this->typeValue(
+                    $formatterReader->required(ConfigKey::Type->value),
+                    ConfigKey::Formatters->value . '.' . $id,
+                ),
                 options: $formatterReader->map(ConfigKey::Options->value, []),
             );
         }
@@ -190,7 +198,10 @@ final class MonologConfigReader
 
             $result[$id] = new ProcessorDefinition(
                 id: $id,
-                type: $this->typeValue($processorReader->required(ConfigKey::Type->value), ConfigKey::Processors->value . '.' . $id),
+                type: $this->typeValue(
+                    $processorReader->required(ConfigKey::Type->value),
+                    ConfigKey::Processors->value . '.' . $id,
+                ),
                 options: $processorReader->map(ConfigKey::Options->value, []),
             );
         }
@@ -254,13 +265,17 @@ final class MonologConfigReader
         foreach ($channels as $channel) {
             foreach ($channel->handlers as $handlerId) {
                 if (! isset($handlers[$handlerId])) {
-                    throw new MissingConfigException("Channel '{$channel->id}' references unknown handler '{$handlerId}'.");
+                    throw new MissingConfigException(
+                        "Channel '{$channel->id}' references unknown handler '{$handlerId}'.",
+                    );
                 }
             }
 
             foreach ($channel->processors as $processorId) {
                 if (! isset($processors[$processorId])) {
-                    throw new MissingConfigException("Channel '{$channel->id}' references unknown processor '{$processorId}'.");
+                    throw new MissingConfigException(
+                        "Channel '{$channel->id}' references unknown processor '{$processorId}'.",
+                    );
                 }
             }
         }
@@ -275,12 +290,16 @@ final class MonologConfigReader
     {
         foreach ($handlers as $handler) {
             if (null !== $handler->formatter && ! isset($formatters[$handler->formatter])) {
-                throw new MissingConfigException("Handler '{$handler->id}' references unknown formatter '{$handler->formatter}'.");
+                throw new MissingConfigException(
+                    "Handler '{$handler->id}' references unknown formatter '{$handler->formatter}'.",
+                );
             }
 
             foreach ($handler->processors as $processorId) {
                 if (! isset($processors[$processorId])) {
-                    throw new MissingConfigException("Handler '{$handler->id}' references unknown processor '{$processorId}'.");
+                    throw new MissingConfigException(
+                        "Handler '{$handler->id}' references unknown processor '{$processorId}'.",
+                    );
                 }
             }
         }
