@@ -24,10 +24,14 @@ final class BuiltInFormatterFactories
             FormatterType::ChromePhp->value => ChromePHPFormatterFactory::class,
             FormatterType::Gelf->value => GelfMessageFormatterFactory::class,
             FormatterType::Elastica->value => ElasticaFormatterFactory::class,
+            FormatterType::Elasticsearch->value => ElasticsearchFormatterFactory::class,
+            FormatterType::Fluentd->value => FluentdFormatterFactory::class,
+            FormatterType::GoogleCloudLogging->value => GoogleCloudLoggingFormatterFactory::class,
             FormatterType::Loggly->value => LogglyFormatterFactory::class,
             FormatterType::Flowdock->value => FlowdockFormatterFactory::class,
             FormatterType::MongoDb->value => MongoDBFormatterFactory::class,
             FormatterType::Logmatic->value => LogmaticFormatterFactory::class,
+            FormatterType::Syslog->value => SyslogFormatterFactory::class,
         ];
     }
 }

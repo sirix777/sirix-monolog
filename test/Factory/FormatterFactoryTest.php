@@ -10,8 +10,11 @@ use DateTimeImmutable;
 use Gelf\Message;
 use Monolog\Formatter\ChromePHPFormatter;
 use Monolog\Formatter\ElasticaFormatter;
+use Monolog\Formatter\ElasticsearchFormatter;
 use Monolog\Formatter\FlowdockFormatter;
+use Monolog\Formatter\FluentdFormatter;
 use Monolog\Formatter\GelfMessageFormatter;
+use Monolog\Formatter\GoogleCloudLoggingFormatter;
 use Monolog\Formatter\HtmlFormatter;
 use Monolog\Formatter\JsonFormatter;
 use Monolog\Formatter\LineFormatter;
@@ -21,6 +24,7 @@ use Monolog\Formatter\LogstashFormatter;
 use Monolog\Formatter\MongoDBFormatter;
 use Monolog\Formatter\NormalizerFormatter;
 use Monolog\Formatter\ScalarFormatter;
+use Monolog\Formatter\SyslogFormatter;
 use Monolog\Formatter\WildfireFormatter;
 use Monolog\Level;
 use Monolog\LogRecord;
@@ -109,6 +113,25 @@ final class FormatterFactoryTest extends TestCase
                     'document_type' => '_doc',
                 ],
             ],
+            'elasticsearch' => [
+                C::Type->value => FormatterType::Elasticsearch,
+                C::Options->value => [
+                    'index' => 'search-logs',
+                    'document_type' => '_doc',
+                ],
+            ],
+            'fluentd' => [
+                C::Type->value => FormatterType::Fluentd,
+                C::Options->value => [
+                    'level_tag' => true,
+                ],
+            ],
+            'google_cloud_logging' => [
+                C::Type->value => FormatterType::GoogleCloudLogging,
+                C::Options->value => [
+                    'append_newline' => false,
+                ],
+            ],
             'loggly' => [
                 C::Type->value => FormatterType::Loggly,
                 C::Options->value => [
@@ -137,6 +160,12 @@ final class FormatterFactoryTest extends TestCase
                     'append_newline' => false,
                     'hostname' => 'logmatic-host',
                     'app_name' => 'logmatic-app',
+                ],
+            ],
+            'syslog' => [
+                C::Type->value => FormatterType::Syslog,
+                C::Options->value => [
+                    'application_name' => 'formatter-test',
                 ],
             ],
         ]);
@@ -192,6 +221,22 @@ final class FormatterFactoryTest extends TestCase
         $this->assertSame('logs', $elastica->getIndex());
         $this->assertSame('_doc', $elastica->getType());
 
+        $elasticsearch = $registry->get('elasticsearch');
+        $this->assertInstanceOf(ElasticsearchFormatter::class, $elasticsearch);
+        $this->assertSame('search-logs', $elasticsearch->getIndex());
+        $this->assertSame('_doc', $elasticsearch->getType());
+
+        $fluentd = $registry->get('fluentd');
+        $this->assertInstanceOf(FluentdFormatter::class, $fluentd);
+        $fluentdOutput = json_decode($fluentd->format($this->record()), true, flags: JSON_THROW_ON_ERROR);
+        $this->assertSame('app.info', $fluentdOutput[0]);
+
+        $googleCloudLogging = $registry->get('google_cloud_logging');
+        $this->assertInstanceOf(GoogleCloudLoggingFormatter::class, $googleCloudLogging);
+        $googleCloudLoggingOutput = json_decode($googleCloudLogging->format($this->record()), true, flags: JSON_THROW_ON_ERROR);
+        $this->assertSame('INFO', $googleCloudLoggingOutput['severity']);
+        $this->assertArrayHasKey('time', $googleCloudLoggingOutput);
+
         $loggly = $registry->get('loggly');
         $this->assertInstanceOf(LogglyFormatter::class, $loggly);
         $logglyOutput = json_decode($loggly->format($this->record()), true, flags: JSON_THROW_ON_ERROR);
@@ -213,6 +258,10 @@ final class FormatterFactoryTest extends TestCase
         $logmaticOutput = json_decode($logmatic->format($this->record()), true, flags: JSON_THROW_ON_ERROR);
         $this->assertSame('logmatic-host', $logmaticOutput['hostname']);
         $this->assertSame('logmatic-app', $logmaticOutput['appname']);
+
+        $syslog = $registry->get('syslog');
+        $this->assertInstanceOf(SyslogFormatter::class, $syslog);
+        $this->assertStringContainsString('formatter-test', $syslog->format($this->record()));
     }
 
     /**

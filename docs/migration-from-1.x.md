@@ -54,12 +54,21 @@ Examples:
 | `whatFailureGroup` | `what_failure_group` |
 | `fallbackgroup` | `fallback_group` |
 | `fingersCrossed` | `fingers_crossed` |
+| `telegrambot` | `telegram_bot` |
+| `syslogudp` | `syslog_udp` |
+| `nativeMailer` | `native_mailer` |
+| `slackwebhook` | `slack_webhook` |
+| `sendgrid` | `send_grid` |
+| `newrelic` | `new_relic` |
+| `redisPubSub` | `redis_pub_sub` |
 | `psrLogMessage` | `psr_log_message` |
 | `memoryUsage` | `memory_usage` |
 | `memoryPeak` | `memory_peak_usage` |
 | `processid` | `process_id` |
+| `loadAverage` | `load_average` |
 | `chromePHP` | `chrome_php` |
 | `mongodb` | `mongo_db` |
+| `googleCloudLogging` | `google_cloud_logging` |
 
 Prefer enum cases such as `HandlerType::Stream`, `FormatterType::Line`, and `ProcessorType::PsrLogMessage`.
 
@@ -94,17 +103,13 @@ Examples:
 | `lengthLimit` | `length_limit` |
 | `maxDepth` | `max_depth` |
 
-## Removed built-in handlers and processors
+## Built-in handlers and processors
 
-2.x keeps a focused built-in handler set:
+2.x supports the concrete handlers, formatters, and processors shipped with Monolog 3 using `snake_case` type names.
 
-- file/syslog/process/PSR handlers
-- null/noop/test handlers
-- wrapper handlers
+Service-specific handlers such as Slack, Redis, AMQP, SQS, DynamoDB, MongoDB, and similar integrations may require optional extensions, SDKs, or container services; see `docs/handlers.md` for required options.
 
-Legacy integrations such as Slack, Redis, AMQP, SQS, DynamoDB, NativeMailer, MongoDB handler, and similar service-specific handlers were removed from the built-in map. If you need them, provide a custom `HandlerFactoryInterface` implementation and register it under `handler_factories`.
-
-Git, Mercurial, and Pushover-device processors were also removed. Add them back with custom processor factories if needed.
+The Git and Mercurial processors are available as `git` and `mercurial`. The legacy Pushover-device processor is not part of Monolog 3's default processor set and remains unsupported.
 
 ## Custom factories
 

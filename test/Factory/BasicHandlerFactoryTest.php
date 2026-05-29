@@ -7,11 +7,18 @@ namespace Sirix\Test\Monolog\Factory;
 use const LOG_PID;
 use const LOG_USER;
 
+use Monolog\Handler\BrowserConsoleHandler;
+use Monolog\Handler\ChromePHPHandler;
 use Monolog\Handler\ErrorLogHandler;
+use Monolog\Handler\FirePHPHandler;
+use Monolog\Handler\NativeMailerHandler;
 use Monolog\Handler\ProcessHandler;
 use Monolog\Handler\PsrHandler;
 use Monolog\Handler\RotatingFileHandler;
+use Monolog\Handler\SocketHandler;
 use Monolog\Handler\SyslogHandler;
+use Monolog\Handler\SyslogUdpHandler;
+use Monolog\Handler\TelegramBotHandler;
 use Monolog\Handler\TestHandler;
 use Monolog\Level;
 use Monolog\Logger;
@@ -25,6 +32,7 @@ use Sirix\Monolog\Registry\HandlerRegistry;
 use Sirix\Test\Monolog\Support\ArrayContainer;
 use Sirix\Test\Monolog\Support\CollectingLogger;
 
+use function extension_loaded;
 use function sys_get_temp_dir;
 use function tempnam;
 use function unlink;
@@ -149,6 +157,109 @@ final class BasicHandlerFactoryTest extends TestCase
         $handler = $container->get(HandlerRegistry::class)->get('process');
 
         $this->assertInstanceOf(ProcessHandler::class, $handler);
+    }
+
+    public function testBrowserConsoleHandlersCanBeCreated(): void
+    {
+        $container = $this->container([
+            'browser_console' => [
+                C::Type->value => HandlerType::BrowserConsole,
+            ],
+            'chrome_php' => [
+                C::Type->value => HandlerType::ChromePhp,
+            ],
+            'fire_php' => [
+                C::Type->value => HandlerType::FirePhp,
+            ],
+        ], ['browser_console', 'chrome_php', 'fire_php']);
+
+        $registry = $container->get(HandlerRegistry::class);
+        $this->assertInstanceOf(HandlerRegistry::class, $registry);
+        $this->assertInstanceOf(BrowserConsoleHandler::class, $registry->get('browser_console'));
+        $this->assertInstanceOf(ChromePHPHandler::class, $registry->get('chrome_php'));
+        $this->assertInstanceOf(FirePHPHandler::class, $registry->get('fire_php'));
+    }
+
+    public function testNativeMailerAndSocketHandlersCanBeCreated(): void
+    {
+        $container = $this->container([
+            'native_mailer' => [
+                C::Type->value => HandlerType::NativeMailer,
+                C::Options->value => [
+                    'to' => ['ops@example.com'],
+                    'subject' => 'Critical log: %message%',
+                    'from' => 'logs@example.com',
+                    'headers' => ['X-App: test'],
+                    'parameters' => ['-f logs@example.com'],
+                    'content_type' => 'text/plain',
+                    'encoding' => 'utf-8',
+                ],
+            ],
+            'socket' => [
+                C::Type->value => HandlerType::Socket,
+                C::Options->value => [
+                    'connection_string' => 'udp://127.0.0.1:514',
+                    'timeout' => 0.0,
+                    'writing_timeout' => 1.0,
+                ],
+            ],
+        ], ['native_mailer', 'socket']);
+
+        $registry = $container->get(HandlerRegistry::class);
+        $this->assertInstanceOf(HandlerRegistry::class, $registry);
+        $this->assertInstanceOf(NativeMailerHandler::class, $registry->get('native_mailer'));
+        $this->assertInstanceOf(SocketHandler::class, $registry->get('socket'));
+    }
+
+    public function testSyslogUdpHandlerCanBeCreated(): void
+    {
+        if (! extension_loaded('sockets')) {
+            $this->markTestSkipped('The sockets extension is required to instantiate SyslogUdpHandler.');
+        }
+
+        $container = $this->container([
+            'syslog_udp' => [
+                C::Type->value => HandlerType::SyslogUdp,
+                C::Options->value => [
+                    'host' => '127.0.0.1',
+                    'port' => 514,
+                    'facility' => LOG_USER,
+                    'ident' => 'sirix-monolog-test',
+                    'rfc' => SyslogUdpHandler::RFC5424,
+                ],
+            ],
+        ], ['syslog_udp']);
+
+        $handler = $container->get(HandlerRegistry::class)->get('syslog_udp');
+
+        $this->assertInstanceOf(SyslogUdpHandler::class, $handler);
+    }
+
+    public function testTelegramBotHandlerCanBeCreated(): void
+    {
+        if (! extension_loaded('curl')) {
+            $this->markTestSkipped('The curl extension is required to instantiate TelegramBotHandler.');
+        }
+
+        $container = $this->container([
+            'telegram_bot' => [
+                C::Type->value => HandlerType::TelegramBot,
+                C::Options->value => [
+                    'api_key' => '123456:test-token',
+                    'channel' => '-1001234567890',
+                    'parse_mode' => 'HTML',
+                    'disable_web_page_preview' => true,
+                    'disable_notification' => false,
+                    'split_long_messages' => true,
+                    'delay_between_messages' => false,
+                    'topic' => 1,
+                ],
+            ],
+        ], ['telegram_bot']);
+
+        $handler = $container->get(HandlerRegistry::class)->get('telegram_bot');
+
+        $this->assertInstanceOf(TelegramBotHandler::class, $handler);
     }
 
     /**

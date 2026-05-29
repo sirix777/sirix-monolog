@@ -8,6 +8,20 @@ Creates `Monolog\Processor\PsrLogMessageProcessor`.
 
 No options.
 
+## `closure_context`
+
+Creates `Monolog\Processor\ClosureContextProcessor`.
+
+No options.
+
+## `git`
+
+Creates `Monolog\Processor\GitProcessor`.
+
+Options:
+
+- `level` default: `Level::Debug`
+
 ## `introspection`
 
 Creates `Monolog\Processor\IntrospectionProcessor`.
@@ -17,6 +31,28 @@ Options:
 - `level` default: `Level::Debug`
 - `skip_classes_partials` default: `[]`
 - `skip_stack_frames_count` default: `0`
+
+## `load_average`
+
+Creates `Monolog\Processor\LoadAverageProcessor`.
+
+Options:
+
+- `avg_system_load` default: `LoadAverageProcessor::LOAD_1_MINUTE`
+
+`avg_system_load` must be one of:
+
+- `LoadAverageProcessor::LOAD_1_MINUTE`
+- `LoadAverageProcessor::LOAD_5_MINUTE`
+- `LoadAverageProcessor::LOAD_15_MINUTE`
+
+## `mercurial`
+
+Creates `Monolog\Processor\MercurialProcessor`.
+
+Options:
+
+- `level` default: `Level::Debug`
 
 ## `web`
 

@@ -22,7 +22,9 @@ composer require sirix/monolog
 
 ## Register the config provider
 
-For Mezzio, add the provider to `config/config.php`:
+In Mezzio applications that use `laminas/laminas-component-installer`, the provider is registered automatically during Composer install.
+
+If your application does not use auto-discovery, add the provider to `config/config.php` manually:
 
 ```php
 <?php
@@ -143,24 +145,59 @@ Register the additional logger service with `Sirix\Monolog\Factory\LoggerFactory
 
 ### Handlers
 
-- `stream`
-- `rotating_file`
-- `syslog`
-- `error_log`
-- `process`
-- `psr`
-- `test`
-- `null`
-- `noop`
-- `group`
-- `what_failure_group`
-- `fallback_group`
+- `amqp`
+- `browser_console`
 - `buffer`
+- `chrome_php`
+- `couch_db`
+- `cube`
+- `deduplication`
+- `doctrine_couch_db`
+- `dynamo_db`
+- `elastica`
+- `elasticsearch`
+- `error_log`
+- `fallback_group`
 - `filter`
 - `fingers_crossed`
-- `sampling`
-- `deduplication`
+- `fire_php`
+- `fleep_hook`
+- `flowdock`
+- `gelf`
+- `group`
+- `ifttt`
+- `insight_ops`
+- `log_entries`
+- `loggly`
+- `logmatic`
+- `mongo_db`
+- `native_mailer`
+- `new_relic`
+- `noop`
+- `null`
 - `overflow`
+- `php_console`
+- `process`
+- `psr`
+- `pushover`
+- `redis`
+- `redis_pub_sub`
+- `rollbar`
+- `rotating_file`
+- `sampling`
+- `send_grid`
+- `slack`
+- `slack_webhook`
+- `socket`
+- `sqs`
+- `stream`
+- `symfony_mailer`
+- `syslog`
+- `syslog_udp`
+- `telegram_bot`
+- `test`
+- `what_failure_group`
+- `zend_monitor`
 
 ### Formatters
 
@@ -174,15 +211,23 @@ Register the additional logger service with `Sirix\Monolog\Factory\LoggerFactory
 - `chrome_php`
 - `gelf`
 - `elastica`
+- `elasticsearch`
+- `fluentd`
+- `google_cloud_logging`
 - `loggly`
 - `flowdock`
 - `mongo_db`
 - `logmatic`
+- `syslog`
 
 ### Processors
 
 - `psr_log_message`
+- `closure_context`
+- `git`
 - `introspection`
+- `load_average`
+- `mercurial`
 - `web`
 - `memory_usage`
 - `memory_peak_usage`

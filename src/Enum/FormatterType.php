@@ -16,8 +16,12 @@ enum FormatterType: string
     case ChromePhp = 'chrome_php';
     case Gelf = 'gelf';
     case Elastica = 'elastica';
+    case Elasticsearch = 'elasticsearch';
+    case Fluentd = 'fluentd';
+    case GoogleCloudLogging = 'google_cloud_logging';
     case Loggly = 'loggly';
     case Flowdock = 'flowdock';
     case MongoDb = 'mongo_db';
     case Logmatic = 'logmatic';
+    case Syslog = 'syslog';
 }

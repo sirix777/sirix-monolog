@@ -28,9 +28,25 @@
     "sirix/redaction": "^1.3.1"
   },
   "suggest": {
-    "graylog2/gelf-php": "Required when using the gelf formatter",
-    "mongodb/mongodb": "Required when using the mongo_db formatter",
-    "ruflin/elastica": "Required when using the elastica formatter",
+    "aws/aws-sdk-php": "Required when using the dynamo_db or sqs handlers",
+    "doctrine/couchdb": "Required when using the doctrine_couch_db handler",
+    "elastic/elasticsearch": "Required when using the elasticsearch handler with the official Elasticsearch client v8",
+    "elasticsearch/elasticsearch": "Required when using the elasticsearch handler with the official Elasticsearch client v7",
+    "ext-amqp": "Required when using the amqp handler with the ext-amqp exchange",
+    "ext-curl": "Required when using curl-based handlers such as ifttt, loggly, send_grid, slack_webhook, or telegram_bot",
+    "ext-mongodb": "Required when using the mongo_db handler with MongoDB\\Driver\\Manager",
+    "ext-openssl": "Required when using SSL socket handlers such as fleep_hook, flowdock, or slack",
+    "ext-sockets": "Required when using the syslog_udp handler",
+    "graylog2/gelf-php": "Required when using the gelf handler or formatter",
+    "mongodb/mongodb": "Required when using the mongo_db handler or formatter",
+    "php-amqplib/php-amqplib": "Required when using the amqp handler with php-amqplib",
+    "php-console/php-console": "Required when using the php_console handler",
+    "predis/predis": "Required when using redis handlers with Predis",
+    "rollbar/rollbar": "Required when using the rollbar handler",
+    "ruflin/elastica": "Required when using the elastica handler or formatter",
+    "swiftmailer/swiftmailer": "Required when using the mandrill handler",
+    "symfony/mailer": "Required when using the symfony_mailer handler",
+    "symfony/mime": "Required when using the symfony_mailer handler",
     "sirix/redaction": "Required when using the redactor processor"
   },
   "autoload": {
@@ -55,6 +71,9 @@
       "bin-links": false,
       "forward-command": true,
       "target-directory": "tools"
+    },
+    "laminas": {
+      "config-provider": "Sirix\\Monolog\\ConfigProvider"
     }
   },
   "scripts": {

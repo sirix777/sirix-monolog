@@ -99,6 +99,36 @@ Options:
 
 Requires `ruflin/elastica` when the formatter is instantiated.
 
+## `elasticsearch`
+
+Creates `Monolog\Formatter\ElasticsearchFormatter`.
+
+Options:
+
+- `index` required
+- `document_type` required
+
+## `fluentd`
+
+Creates `Monolog\Formatter\FluentdFormatter`.
+
+Options:
+
+- `level_tag` default: `false`
+
+## `google_cloud_logging`
+
+Creates `Monolog\Formatter\GoogleCloudLoggingFormatter`.
+
+Options:
+
+- `batch_mode` default: `JsonFormatter::BATCH_MODE_JSON`
+- `append_newline` default: `true`
+- `ignore_empty_context_and_extra` default: `false`
+- `include_stacktraces` default: `false`
+
+`batch_mode` must be a valid JSON formatter batch mode.
+
 ## `loggly`
 
 Creates `Monolog\Formatter\LogglyFormatter`.
@@ -142,3 +172,11 @@ Options:
 - `app_name` optional
 
 `batch_mode` must be a valid JSON formatter batch mode.
+
+## `syslog`
+
+Creates `Monolog\Formatter\SyslogFormatter`.
+
+Options:
+
+- `application_name` default: `-`

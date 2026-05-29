@@ -30,8 +30,8 @@ jobs:
           coverage: none
           tools: composer:v2
 
-      - name: Validate composer.json and composer.lock
-        run: composer validate --strict
+      - name: Validate composer.json
+        run: composer validate --strict --no-check-lock
 
       - name: Install dependencies
         run: composer install --prefer-dist --no-progress --ignore-platform-req=ext-mongodb

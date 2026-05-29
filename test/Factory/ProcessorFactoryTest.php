@@ -4,10 +4,15 @@ declare(strict_types=1);
 
 namespace Sirix\Test\Monolog\Factory;
 
+use DateTimeImmutable;
 use Monolog\Handler\TestHandler;
 use Monolog\Level;
 use Monolog\Logger;
 use Monolog\LogRecord;
+use Monolog\Processor\ClosureContextProcessor;
+use Monolog\Processor\GitProcessor;
+use Monolog\Processor\LoadAverageProcessor;
+use Monolog\Processor\MercurialProcessor;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Sirix\Monolog\ConfigProvider;
@@ -15,6 +20,7 @@ use Sirix\Monolog\Enum\ConfigKey as C;
 use Sirix\Monolog\Enum\HandlerType;
 use Sirix\Monolog\Enum\ProcessorType;
 use Sirix\Monolog\Registry\HandlerRegistry;
+use Sirix\Monolog\Registry\ProcessorRegistry;
 use Sirix\Redaction\Rule\FullMaskRule;
 use Sirix\Test\Monolog\Support\ArrayContainer;
 use Sirix\Test\Monolog\Support\CustomExtraProcessorFactory;
@@ -109,6 +115,51 @@ final class ProcessorFactoryTest extends TestCase
         $this->assertSame('/hello', $record->extra['url']);
         $this->assertSame('127.0.0.1', $record->extra['ip']);
         $this->assertSame('GET', $record->extra['http_method']);
+    }
+
+    public function testAdditionalMonologProcessorsCanBeCreated(): void
+    {
+        $container = $this->container([
+            'closure_context' => [
+                C::Type->value => ProcessorType::ClosureContext,
+            ],
+            'git' => [
+                C::Type->value => ProcessorType::Git,
+                C::Options->value => [
+                    'level' => Level::Info,
+                ],
+            ],
+            'load_average' => [
+                C::Type->value => ProcessorType::LoadAverage,
+                C::Options->value => [
+                    'avg_system_load' => LoadAverageProcessor::LOAD_5_MINUTE,
+                ],
+            ],
+            'mercurial' => [
+                C::Type->value => ProcessorType::Mercurial,
+                C::Options->value => [
+                    'level' => Level::Info,
+                ],
+            ],
+        ], []);
+
+        $registry = $container->get(ProcessorRegistry::class);
+        $this->assertInstanceOf(ProcessorRegistry::class, $registry);
+
+        $closureContext = $registry->get('closure_context');
+        $this->assertInstanceOf(ClosureContextProcessor::class, $closureContext);
+        $record = $closureContext(new LogRecord(
+            datetime: new DateTimeImmutable('@0'),
+            channel: 'app',
+            level: Level::Info,
+            message: 'Hello',
+            context: [static fn (): array => ['lazy' => true]],
+        ));
+        $this->assertSame(['lazy' => true], $record->context);
+
+        $this->assertInstanceOf(GitProcessor::class, $registry->get('git'));
+        $this->assertInstanceOf(LoadAverageProcessor::class, $registry->get('load_average'));
+        $this->assertInstanceOf(MercurialProcessor::class, $registry->get('mercurial'));
     }
 
     public function testRedactorProcessorMasksConfiguredContext(): void
