@@ -2,6 +2,8 @@
 
 Built-in processors are configured under `monolog.processors`. Processor option names use `snake_case`.
 
+Processors run for every record that reaches the logger or handler they are attached to, unless the processor itself filters by level. Keep expensive processors off hot `debug`/`info` paths in production.
+
 ## `psr_log_message`
 
 Creates `Monolog\Processor\PsrLogMessageProcessor`.
@@ -22,6 +24,8 @@ Options:
 
 - `level` default: `Level::Debug`
 
+The Git processor shells out to `git` on the first matching record and caches the result afterwards. Prefer enabling it only when repository metadata is useful in runtime logs.
+
 ## `introspection`
 
 Creates `Monolog\Processor\IntrospectionProcessor`.
@@ -31,6 +35,8 @@ Options:
 - `level` default: `Level::Debug`
 - `skip_classes_partials` default: `[]`
 - `skip_stack_frames_count` default: `0`
+
+This processor uses `debug_backtrace()` for matching records. In production, prefer a higher threshold such as `Level::Error` or attach it only to handlers that process exceptional records.
 
 ## `load_average`
 
@@ -53,6 +59,8 @@ Creates `Monolog\Processor\MercurialProcessor`.
 Options:
 
 - `level` default: `Level::Debug`
+
+The Mercurial processor shells out to `hg` on the first matching record and caches the result afterwards. Prefer enabling it only when repository metadata is useful in runtime logs.
 
 ## `web`
 

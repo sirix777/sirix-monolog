@@ -31,7 +31,7 @@ class StreamHandlerFactory implements HandlerFactoryInterface
             $level,
             $options->bool('bubble', true),
             $options->int('file_permission', 0o644),
-            $options->bool('use_locking', true),
+            $options->bool('use_locking', false),
         );
     }
 }

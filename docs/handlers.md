@@ -4,6 +4,8 @@ Built-in handlers are configured under `monolog.handlers`. Handler option names 
 
 A handler entry is a configured handler instance identified by a local id. Channels reference handler ids through their `handlers` list. The handler `type` selects either a built-in handler factory or a custom handler factory registered under `monolog.handler_factories`.
 
+Handler instances are cached by handler id for the container lifetime. If multiple channels reference the same handler id, they share the same handler instance and its state. This is useful for reusing file handles and client-backed handlers, but use separate handler ids when buffered, deduplicated, or otherwise stateful handlers must be isolated.
+
 Common optional options where supported:
 
 - `level`: `Monolog\Level`, level name, or level value depending on enum parsing
@@ -21,7 +23,9 @@ Options:
 - `level` default: `Level::Debug`
 - `bubble` default: `true`
 - `file_permission` default: `0o644`
-- `use_locking` default: `true`
+- `use_locking` default: `false`
+
+Set `use_locking` to `true` when multiple processes write to the same file and you want `flock()` around each write. Keep it disabled for the Monolog default behavior and lower per-record overhead, especially when writing to `php://stderr` or container-managed streams.
 
 ### `rotating_file`
 
@@ -718,10 +722,12 @@ Creates `Monolog\Handler\BufferHandler`.
 Options:
 
 - `handler` required: wrapped handler id
-- `buffer_limit` default: `0`
+- `buffer_limit` default: `0` (unlimited)
 - `level` default: `Level::Debug`
 - `bubble` default: `true`
 - `flush_on_overflow` default: `false`
+
+For long-running workers, prefer an explicit positive `buffer_limit` and consider `flush_on_overflow: true`. Call `Logger::reset()` or close the logger between jobs to flush and clear buffered records.
 
 ### `filter`
 

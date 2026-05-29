@@ -218,6 +218,22 @@ Factory classes must exist and implement the matching strict interface:
 - `Sirix\Monolog\Formatter\FormatterFactoryInterface`
 - `Sirix\Monolog\Processor\ProcessorFactoryInterface`
 
+## Long-running workers
+
+The package caches configured loggers, handlers, formatters, and processors for the container lifetime. This avoids rebuilding the stack, but long-running workers should reset loggers between jobs so Monolog can flush buffers and release/reopen stateful resources.
+
+```php
+try {
+    // Process one job/message...
+} finally {
+    $logger->reset();
+}
+```
+
+This is especially important when using buffered, deduplicated, socket, persistent, or file-based handlers. If multiple channels reference the same handler id, they share the same handler instance and state; use separate handler ids when isolation is required.
+
+Client-backed handlers resolve their client services when the handler is built, which normally happens on first logger retrieval. They are not rebuilt on every log call when the container shares the registries.
+
 ## Type safety
 
 The new configuration reader is strict:

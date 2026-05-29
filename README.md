@@ -261,6 +261,14 @@ In the example above, `logger_crypto_transaction` reuses the `audit` channel's h
 - `tags`
 - `redactor`
 
+## Runtime notes
+
+Configured loggers, handlers, formatters, and processors are cached for the container lifetime. In long-running workers, call `Logger::reset()` between jobs/messages so Monolog can flush buffers and release or reopen stateful resources.
+
+Handlers are shared by handler id. If multiple channels reference the same handler id, they share the same handler instance and state. Use separate handler ids when buffered, deduplicated, or otherwise stateful handlers must be isolated.
+
+For stream handlers, `use_locking` defaults to `false`, matching Monolog. Enable it only when multiple processes write to the same file and you want `flock()` around each write.
+
 ## Custom factories
 
 Register custom factory classes under `handler_factories`, `formatter_factories`, or `processor_factories`.
