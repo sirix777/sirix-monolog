@@ -11,11 +11,24 @@ permissions:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        php-version: ["8.2", "8.3", "8.4", "8.5"]
+
+    name: PHP ${{ matrix.php-version }}
 
     steps:
       - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-version }}
+          coverage: none
+          tools: composer:v2
 
       - name: Validate composer.json and composer.lock
         run: composer validate --strict
@@ -23,17 +36,8 @@ jobs:
       - name: Install dependencies
         run: composer install --prefer-dist --no-progress --ignore-platform-req=ext-mongodb
 
-      - name: Install php-cs-fixer
-        run: composer install --working-dir=tools/php-cs-fixer
+      - name: Install tools
+        run: composer bin all install --prefer-dist --no-progress
 
-      - name: Install phpstan
-        run: composer install --working-dir=tools/phpstan
-
-      - name: Run cs-check
-        run: composer cs-check
-
-      - name: Run phpstan
-        run: composer phpstan
-
-      - name: Run phpunit
-        run: composer test
+      - name: Run checks
+        run: composer check

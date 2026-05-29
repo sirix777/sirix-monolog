@@ -6,18 +6,20 @@ namespace Sirix\Monolog\Handler;
 
 use Monolog\Handler\TestHandler;
 use Monolog\Level;
-use Sirix\Monolog\FactoryInterface;
+use Psr\Container\ContainerInterface;
+use Sirix\ContainerResolver\ConfigReader;
+use Sirix\Monolog\Config\HandlerDefinition;
 
-class TestHandlerFactory implements FactoryInterface
+class TestHandlerFactory implements HandlerFactoryInterface
 {
-    public function __invoke(array $options): TestHandler
+    public function create(ContainerInterface $container, HandlerDefinition $definition): TestHandler
     {
-        $level = $options['level'] ?? Level::Debug;
-        $bubble = (bool) ($options['bubble'] ?? true);
+        $options = ConfigReader::fromArray($definition->options, self::class);
+        $level = $options->enum('level', Level::class, Level::Debug);
 
         return new TestHandler(
             $level,
-            $bubble
+            $options->bool('bubble', true),
         );
     }
 }

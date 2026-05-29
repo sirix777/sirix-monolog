@@ -5,25 +5,24 @@ declare(strict_types=1);
 namespace Sirix\Monolog\Formatter;
 
 use Monolog\Formatter\LineFormatter;
-use Sirix\Monolog\FactoryInterface;
+use Psr\Container\ContainerInterface;
+use Sirix\ContainerResolver\ConfigReader;
+use Sirix\Monolog\Config\FormatterDefinition;
 
 /**
  * @SuppressWarnings("LongVariable")
  */
-class LineFormatterFactory implements FactoryInterface
+class LineFormatterFactory implements FormatterFactoryInterface
 {
-    public function __invoke(array $options): LineFormatter
+    public function create(ContainerInterface $container, FormatterDefinition $definition): LineFormatter
     {
-        $format = $options['format'] ?? null;
-        $dateFormat = $options['dateFormat'] ?? null;
-        $allowInlineLineBreaks = (bool) ($options['allowInlineLineBreaks'] ?? false);
-        $ignoreEmptyContextAndExtra = (bool) ($options['ignoreEmptyContextAndExtra'] ?? false);
+        $options = ConfigReader::fromArray($definition->options, self::class);
 
         return new LineFormatter(
-            $format,
-            $dateFormat,
-            $allowInlineLineBreaks,
-            $ignoreEmptyContextAndExtra
+            $options->optionalString('format'),
+            $options->optionalString('date_format'),
+            $options->bool('allow_inline_line_breaks', false),
+            $options->bool('ignore_empty_context_and_extra', false),
         );
     }
 }

@@ -5,11 +5,12 @@ declare(strict_types=1);
 namespace Sirix\Monolog\Processor;
 
 use Monolog\Processor\HostnameProcessor;
-use Sirix\Monolog\FactoryInterface;
+use Psr\Container\ContainerInterface;
+use Sirix\Monolog\Config\ProcessorDefinition;
 
-class HostnameProcessorFactory implements FactoryInterface
+class HostnameProcessorFactory implements ProcessorFactoryInterface
 {
-    public function __invoke(array $options): HostnameProcessor
+    public function create(ContainerInterface $container, ProcessorDefinition $definition): HostnameProcessor
     {
         return new HostnameProcessor();
     }

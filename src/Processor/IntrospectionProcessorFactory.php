@@ -6,20 +6,21 @@ namespace Sirix\Monolog\Processor;
 
 use Monolog\Level;
 use Monolog\Processor\IntrospectionProcessor;
-use Sirix\Monolog\FactoryInterface;
+use Psr\Container\ContainerInterface;
+use Sirix\ContainerResolver\ConfigReader;
+use Sirix\Monolog\Config\ProcessorDefinition;
 
-class IntrospectionProcessorFactory implements FactoryInterface
+class IntrospectionProcessorFactory implements ProcessorFactoryInterface
 {
-    public function __invoke(array $options): IntrospectionProcessor
+    public function create(ContainerInterface $container, ProcessorDefinition $definition): IntrospectionProcessor
     {
-        $level = $options['level'] ?? Level::Debug;
-        $skipPartials = (array) ($options['skipClassesPartials'] ?? []);
-        $skipFrameCount = (int) ($options['skipStackFramesCount'] ?? 0);
+        $options = ConfigReader::fromArray($definition->options, self::class);
+        $level = $options->enum('level', Level::class, Level::Debug);
 
         return new IntrospectionProcessor(
             $level,
-            $skipPartials,
-            $skipFrameCount
+            $options->stringList('skip_classes_partials', []),
+            $options->int('skip_stack_frames_count', 0),
         );
     }
 }

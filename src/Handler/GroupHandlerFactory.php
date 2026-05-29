@@ -5,27 +5,26 @@ declare(strict_types=1);
 namespace Sirix\Monolog\Handler;
 
 use Monolog\Handler\GroupHandler;
-use Psr\Container\ContainerExceptionInterface;
-use Psr\Container\NotFoundExceptionInterface;
-use Sirix\Monolog\FactoryInterface;
-use Sirix\Monolog\HandlerManagerAwareInterface;
+use Psr\Container\ContainerInterface;
+use Sirix\ContainerResolver\ConfigReader;
+use Sirix\Monolog\Config\HandlerDefinition;
 
-class GroupHandlerFactory implements FactoryInterface, HandlerManagerAwareInterface
+class GroupHandlerFactory implements HandlerFactoryInterface, HandlerRegistryAwareInterface
 {
-    use GetHandlersTrait;
+    use HandlerRegistryTrait;
 
-    /**
-     * @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface
-     */
-    public function __invoke(array $options): GroupHandler
+    public function create(ContainerInterface $container, HandlerDefinition $definition): GroupHandler
     {
-        $handlers = $this->getHandlers($options);
-        $bubble = (bool) ($options['bubble'] ?? true);
+        $options = ConfigReader::fromArray($definition->options, self::class);
+        $handlers = [];
+
+        foreach ($options->requiredNonEmptyStringList('handlers') as $handlerId) {
+            $handlers[] = $this->getHandlerRegistry()->get($handlerId);
+        }
 
         return new GroupHandler(
             $handlers,
-            $bubble
+            $options->bool('bubble', true),
         );
     }
 }

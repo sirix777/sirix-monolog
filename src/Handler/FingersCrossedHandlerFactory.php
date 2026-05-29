@@ -4,61 +4,63 @@ declare(strict_types=1);
 
 namespace Sirix\Monolog\Handler;
 
+use Monolog\Handler\FingersCrossed\ActivationStrategyInterface;
 use Monolog\Handler\FingersCrossedHandler;
-use Psr\Container\ContainerExceptionInterface;
-use Psr\Container\NotFoundExceptionInterface;
-use Sirix\Monolog\ContainerAwareInterface;
-use Sirix\Monolog\ContainerTrait;
-use Sirix\Monolog\FactoryInterface;
-use Sirix\Monolog\HandlerManagerAwareInterface;
-use Sirix\Monolog\HandlerManagerTrait;
+use Monolog\Level;
+use Psr\Container\ContainerInterface;
+use Sirix\ContainerResolver\ConfigReader;
+use Sirix\ContainerResolver\ContainerResolver;
+use Sirix\Monolog\Config\HandlerDefinition;
 
 use function is_string;
 
-class FingersCrossedHandlerFactory implements FactoryInterface, HandlerManagerAwareInterface, ContainerAwareInterface
+class FingersCrossedHandlerFactory implements HandlerFactoryInterface, HandlerRegistryAwareInterface
 {
-    use ContainerTrait;
-    use HandlerManagerTrait;
+    use HandlerRegistryTrait;
 
-    /**
-     * @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface
-     */
-    public function __invoke(array $options): FingersCrossedHandler
+    public function create(ContainerInterface $container, HandlerDefinition $definition): FingersCrossedHandler
     {
-        $handler = $this->getHandlerManager()->get($options['handler']);
-        $activationStrategy = $this->getActivationStrategy($options);
-        $bufferSize = (int) ($options['bufferSize'] ?? 0);
-        $bubble = (bool) ($options['bubble'] ?? true);
-        $stopBuffering = (bool) ($options['stopBuffering'] ?? true);
-        $passthruLevel = $options['passthruLevel'] ?? null;
+        $options = ConfigReader::fromArray($definition->options, self::class);
 
         return new FingersCrossedHandler(
-            $handler,
-            $activationStrategy,
-            $bufferSize,
-            $bubble,
-            $stopBuffering,
-            $passthruLevel
+            $this->getHandlerRegistry()->get($options->requiredNonEmptyString('handler')),
+            $this->activationStrategy($container, $definition->options['activation_strategy'] ?? null),
+            $options->int('buffer_size', 0),
+            $options->bool('bubble', true),
+            $options->bool('stop_buffering', true),
+            $this->passthruLevel($definition->options['passthru_level'] ?? null),
         );
     }
 
-    /**
-     * @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface
-     */
-    protected function getActivationStrategy(array $options): mixed
-    {
-        $activationStrategy = $options['activationStrategy'] ?? null;
-
-        if (! $activationStrategy) {
+    private function activationStrategy(
+        ContainerInterface $container,
+        mixed $value
+    ): ActivationStrategyInterface|Level|null {
+        if (null === $value) {
             return null;
         }
 
-        if (is_string($activationStrategy) && $this->getContainer()->has($activationStrategy)) {
-            return $this->getContainer()->get($activationStrategy);
+        if (is_string($value) && $container->has($value)) {
+            $strategy = ContainerResolver::forContext($container, self::class)->getExisting($value);
+
+            if ($strategy instanceof ActivationStrategyInterface) {
+                return $strategy;
+            }
         }
 
-        return $activationStrategy;
+        $reader = ConfigReader::fromArray(['level' => $value], self::class);
+
+        return $reader->enum('level', Level::class, Level::Warning);
+    }
+
+    private function passthruLevel(mixed $value): ?Level
+    {
+        if (null === $value) {
+            return null;
+        }
+
+        $reader = ConfigReader::fromArray(['level' => $value], self::class);
+
+        return $reader->enum('level', Level::class, Level::Debug);
     }
 }

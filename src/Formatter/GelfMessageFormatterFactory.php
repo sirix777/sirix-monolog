@@ -5,17 +5,22 @@ declare(strict_types=1);
 namespace Sirix\Monolog\Formatter;
 
 use Monolog\Formatter\GelfMessageFormatter;
-use Sirix\Monolog\FactoryInterface;
+use Psr\Container\ContainerInterface;
+use Sirix\ContainerResolver\ConfigReader;
+use Sirix\Monolog\Config\FormatterDefinition;
 
-class GelfMessageFormatterFactory implements FactoryInterface
+class GelfMessageFormatterFactory implements FormatterFactoryInterface
 {
-    public function __invoke(array $options): GelfMessageFormatter
+    public function create(ContainerInterface $container, FormatterDefinition $definition): GelfMessageFormatter
     {
-        $systemName = $options['systemName'] ?? null;
-        $extraPrefix = $options['extraPrefix'] ?? null;
-        $contextPrefix = $options['contextPrefix'] ?? 'ctxt_';
-        $maxLength = $options['maxLength'] ?? null;
+        $options = ConfigReader::fromArray($definition->options, self::class);
+        $maxLength = $options->has('max_length') ? $options->requiredInt('max_length') : null;
 
-        return new GelfMessageFormatter($systemName, $extraPrefix, $contextPrefix, $maxLength);
+        return new GelfMessageFormatter(
+            $options->optionalString('system_name'),
+            $options->optionalString('extra_prefix'),
+            $options->string('context_prefix', 'ctxt_'),
+            $maxLength,
+        );
     }
 }

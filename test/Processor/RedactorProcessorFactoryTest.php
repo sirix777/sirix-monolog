@@ -10,27 +10,29 @@ use Monolog\LogRecord;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
+use Sirix\Monolog\Config\ProcessorDefinition;
 use Sirix\Monolog\Processor\RedactorProcessorFactory;
 use Sirix\Redaction\Bridge\Monolog\RedactorProcessor;
 use Sirix\Redaction\RedactorInterface;
 use Sirix\Redaction\Rule\FullMaskRule;
+use Sirix\Test\Monolog\Support\ArrayContainer;
 
 final class RedactorProcessorFactoryTest extends TestCase
 {
     private RedactorProcessorFactory $factory;
-    private ContainerInterface|MockObject $mockContainer;
+    private ContainerInterface|MockObject $container;
 
     protected function setUp(): void
     {
         $this->factory = new RedactorProcessorFactory();
-        $this->mockContainer = $this->createMock(ContainerInterface::class);
-        $this->factory->setContainer($this->mockContainer);
-        $this->mockContainer->method('has')->willReturn(false);
+        $this->container = $this->createMock(ContainerInterface::class);
+        $this->container->method('has')->willReturn(false);
     }
 
-    public function testInvokeReturnsProcessorInstance(): void
+    public function testCreateReturnsProcessorInstance(): void
     {
-        $processor = $this->factory->__invoke([]);
+        $processor = $this->createProcessor([]);
+
         $this->assertInstanceOf(RedactorProcessor::class, $processor);
     }
 
@@ -39,87 +41,53 @@ final class RedactorProcessorFactoryTest extends TestCase
         $mockRedactor = $this->createMock(RedactorInterface::class);
         $mockRedactor->method('redact')->willReturn(['x' => 'y']);
 
-        $this->mockContainer->method('has')
-            ->with(RedactorInterface::class)
-            ->willReturn(true)
-        ;
-        $this->mockContainer->method('get')
-            ->with(RedactorInterface::class)
-            ->willReturn($mockRedactor)
-        ;
+        $container = new ArrayContainer([
+            RedactorInterface::class => $mockRedactor,
+        ]);
 
-        $processor = new RedactorProcessor($mockRedactor);
-
-        $record = new LogRecord(
-            datetime: new DateTimeImmutable('2025-10-10T00:00:00Z'),
-            channel: 'test',
-            level: Level::Info,
-            message: 'hello',
-            context: ['a' => 'b'],
-            extra: []
-        );
-
-        $processed = $processor($record);
+        $processor = $this->createProcessor([], $container);
+        $processed = $processor($this->record(['a' => 'b']));
 
         $this->assertSame(['x' => 'y'], $processed->context);
     }
 
     public function testAppliesCustomRuleFullMaskWithDefaultReplacement(): void
     {
-        $processor = $this->factory->__invoke([
+        $processor = $this->createProcessor([
             'rules' => [
                 'password' => new FullMaskRule(),
             ],
         ]);
 
-        $record = new LogRecord(
-            datetime: new DateTimeImmutable('2025-10-10T00:00:00Z'),
-            channel: 'test',
-            level: Level::Info,
-            message: 'hello',
-            context: ['password' => 'secret'],
-            extra: []
-        );
+        $processed = $processor($this->record(['password' => 'secret']));
 
-        $processed = $processor($record);
-
-        // Full mask of 6 characters using default replacement '*'
         $this->assertSame('******', $processed->context['password']);
     }
 
     public function testCustomReplacementAffectsMasking(): void
     {
-        $processor = $this->factory->__invoke([
+        $processor = $this->createProcessor([
             'replacement' => '#',
             'rules' => [
                 'password' => new FullMaskRule(),
             ],
         ]);
 
-        $record = new LogRecord(
-            datetime: new DateTimeImmutable('2025-10-10T00:00:00Z'),
-            channel: 'test',
-            level: Level::Info,
-            message: 'hello',
-            context: ['password' => 'secret'],
-            extra: []
-        );
-
-        $processed = $processor($record);
+        $processed = $processor($this->record(['password' => 'secret']));
 
         $this->assertSame('######', $processed->context['password']);
     }
 
     public function testAppliesRuleToAllMatchingKeys(): void
     {
-        $processor = $this->factory->__invoke([
+        $processor = $this->createProcessor([
             'rules' => [
                 'password' => new FullMaskRule(),
             ],
-            'useDefaultRules' => false,
+            'use_default_rules' => false,
         ]);
 
-        $context = [
+        $processed = $processor($this->record([
             'user' => [
                 'name' => 'John',
                 'password' => 'topsecret',
@@ -128,18 +96,7 @@ final class RedactorProcessorFactoryTest extends TestCase
                 'full_name' => 'John Doe',
                 'password' => 'topsecret',
             ],
-        ];
-
-        $record = new LogRecord(
-            datetime: new DateTimeImmutable('2025-10-10T00:00:00Z'),
-            channel: 'test',
-            level: Level::Info,
-            message: 'hello',
-            context: $context,
-            extra: []
-        );
-
-        $processed = $processor($record);
+        ]));
 
         $this->assertSame('*********', $processed->context['user']['password']);
         $this->assertSame('*********', $processed->context['account']['password']);
@@ -148,28 +105,44 @@ final class RedactorProcessorFactoryTest extends TestCase
 
     public function testDisablesDefaultRulesWhenConfigured(): void
     {
-        // With defaults disabled and no custom rule, email should stay as-is
-        $processor = $this->factory->__invoke([
-            'useDefaultRules' => false,
+        $record = $this->record(['email' => 'john.doe@example.com']);
+
+        $processor = $this->createProcessor([
+            'use_default_rules' => false,
         ]);
-
-        $record = new LogRecord(
-            datetime: new DateTimeImmutable('2025-10-10T00:00:00Z'),
-            channel: 'test',
-            level: Level::Info,
-            message: 'hello',
-            context: ['email' => 'john.doe@example.com'],
-            extra: []
-        );
-
         $processed = $processor($record);
 
         $this->assertSame('john.doe@example.com', $processed->context['email']);
 
-        // With defaults enabled (default behavior), email should be masked
-        $processorWithDefaults = $this->factory->__invoke([]);
+        $processorWithDefaults = $this->createProcessor([]);
         $processedWithDefaults = $processorWithDefaults($record);
 
         $this->assertNotSame('john.doe@example.com', $processedWithDefaults->context['email']);
+    }
+
+    /**
+     * @param array<string, mixed> $options
+     */
+    private function createProcessor(array $options, ?ContainerInterface $container = null): RedactorProcessor
+    {
+        return $this->factory->create(
+            $container ?? $this->container,
+            new ProcessorDefinition('redactor', 'redactor', $options),
+        );
+    }
+
+    /**
+     * @param array<string, mixed> $context
+     */
+    private function record(array $context): LogRecord
+    {
+        return new LogRecord(
+            datetime: new DateTimeImmutable('2025-10-10T00:00:00Z'),
+            channel: 'test',
+            level: Level::Info,
+            message: 'hello',
+            context: $context,
+            extra: [],
+        );
     }
 }

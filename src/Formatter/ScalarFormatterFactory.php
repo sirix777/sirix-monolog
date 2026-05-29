@@ -5,12 +5,16 @@ declare(strict_types=1);
 namespace Sirix\Monolog\Formatter;
 
 use Monolog\Formatter\ScalarFormatter;
-use Sirix\Monolog\FactoryInterface;
+use Psr\Container\ContainerInterface;
+use Sirix\ContainerResolver\ConfigReader;
+use Sirix\Monolog\Config\FormatterDefinition;
 
-class ScalarFormatterFactory implements FactoryInterface
+class ScalarFormatterFactory implements FormatterFactoryInterface
 {
-    public function __invoke(array $options): ScalarFormatter
+    public function create(ContainerInterface $container, FormatterDefinition $definition): ScalarFormatter
     {
-        return new ScalarFormatter();
+        $options = ConfigReader::fromArray($definition->options, self::class);
+
+        return new ScalarFormatter($options->optionalString('date_format'));
     }
 }

@@ -6,26 +6,45 @@ namespace Sirix\Monolog\Handler;
 
 use Monolog\Handler\FilterHandler;
 use Monolog\Level;
-use Sirix\Monolog\FactoryInterface;
-use Sirix\Monolog\HandlerManagerAwareInterface;
-use Sirix\Monolog\HandlerManagerTrait;
+use Psr\Container\ContainerInterface;
+use Sirix\ContainerResolver\ConfigReader;
+use Sirix\Monolog\Config\HandlerDefinition;
 
-class FilterHandlerFactory implements FactoryInterface, HandlerManagerAwareInterface
+use function is_array;
+
+class FilterHandlerFactory implements HandlerFactoryInterface, HandlerRegistryAwareInterface
 {
-    use HandlerManagerTrait;
+    use HandlerRegistryTrait;
 
-    public function __invoke(array $options): FilterHandler
+    public function create(ContainerInterface $container, HandlerDefinition $definition): FilterHandler
     {
-        $handler = $this->getHandlerManager()->get($options['handler']);
-        $minLevelOrList = $options['minLevelOrList'] ?? Level::Debug;
-        $maxLevel = $options['maxLevel'] ?? Level::Emergency;
-        $bubble = (bool) ($options['bubble'] ?? true);
+        $options = ConfigReader::fromArray($definition->options, self::class);
+        $minLevelOrList = $this->levelOrList($definition->options['min_level_or_list'] ?? Level::Debug);
+        $maxLevel = $options->enum('max_level', Level::class, Level::Emergency);
 
         return new FilterHandler(
-            $handler,
+            $this->getHandlerRegistry()->get($options->requiredNonEmptyString('handler')),
             $minLevelOrList,
             $maxLevel,
-            $bubble
+            $options->bool('bubble', true),
         );
+    }
+
+    private function levelOrList(mixed $value): array|Level
+    {
+        if (! is_array($value)) {
+            $reader = ConfigReader::fromArray(['level' => $value], self::class);
+
+            return $reader->enum('level', Level::class, Level::Debug);
+        }
+
+        $levels = [];
+
+        foreach ($value as $index => $level) {
+            $reader = ConfigReader::fromArray(['level' => $level], self::class);
+            $levels[$index] = $reader->enum('level', Level::class, Level::Debug);
+        }
+
+        return $levels;
     }
 }

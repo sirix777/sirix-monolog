@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0] — Unreleased
+
+### Changed
+- Rebuild the package around a Mezzio-first `ConfigProvider` architecture.
+- Replace legacy mutable factories with strict handler, formatter, and processor factory interfaces.
+- Move built-in config to enum-backed `snake_case` type and option names.
+- Use `sirix/container-resolver` for strict container/config resolution.
+
+### Removed
+- Remove `MonologFactory`, `ChannelChanger`, legacy service managers, mapper classes, and config wrapper classes.
+- Remove `FactoryInterface`, container-aware traits/interfaces, and `__invoke(array $options)` factory API.
+- Remove legacy integration handlers that are no longer part of the focused built-in handler set.
+- Remove Git, Mercurial, and Pushover-device processors.
+
+### Added
+- Add builders, registries, DTO-style config definitions, built-in factory maps, and integration tests for the new architecture.
+- Add dedicated documentation under `docs/`, including migration notes from 1.x.
+
 ## [1.1.7] — 2026-05-10
 
 ### Fixed

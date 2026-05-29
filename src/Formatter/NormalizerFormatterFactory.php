@@ -5,14 +5,16 @@ declare(strict_types=1);
 namespace Sirix\Monolog\Formatter;
 
 use Monolog\Formatter\NormalizerFormatter;
-use Sirix\Monolog\FactoryInterface;
+use Psr\Container\ContainerInterface;
+use Sirix\ContainerResolver\ConfigReader;
+use Sirix\Monolog\Config\FormatterDefinition;
 
-class NormalizerFormatterFactory implements FactoryInterface
+class NormalizerFormatterFactory implements FormatterFactoryInterface
 {
-    public function __invoke(array $options): NormalizerFormatter
+    public function create(ContainerInterface $container, FormatterDefinition $definition): NormalizerFormatter
     {
-        $dateFormat = $options['dateFormat'] ?? null;
+        $options = ConfigReader::fromArray($definition->options, self::class);
 
-        return new NormalizerFormatter($dateFormat);
+        return new NormalizerFormatter($options->optionalString('date_format'));
     }
 }

@@ -5,15 +5,19 @@ declare(strict_types=1);
 namespace Sirix\Monolog\Formatter;
 
 use Monolog\Formatter\ElasticaFormatter;
-use Sirix\Monolog\FactoryInterface;
+use Psr\Container\ContainerInterface;
+use Sirix\ContainerResolver\ConfigReader;
+use Sirix\Monolog\Config\FormatterDefinition;
 
-class ElasticaFormatterFactory implements FactoryInterface
+class ElasticaFormatterFactory implements FormatterFactoryInterface
 {
-    public function __invoke(array $options): ElasticaFormatter
+    public function create(ContainerInterface $container, FormatterDefinition $definition): ElasticaFormatter
     {
-        $index = (string) ($options['index'] ?? null);
-        $type = (string) ($options['type'] ?? null);
+        $options = ConfigReader::fromArray($definition->options, self::class);
 
-        return new ElasticaFormatter($index, $type);
+        return new ElasticaFormatter(
+            $options->requiredNonEmptyString('index'),
+            $options->optionalString('document_type'),
+        );
     }
 }

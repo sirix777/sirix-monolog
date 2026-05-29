@@ -5,11 +5,12 @@ declare(strict_types=1);
 namespace Sirix\Monolog\Processor;
 
 use Monolog\Processor\PsrLogMessageProcessor;
-use Sirix\Monolog\FactoryInterface;
+use Psr\Container\ContainerInterface;
+use Sirix\Monolog\Config\ProcessorDefinition;
 
-class PsrLogMessageProcessorFactory implements FactoryInterface
+class PsrLogMessageProcessorFactory implements ProcessorFactoryInterface
 {
-    public function __invoke(array $options): PsrLogMessageProcessor
+    public function create(ContainerInterface $container, ProcessorDefinition $definition): PsrLogMessageProcessor
     {
         return new PsrLogMessageProcessor();
     }

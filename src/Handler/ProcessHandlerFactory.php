@@ -6,22 +6,36 @@ namespace Sirix\Monolog\Handler;
 
 use Monolog\Handler\ProcessHandler;
 use Monolog\Level;
-use Sirix\Monolog\FactoryInterface;
+use Psr\Container\ContainerInterface;
+use Sirix\ContainerResolver\ConfigReader;
+use Sirix\Monolog\Config\HandlerDefinition;
+use Sirix\Monolog\Exception\InvalidConfigException;
 
-class ProcessHandlerFactory implements FactoryInterface
+use function is_float;
+use function is_int;
+
+class ProcessHandlerFactory implements HandlerFactoryInterface
 {
-    public function __invoke(array $options): ProcessHandler
+    public function create(ContainerInterface $container, HandlerDefinition $definition): ProcessHandler
     {
-        $command = (string) ($options['command'] ?? null);
-        $cwd = (string) ($options['cwd'] ?? null);
-        $level = $options['level'] ?? Level::Debug;
-        $bubble = (bool) ($options['bubble'] ?? true);
+        $options = ConfigReader::fromArray($definition->options, self::class);
+        $level = $options->enum('level', Level::class, Level::Debug);
 
         return new ProcessHandler(
-            $command,
+            $options->requiredNonEmptyString('command'),
             $level,
-            $bubble,
-            $cwd
+            $options->bool('bubble', true),
+            $options->optionalNonEmptyString('cwd'),
+            $this->timeout($definition->options['timeout'] ?? 1.0),
         );
+    }
+
+    private function timeout(mixed $timeout): float
+    {
+        if (is_float($timeout) || is_int($timeout)) {
+            return (float) $timeout;
+        }
+
+        throw new InvalidConfigException('Process handler option "timeout" must be a float or int.');
     }
 }
