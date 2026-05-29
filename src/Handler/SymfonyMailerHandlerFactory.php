@@ -49,7 +49,7 @@ class SymfonyMailerHandlerFactory implements HandlerFactoryInterface
         }
 
         if (is_callable($email)) {
-            return Closure::fromCallable($email);
+            return $email(...);
         }
 
         if (is_object($email) && is_a($email, 'Symfony\Component\Mime\Email')) {
