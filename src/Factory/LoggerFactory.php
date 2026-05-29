@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Sirix\Monolog\Factory;
 
 use Monolog\Logger;
+use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
 use Sirix\ContainerResolver\ContainerResolver;
@@ -16,6 +17,9 @@ use function trim;
 
 final class LoggerFactory
 {
+    /**
+     * @throws ContainerExceptionInterface
+     */
     public function __invoke(
         ContainerInterface $container,
         string $requestedName = LoggerInterface::class,
