@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Sirix\Monolog\Factory;
 
+use Monolog\Logger;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
 use Sirix\ContainerResolver\ContainerResolver;
@@ -25,8 +26,21 @@ final class LoggerFactory
         $channelOption = $options['channel'] ?? null;
         $channelId = is_string($channelOption) && '' !== trim($channelOption)
             ? trim($channelOption)
-            : $config->channelForLoggerService($requestedName);
+            : null;
 
-        return $resolver->get(ChannelRegistry::class)->get($channelId);
+        $registry = $resolver->get(ChannelRegistry::class);
+
+        if (null !== $channelId) {
+            return $registry->get($channelId);
+        }
+
+        $loggerService = $config->loggerService($requestedName);
+        $logger = $registry->get($loggerService->channel);
+
+        if (null !== $loggerService->name && $logger instanceof Logger) {
+            return $logger->withName($loggerService->name);
+        }
+
+        return $logger;
     }
 }

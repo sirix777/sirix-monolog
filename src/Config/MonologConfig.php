@@ -11,11 +11,11 @@ use Sirix\Monolog\Exception\UnknownChannelException;
 final readonly class MonologConfig
 {
     /**
-     * @param array<non-empty-string, non-empty-string>    $loggerServices
-     * @param array<non-empty-string, ChannelDefinition>   $channels
-     * @param array<non-empty-string, HandlerDefinition>   $handlers
-     * @param array<non-empty-string, FormatterDefinition> $formatters
-     * @param array<non-empty-string, ProcessorDefinition> $processors
+     * @param array<non-empty-string, LoggerServiceDefinition> $loggerServices
+     * @param array<non-empty-string, ChannelDefinition>       $channels
+     * @param array<non-empty-string, HandlerDefinition>       $handlers
+     * @param array<non-empty-string, FormatterDefinition>     $formatters
+     * @param array<non-empty-string, ProcessorDefinition>     $processors
      */
     public function __construct(
         public array $loggerServices,
@@ -31,9 +31,14 @@ final readonly class MonologConfig
         return $this->channels[$id] ?? throw UnknownChannelException::forChannel($id);
     }
 
-    public function channelForLoggerService(string $serviceId): string
+    public function loggerService(string $serviceId): LoggerServiceDefinition
     {
         return $this->loggerServices[$serviceId] ?? throw UnknownChannelException::forLoggerService($serviceId);
+    }
+
+    public function channelForLoggerService(string $serviceId): string
+    {
+        return $this->loggerService($serviceId)->channel;
     }
 
     public function handler(string $id): HandlerDefinition
@@ -43,12 +48,14 @@ final readonly class MonologConfig
 
     public function formatter(string $id): FormatterDefinition
     {
-        return $this->formatters[$id] ?? throw new MissingConfigException("Unable to locate monolog formatter '{$id}'.");
+        return $this->formatters[$id]
+            ?? throw new MissingConfigException("Unable to locate monolog formatter '{$id}'.");
     }
 
     public function processor(string $id): ProcessorDefinition
     {
-        return $this->processors[$id] ?? throw new MissingConfigException("Unable to locate monolog processor '{$id}'.");
+        return $this->processors[$id]
+            ?? throw new MissingConfigException("Unable to locate monolog processor '{$id}'.");
     }
 
     public function handlerFactory(string $type): string

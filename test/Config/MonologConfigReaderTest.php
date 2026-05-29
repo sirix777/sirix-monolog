@@ -66,6 +66,39 @@ final class MonologConfigReaderTest extends TestCase
         $this->assertSame('json', $config->handler('main')->formatter);
     }
 
+    public function testReadLoggerServiceNameOverride(): void
+    {
+        $config = (new MonologConfigReader())->read([
+            C::Root->value => [
+                C::LoggerServices->value => [
+                    'logger_crypto_transaction' => [
+                        C::Channel->value => 'default',
+                        C::Name->value => 'CryptoTransactionService',
+                    ],
+                ],
+            ],
+        ]);
+
+        $loggerService = $config->loggerService('logger_crypto_transaction');
+
+        $this->assertSame('default', $loggerService->channel);
+        $this->assertSame('CryptoTransactionService', $loggerService->name);
+    }
+
+    public function testMissingLoggerServiceChannelReferenceFailsEarly(): void
+    {
+        $this->expectException(MissingConfigException::class);
+        $this->expectExceptionMessage("Logger service 'logger_missing' references unknown channel 'missing'.");
+
+        (new MonologConfigReader())->read([
+            C::Root->value => [
+                C::LoggerServices->value => [
+                    'logger_missing' => 'missing',
+                ],
+            ],
+        ]);
+    }
+
     public function testCustomHandlerFactoryMapOverridesBuiltIns(): void
     {
         $config = (new MonologConfigReader())->read([

@@ -17,6 +17,7 @@ enum ConfigKey: string
     case ProcessorFactories = 'processor_factories';
 
     case Name = 'name';
+    case Channel = 'channel';
     case Type = 'type';
     case Options = 'options';
     case Formatter = 'formatter';

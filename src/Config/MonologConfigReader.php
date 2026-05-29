@@ -43,6 +43,7 @@ final class MonologConfigReader
         $loggerServices = $this->readLoggerServices($rootReader);
         $factoryMap = $this->readFactoryMap($rootReader);
 
+        $this->assertLoggerServiceReferences($loggerServices, $channels);
         $this->assertChannelReferences($channels, $handlers, $processors);
         $this->assertHandlerReferences($handlers, $formatters, $processors);
 
@@ -57,7 +58,7 @@ final class MonologConfigReader
     }
 
     /**
-     * @return array<non-empty-string, non-empty-string>
+     * @return array<non-empty-string, LoggerServiceDefinition>
      */
     private function readLoggerServices(ConfigReader $reader): array
     {
@@ -67,17 +68,36 @@ final class MonologConfigReader
             'logger' => 'default',
         ]);
 
-        /** @var array<non-empty-string, non-empty-string> $result */
+        /** @var array<non-empty-string, LoggerServiceDefinition> $result */
         $result = [];
 
-        foreach ($services as $serviceId => $channelId) {
-            $result[$this->nonEmptyString($serviceId, ConfigKey::LoggerServices->value)] = $this->nonEmptyString(
-                $channelId,
-                ConfigKey::LoggerServices->value . '.' . $serviceId,
-            );
+        foreach ($services as $serviceId => $serviceConfig) {
+            $serviceId = $this->nonEmptyString($serviceId, ConfigKey::LoggerServices->value);
+            $path = ConfigKey::LoggerServices->value . '.' . $serviceId;
+
+            $result[$serviceId] = is_array($serviceConfig)
+                ? $this->readLoggerServiceDefinition($serviceId, $serviceConfig)
+                : new LoggerServiceDefinition(
+                    serviceId: $serviceId,
+                    channel: $this->nonEmptyString($serviceConfig, $path),
+                );
         }
 
         return $result;
+    }
+
+    /**
+     * @param array<string, mixed> $serviceConfig
+     */
+    private function readLoggerServiceDefinition(string $serviceId, array $serviceConfig): LoggerServiceDefinition
+    {
+        $serviceReader = ConfigReader::fromArray($serviceConfig, self::class);
+
+        return new LoggerServiceDefinition(
+            serviceId: $serviceId,
+            channel: $serviceReader->requiredNonEmptyString(ConfigKey::Channel->value),
+            name: $serviceReader->optionalNonEmptyString(ConfigKey::Name->value),
+        );
     }
 
     /**
@@ -253,6 +273,22 @@ final class MonologConfigReader
         }
 
         return $builtIn;
+    }
+
+    /**
+     * @param array<non-empty-string, LoggerServiceDefinition> $loggerServices
+     * @param array<non-empty-string, ChannelDefinition>       $channels
+     */
+    private function assertLoggerServiceReferences(array $loggerServices, array $channels): void
+    {
+        foreach ($loggerServices as $loggerService) {
+            if (! isset($channels[$loggerService->channel])) {
+                throw new MissingConfigException(
+                    "Logger service '{$loggerService->serviceId}' references unknown channel "
+                    . "'{$loggerService->channel}'.",
+                );
+            }
+        }
     }
 
     /**

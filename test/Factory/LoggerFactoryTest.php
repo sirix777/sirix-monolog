@@ -87,6 +87,39 @@ final class LoggerFactoryTest extends TestCase
         $this->assertStringContainsString('"channel":"app"', $contents);
     }
 
+    public function testLoggerServiceCanOverrideMonologChannelName(): void
+    {
+        $providerConfig = (new ConfigProvider())();
+        $providerConfig['dependencies']['factories']['logger_crypto_transaction'] = LoggerFactory::class;
+
+        $container = ArrayContainer::fromConfigProvider([
+            C::Root->value => [
+                C::LoggerServices->value => [
+                    'logger_crypto_transaction' => [
+                        C::Channel->value => 'default',
+                        C::Name->value => 'CryptoTransactionService',
+                    ],
+                ],
+                C::Channels->value => [
+                    'default' => [
+                        C::Name->value => 'app',
+                        C::Handlers->value => ['default_handler'],
+                    ],
+                ],
+                C::Handlers->value => [
+                    'default_handler' => [
+                        C::Type->value => HandlerType::Noop,
+                    ],
+                ],
+            ],
+        ], $providerConfig);
+
+        $logger = $container->get('logger_crypto_transaction');
+
+        $this->assertInstanceOf(Logger::class, $logger);
+        $this->assertSame('CryptoTransactionService', $logger->getName());
+    }
+
     public function testRequestedNameSelectsConfiguredChannel(): void
     {
         $providerConfig = (new ConfigProvider())();

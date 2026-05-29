@@ -39,6 +39,22 @@ return [
 
 The provider registers `logger`, `Monolog\Logger`, and `Psr\Log\LoggerInterface` for the default logger service. Dotted service ids are intentionally avoided because some containers treat dots as path separators.
 
+If resolving `logger` fails with a `ConfigAbstractFactory` error such as `Service dependencies config must exist and be an array`, the Monolog `ConfigProvider` was not merged into the application config, or another config entry overrides the `logger` factory. The effective dependency config must contain:
+
+```php
+'dependencies' => [
+    'aliases' => [
+        Monolog\Logger::class => 'logger',
+        Psr\Log\LoggerInterface::class => 'logger',
+    ],
+    'factories' => [
+        'logger' => Sirix\Monolog\Factory\LoggerFactory::class,
+    ],
+],
+```
+
+Do not register `logger` with `Laminas\ServiceManager\AbstractFactory\ConfigAbstractFactory` unless you provide its dependency list yourself.
+
 ## Minimal configuration
 
 Create `config/autoload/monolog.global.php`:
@@ -110,7 +126,7 @@ $logger->info('User {user_id} logged in', ['user_id' => 42]);
 
 ## Multiple logger services
 
-Map any service id to a channel id with `logger_services`:
+Map any service id to a channel id with `logger_services`. Use a string value when the service should use the configured channel as-is. Use the array form when the service should reuse a configured channel stack but emit records with a different Monolog channel name.
 
 ```php
 <?php
@@ -122,6 +138,10 @@ return [
     ConfigKey::Root->value => [
         ConfigKey::LoggerServices->value => [
             'logger_audit' => 'audit',
+            'logger_crypto_transaction' => [
+                ConfigKey::Channel->value => 'audit',
+                ConfigKey::Name->value => 'CryptoTransactionService',
+            ],
         ],
         ConfigKey::Channels->value => [
             'audit' => [
@@ -141,7 +161,9 @@ return [
 ];
 ```
 
-Register the additional logger service with `Sirix\Monolog\Factory\LoggerFactory` in your container if your framework does not auto-wire it from the dependency config.
+Register additional logger services with `Sirix\Monolog\Factory\LoggerFactory` in your container if your framework does not auto-wire them from the dependency config.
+
+In the example above, `logger_crypto_transaction` reuses the `audit` channel's handlers and processors but writes `CryptoTransactionService` into Monolog's record `channel` field.
 
 ## Built-in types
 

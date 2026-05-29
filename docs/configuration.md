@@ -35,7 +35,7 @@ This means an unconfigured logger is safe to request and will discard records.
 
 ## Logger services
 
-`logger_services` maps container service ids to channel ids.
+`logger_services` maps container service ids to channel ids. A service value can be either a channel id string or an object-like array with a base channel id and an optional Monolog channel name override.
 
 ```php
 <?php
@@ -49,6 +49,10 @@ return [
         ConfigKey::LoggerServices->value => [
             'logger' => 'default',
             'logger_audit' => 'audit',
+            'logger_crypto_transaction' => [
+                ConfigKey::Channel->value => 'default',
+                ConfigKey::Name->value => 'CryptoTransactionService',
+            ],
             Logger::class => 'default',
             LoggerInterface::class => 'default',
         ],
@@ -59,6 +63,15 @@ return [
 `ConfigProvider` registers `logger`, `Monolog\Logger`, and `Psr\Log\LoggerInterface`. If you add custom logger service ids, register them with `Sirix\Monolog\Factory\LoggerFactory` in your container.
 
 Prefer service ids without dots, such as `logger_audit`, because some containers treat dots as path separators.
+
+The array form lets a logger service reuse an existing configured channel stack while changing the Monolog record `channel` value. In the example above, `logger_crypto_transaction` uses the handlers and processors from the `default` channel, but records are emitted with `"channel":"CryptoTransactionService"`.
+
+The array form supports:
+
+- `channel`: required configured channel id
+- `name`: optional Monolog channel name override
+
+If resolving `logger` fails with a `Laminas\ServiceManager\AbstractFactory\ConfigAbstractFactory` error such as `Service dependencies config must exist and be an array`, the Monolog `ConfigProvider` was not merged into the application config, or another config entry overrides the `logger` factory. The effective dependency config must include `logger => Sirix\Monolog\Factory\LoggerFactory::class` under `dependencies.factories`.
 
 ## Channels
 
