@@ -37,23 +37,7 @@ return [
 ];
 ```
 
-The provider registers `logger`, `Monolog\Logger`, and `Psr\Log\LoggerInterface` for the default logger service. Dotted service ids are intentionally avoided because some containers treat dots as path separators.
-
-If resolving `logger` fails with a `ConfigAbstractFactory` error such as `Service dependencies config must exist and be an array`, the Monolog `ConfigProvider` was not merged into the application config, or another config entry overrides the `logger` factory. The effective dependency config must contain:
-
-```php
-'dependencies' => [
-    'aliases' => [
-        Monolog\Logger::class => 'logger',
-        Psr\Log\LoggerInterface::class => 'logger',
-    ],
-    'factories' => [
-        'logger' => Sirix\Monolog\Factory\LoggerFactory::class,
-    ],
-],
-```
-
-Do not register `logger` with `Laminas\ServiceManager\AbstractFactory\ConfigAbstractFactory` unless you provide its dependency list yourself.
+The provider registers `logger`, `Monolog\Logger`, and `Psr\Log\LoggerInterface` for the default logger service.
 
 ## Minimal configuration
 
