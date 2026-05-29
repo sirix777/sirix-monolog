@@ -71,8 +71,6 @@ The array form supports:
 - `channel`: required configured channel id
 - `name`: optional Monolog channel name override
 
-If resolving `logger` fails with a `Laminas\ServiceManager\AbstractFactory\ConfigAbstractFactory` error such as `Service dependencies config must exist and be an array`, the Monolog `ConfigProvider` was not merged into the application config, or another config entry overrides the `logger` factory. The effective dependency config must include `logger => Sirix\Monolog\Factory\LoggerFactory::class` under `dependencies.factories`.
-
 ## Channels
 
 Channels define the Monolog logger name and the handler/processor stack.
