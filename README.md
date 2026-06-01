@@ -39,9 +39,15 @@ return [
 
 The provider registers `logger`, `Monolog\Logger`, and `Psr\Log\LoggerInterface` for the default logger service.
 
+## Default behavior
+
+If no `monolog` configuration is provided, the package still exposes a safe default logger. The default services point to the `default` channel, that channel uses the Monolog name `app`, and it writes to a `noop` handler. Requesting `Psr\Log\LoggerInterface` is therefore safe even before application logging is configured; records are discarded until you define real handlers.
+
+Defaults are applied per missing section. For example, a basic application can configure `channels` and `handlers` while omitting `logger_services`; the default `logger` service map will continue to point to the `default` channel.
+
 ## Minimal configuration
 
-Create `config/autoload/monolog.global.php`:
+Create `config/autoload/monolog.global.php`. The basic configuration does not need a `logger_services` section because `logger`, `Monolog\Logger`, and `Psr\Log\LoggerInterface` are registered for the `default` channel automatically:
 
 ```php
 <?php
@@ -149,7 +155,9 @@ return [
 ];
 ```
 
-Providing `logger_services` replaces the default service map for that section, so keep the `logger` entry when the default logger service should remain available. Register additional logger services with `Sirix\Monolog\Factory\LoggerFactory` in your container if your framework does not auto-wire them from the dependency config.
+Providing `logger_services` replaces the default service map for that section, so keep the `logger` entry when the default logger service should remain available. With the provided `ConfigProvider`, `Monolog\Logger` and `Psr\Log\LoggerInterface` are aliases to `logger`; keep the class-name entries too only if your container resolves those ids through `LoggerFactory` directly instead of aliases.
+
+Register additional logger services with `Sirix\Monolog\Factory\LoggerFactory` in your container if your framework does not auto-wire them from the dependency config.
 
 In the example above, `logger_crypto_transaction` reuses the `audit` channel's handlers and processors but writes `CryptoTransactionService` into Monolog's record `channel` field.
 
@@ -182,6 +190,7 @@ In the example above, `logger_crypto_transaction` reuses the `audit` channel's h
 - `log_entries`
 - `loggly`
 - `logmatic`
+- `mandrill`
 - `mongo_db`
 - `native_mailer`
 - `new_relic`
@@ -255,7 +264,15 @@ Configured loggers, handlers, formatters, and processors are cached for the cont
 
 Handlers are shared by handler id. If multiple channels reference the same handler id, they share the same handler instance and state. Use separate handler ids when buffered, deduplicated, or otherwise stateful handlers must be isolated.
 
-For stream handlers, `use_locking` defaults to `false`, matching Monolog. Enable it only when multiple processes write to the same file and you want `flock()` around each write.
+Handler and processor order is preserved as written in configuration. This matters for `bubble`, wrapper handlers, filters, and processor chains.
+
+A handler-local `formatter` requires a Monolog handler that supports formatters. Handler-local `processors` require a processable handler. Unsupported combinations fail fast with a configuration exception instead of being ignored.
+
+For stream handlers, `file_permission` defaults to Monolog's default when omitted or set to `null`, so file permissions remain controlled by your process `umask`. `use_locking` defaults to `false`, matching Monolog. Enable it only when multiple processes write to the same file and you want `flock()` around each write.
+
+## Optional integrations
+
+Many built-in handlers and formatters wrap Monolog integrations that require optional packages or PHP extensions. Install only the dependencies you use; Composer `suggest` lists the packages/extensions required by each optional integration. If an optional dependency is missing, the related factory fails with a configuration error when that handler, formatter, or processor is built.
 
 ## Custom factories
 
