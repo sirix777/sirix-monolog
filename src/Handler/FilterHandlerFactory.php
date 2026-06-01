@@ -16,17 +16,17 @@ class FilterHandlerFactory implements HandlerFactoryInterface, HandlerRegistryAw
 {
     use HandlerRegistryTrait;
 
-    public function create(ContainerInterface $container, HandlerDefinition $definition): FilterHandler
+    public function create(ContainerInterface $container, HandlerDefinition $handlerDefinition): FilterHandler
     {
-        $options = ConfigReader::fromArray($definition->options, self::class);
-        $minLevelOrList = $this->levelOrList($definition->options['min_level_or_list'] ?? Level::Debug);
-        $maxLevel = $options->enum('max_level', Level::class, Level::Emergency);
+        $configReader = ConfigReader::fromArray($handlerDefinition->options, self::class);
+        $minLevelOrList = $this->levelOrList($handlerDefinition->options['min_level_or_list'] ?? Level::Debug);
+        $maxLevel = $configReader->enum('max_level', Level::class, Level::Emergency);
 
         return new FilterHandler(
-            $this->getHandlerRegistry()->get($options->requiredNonEmptyString('handler')),
+            $this->getHandlerRegistry()->get($configReader->requiredNonEmptyString('handler')),
             $minLevelOrList,
             $maxLevel,
-            $options->bool('bubble', true),
+            $configReader->bool('bubble', true),
         );
     }
 

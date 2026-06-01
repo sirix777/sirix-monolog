@@ -12,15 +12,15 @@ use Sirix\Monolog\Config\HandlerDefinition;
 
 class IFTTTHandlerFactory implements HandlerFactoryInterface
 {
-    public function create(ContainerInterface $container, HandlerDefinition $definition): IFTTTHandler
+    public function create(ContainerInterface $container, HandlerDefinition $handlerDefinition): IFTTTHandler
     {
-        $options = ConfigReader::fromArray($definition->options, self::class);
+        $configReader = ConfigReader::fromArray($handlerDefinition->options, self::class);
 
         return new IFTTTHandler(
-            $options->requiredNonEmptyString('event_name'),
-            $options->requiredNonEmptyString('secret_key'),
-            $options->enum('level', Level::class, Level::Error),
-            $options->bool('bubble', true),
+            $configReader->requiredNonEmptyString('event_name'),
+            $configReader->requiredNonEmptyString('secret_key'),
+            $configReader->enum('level', Level::class, Level::Error),
+            $configReader->bool('bubble', true),
         );
     }
 }

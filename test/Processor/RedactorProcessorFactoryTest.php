@@ -19,21 +19,21 @@ use Sirix\Test\Monolog\Support\ArrayContainer;
 
 final class RedactorProcessorFactoryTest extends TestCase
 {
-    private RedactorProcessorFactory $factory;
+    private RedactorProcessorFactory $redactorProcessorFactory;
     private ContainerInterface|MockObject $container;
 
     protected function setUp(): void
     {
-        $this->factory = new RedactorProcessorFactory();
+        $this->redactorProcessorFactory = new RedactorProcessorFactory();
         $this->container = $this->createMock(ContainerInterface::class);
         $this->container->method('has')->willReturn(false);
     }
 
     public function testCreateReturnsProcessorInstance(): void
     {
-        $processor = $this->createProcessor([]);
+        $redactorProcessor = $this->createProcessor([]);
 
-        $this->assertInstanceOf(RedactorProcessor::class, $processor);
+        $this->assertInstanceOf(RedactorProcessor::class, $redactorProcessor);
     }
 
     public function testUsesRedactorFromContainerWhenAvailable(): void
@@ -41,53 +41,53 @@ final class RedactorProcessorFactoryTest extends TestCase
         $mockRedactor = $this->createMock(RedactorInterface::class);
         $mockRedactor->method('redact')->willReturn(['x' => 'y']);
 
-        $container = new ArrayContainer([
+        $arrayContainer = new ArrayContainer([
             RedactorInterface::class => $mockRedactor,
         ]);
 
-        $processor = $this->createProcessor([], $container);
-        $processed = $processor($this->record(['a' => 'b']));
+        $redactorProcessor = $this->createProcessor([], $arrayContainer);
+        $logRecord = $redactorProcessor($this->record(['a' => 'b']));
 
-        $this->assertSame(['x' => 'y'], $processed->context);
+        $this->assertSame(['x' => 'y'], $logRecord->context);
     }
 
     public function testAppliesCustomRuleFullMaskWithDefaultReplacement(): void
     {
-        $processor = $this->createProcessor([
+        $redactorProcessor = $this->createProcessor([
             'rules' => [
                 'password' => new FullMaskRule(),
             ],
         ]);
 
-        $processed = $processor($this->record(['password' => 'secret']));
+        $logRecord = $redactorProcessor($this->record(['password' => 'secret']));
 
-        $this->assertSame('******', $processed->context['password']);
+        $this->assertSame('******', $logRecord->context['password']);
     }
 
     public function testCustomReplacementAffectsMasking(): void
     {
-        $processor = $this->createProcessor([
+        $redactorProcessor = $this->createProcessor([
             'replacement' => '#',
             'rules' => [
                 'password' => new FullMaskRule(),
             ],
         ]);
 
-        $processed = $processor($this->record(['password' => 'secret']));
+        $logRecord = $redactorProcessor($this->record(['password' => 'secret']));
 
-        $this->assertSame('######', $processed->context['password']);
+        $this->assertSame('######', $logRecord->context['password']);
     }
 
     public function testAppliesRuleToAllMatchingKeys(): void
     {
-        $processor = $this->createProcessor([
+        $redactorProcessor = $this->createProcessor([
             'rules' => [
                 'password' => new FullMaskRule(),
             ],
             'use_default_rules' => false,
         ]);
 
-        $processed = $processor($this->record([
+        $logRecord = $redactorProcessor($this->record([
             'user' => [
                 'name' => 'John',
                 'password' => 'topsecret',
@@ -98,26 +98,26 @@ final class RedactorProcessorFactoryTest extends TestCase
             ],
         ]));
 
-        $this->assertSame('*********', $processed->context['user']['password']);
-        $this->assertSame('*********', $processed->context['account']['password']);
-        $this->assertSame('John', $processed->context['user']['name']);
+        $this->assertSame('*********', $logRecord->context['user']['password']);
+        $this->assertSame('*********', $logRecord->context['account']['password']);
+        $this->assertSame('John', $logRecord->context['user']['name']);
     }
 
     public function testDisablesDefaultRulesWhenConfigured(): void
     {
         $record = $this->record(['email' => 'john.doe@example.com']);
 
-        $processor = $this->createProcessor([
+        $redactorProcessor = $this->createProcessor([
             'use_default_rules' => false,
         ]);
-        $processed = $processor($record);
+        $processed = $redactorProcessor($record);
 
         $this->assertSame('john.doe@example.com', $processed->context['email']);
 
         $processorWithDefaults = $this->createProcessor([]);
-        $processedWithDefaults = $processorWithDefaults($record);
+        $logRecord = $processorWithDefaults($record);
 
-        $this->assertNotSame('john.doe@example.com', $processedWithDefaults->context['email']);
+        $this->assertNotSame('john.doe@example.com', $logRecord->context['email']);
     }
 
     /**
@@ -125,7 +125,7 @@ final class RedactorProcessorFactoryTest extends TestCase
      */
     private function createProcessor(array $options, ?ContainerInterface $container = null): RedactorProcessor
     {
-        return $this->factory->create(
+        return $this->redactorProcessorFactory->create(
             $container ?? $this->container,
             new ProcessorDefinition('redactor', 'redactor', $options),
         );

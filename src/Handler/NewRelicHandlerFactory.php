@@ -12,16 +12,16 @@ use Sirix\Monolog\Config\HandlerDefinition;
 
 class NewRelicHandlerFactory implements HandlerFactoryInterface
 {
-    public function create(ContainerInterface $container, HandlerDefinition $definition): NewRelicHandler
+    public function create(ContainerInterface $container, HandlerDefinition $handlerDefinition): NewRelicHandler
     {
-        $options = ConfigReader::fromArray($definition->options, self::class);
+        $configReader = ConfigReader::fromArray($handlerDefinition->options, self::class);
 
         return new NewRelicHandler(
-            $options->enum('level', Level::class, Level::Error),
-            $options->bool('bubble', true),
-            $options->optionalString('app_name'),
-            $options->bool('explode_arrays', false),
-            $options->optionalString('transaction_name'),
+            $configReader->enum('level', Level::class, Level::Error),
+            $configReader->bool('bubble', true),
+            $configReader->optionalString('app_name'),
+            $configReader->bool('explode_arrays', false),
+            $configReader->optionalString('transaction_name'),
         );
     }
 }

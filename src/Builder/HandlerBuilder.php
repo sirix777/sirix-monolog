@@ -7,6 +7,7 @@ namespace Sirix\Monolog\Builder;
 use Monolog\Handler\FormattableHandlerInterface;
 use Monolog\Handler\HandlerInterface;
 use Monolog\Handler\ProcessableHandlerInterface;
+use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Sirix\ContainerResolver\ContainerResolver;
 use Sirix\Monolog\Config\MonologConfig;
@@ -27,36 +28,39 @@ final class HandlerBuilder
 
     public function __construct(
         private readonly ContainerInterface $container,
-        private readonly MonologConfig $config,
-        private readonly FormatterRegistry $formatters,
-        private readonly ProcessorRegistry $processors,
+        private readonly MonologConfig $monologConfig,
+        private readonly FormatterRegistry $formatterRegistry,
+        private readonly ProcessorRegistry $processorRegistry,
     ) {}
 
+    /**
+     * @throws ContainerExceptionInterface
+     */
     public function build(string $handlerId): HandlerInterface
     {
-        $definition = $this->config->handler($handlerId);
-        $factory = $this->factory($definition->type);
-        $handler = $factory->create($this->container, $definition);
+        $handlerDefinition = $this->monologConfig->handler($handlerId);
+        $factory = $this->factory($handlerDefinition->type);
+        $handler = $factory->create($this->container, $handlerDefinition);
 
-        if (null !== $definition->formatter) {
+        if (null !== $handlerDefinition->formatter) {
             if (! $handler instanceof FormattableHandlerInterface) {
                 throw new InvalidConfigException(
                     "Handler '{$handlerId}' has a formatter configured but does not support formatters.",
                 );
             }
 
-            $handler->setFormatter($this->formatters->get($definition->formatter));
+            $handler->setFormatter($this->formatterRegistry->get($handlerDefinition->formatter));
         }
 
-        if ([] !== $definition->processors) {
+        if ([] !== $handlerDefinition->processors) {
             if (! $handler instanceof ProcessableHandlerInterface) {
                 throw new InvalidConfigException(
                     "Handler '{$handlerId}' has processors configured but does not support processors.",
                 );
             }
 
-            foreach (array_reverse($definition->processors) as $processorId) {
-                $handler->pushProcessor($this->processors->get($processorId));
+            foreach (array_reverse($handlerDefinition->processors) as $processorId) {
+                $handler->pushProcessor($this->processorRegistry->get($processorId));
             }
         }
 
@@ -77,9 +81,12 @@ final class HandlerBuilder
         return $this->handlerRegistry;
     }
 
+    /**
+     * @throws ContainerExceptionInterface
+     */
     private function factory(string $type): HandlerFactoryInterface
     {
-        $factoryClass = $this->config->handlerFactory($type);
+        $factoryClass = $this->monologConfig->handlerFactory($type);
         $factory = $this->container->has($factoryClass)
             ? ContainerResolver::forContext($this->container, self::class)->getAs(
                 $factoryClass,

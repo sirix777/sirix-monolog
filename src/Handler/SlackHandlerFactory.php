@@ -14,26 +14,26 @@ class SlackHandlerFactory implements HandlerFactoryInterface
 {
     use HandlerOptionTrait;
 
-    public function create(ContainerInterface $container, HandlerDefinition $definition): SlackHandler
+    public function create(ContainerInterface $container, HandlerDefinition $handlerDefinition): SlackHandler
     {
-        $options = ConfigReader::fromArray($definition->options, self::class);
+        $configReader = ConfigReader::fromArray($handlerDefinition->options, self::class);
 
         return new SlackHandler(
-            $options->requiredNonEmptyString('token'),
-            $options->requiredNonEmptyString('channel'),
-            $options->optionalString('username'),
-            $options->bool('use_attachment', true),
-            $options->optionalString('icon_emoji'),
-            $options->enum('level', Level::class, Level::Critical),
-            $options->bool('bubble', true),
-            $options->bool('use_short_attachment', false),
-            $options->bool('include_context_and_extra', false),
-            $options->stringList('exclude_fields', []),
-            $options->bool('persistent', false),
-            $this->floatOption($definition->options, 'timeout', 0.0, 'Slack'),
-            $this->floatOption($definition->options, 'writing_timeout', 10.0, 'Slack'),
-            $this->nullableFloatOption($definition->options, 'connection_timeout', 'Slack'),
-            $this->nullableIntOption($definition->options, 'chunk_size', 'Slack'),
+            $configReader->requiredNonEmptyString('token'),
+            $configReader->requiredNonEmptyString('channel'),
+            $configReader->optionalString('username'),
+            $configReader->bool('use_attachment', true),
+            $configReader->optionalString('icon_emoji'),
+            $configReader->enum('level', Level::class, Level::Critical),
+            $configReader->bool('bubble', true),
+            $configReader->bool('use_short_attachment', false),
+            $configReader->bool('include_context_and_extra', false),
+            $configReader->stringList('exclude_fields', []),
+            $configReader->bool('persistent', false),
+            $this->floatOption($handlerDefinition->options, 'timeout', 0.0, 'Slack'),
+            $this->floatOption($handlerDefinition->options, 'writing_timeout', 10.0, 'Slack'),
+            $this->nullableFloatOption($handlerDefinition->options, 'connection_timeout', 'Slack'),
+            $this->nullableIntOption($handlerDefinition->options, 'chunk_size', 'Slack'),
         );
     }
 }

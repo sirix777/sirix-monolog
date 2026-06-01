@@ -15,18 +15,18 @@ class AmqpHandlerFactory implements HandlerFactoryInterface
 {
     use ReflectiveHandlerFactoryTrait;
 
-    public function create(ContainerInterface $container, HandlerDefinition $definition): HandlerInterface
+    public function create(ContainerInterface $container, HandlerDefinition $handlerDefinition): HandlerInterface
     {
-        $options = ConfigReader::fromArray($definition->options, self::class);
+        $configReader = ConfigReader::fromArray($handlerDefinition->options, self::class);
 
         return $this->newHandler(AmqpHandler::class, [
-            $this->serviceObject($container, $definition->options['exchange'] ?? null, 'exchange', 'AMQP', [
+            $this->serviceObject($container, $handlerDefinition->options['exchange'] ?? null, 'exchange', 'AMQP', [
                 'AMQPExchange',
                 'PhpAmqpLib\Channel\AMQPChannel',
             ]),
-            $options->optionalString('exchange_name'),
-            $options->enum('level', Level::class, Level::Debug),
-            $options->bool('bubble', true),
+            $configReader->optionalString('exchange_name'),
+            $configReader->enum('level', Level::class, Level::Debug),
+            $configReader->bool('bubble', true),
         ]);
     }
 }

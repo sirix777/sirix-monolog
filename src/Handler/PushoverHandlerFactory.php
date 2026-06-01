@@ -14,30 +14,30 @@ class PushoverHandlerFactory implements HandlerFactoryInterface
 {
     use HandlerOptionTrait;
 
-    public function create(ContainerInterface $container, HandlerDefinition $definition): PushoverHandler
+    public function create(ContainerInterface $container, HandlerDefinition $handlerDefinition): PushoverHandler
     {
-        $options = ConfigReader::fromArray($definition->options, self::class);
+        $configReader = ConfigReader::fromArray($handlerDefinition->options, self::class);
 
-        $handler = new PushoverHandler(
-            $options->requiredNonEmptyString('token'),
-            $this->stringOrStringListOption($definition->options['users'] ?? null, 'users', 'Pushover'),
-            $options->optionalString('title'),
-            $options->enum('level', Level::class, Level::Critical),
-            $options->bool('bubble', true),
-            $options->bool('use_ssl', true),
-            $options->enum('high_priority_level', Level::class, Level::Critical),
-            $options->enum('emergency_level', Level::class, Level::Emergency),
-            $options->int('retry', 30),
-            $options->int('expire', 25200),
-            $options->bool('persistent', false),
-            $this->floatOption($definition->options, 'timeout', 0.0, 'Pushover'),
-            $this->floatOption($definition->options, 'writing_timeout', 10.0, 'Pushover'),
-            $this->nullableFloatOption($definition->options, 'connection_timeout', 'Pushover'),
-            $this->nullableIntOption($definition->options, 'chunk_size', 'Pushover'),
+        $pushoverHandler = new PushoverHandler(
+            $configReader->requiredNonEmptyString('token'),
+            $this->stringOrStringListOption($handlerDefinition->options['users'] ?? null, 'users', 'Pushover'),
+            $configReader->optionalString('title'),
+            $configReader->enum('level', Level::class, Level::Critical),
+            $configReader->bool('bubble', true),
+            $configReader->bool('use_ssl', true),
+            $configReader->enum('high_priority_level', Level::class, Level::Critical),
+            $configReader->enum('emergency_level', Level::class, Level::Emergency),
+            $configReader->int('retry', 30),
+            $configReader->int('expire', 25200),
+            $configReader->bool('persistent', false),
+            $this->floatOption($handlerDefinition->options, 'timeout', 0.0, 'Pushover'),
+            $this->floatOption($handlerDefinition->options, 'writing_timeout', 10.0, 'Pushover'),
+            $this->nullableFloatOption($handlerDefinition->options, 'connection_timeout', 'Pushover'),
+            $this->nullableIntOption($handlerDefinition->options, 'chunk_size', 'Pushover'),
         );
 
-        $handler->useFormattedMessage($options->bool('use_formatted_message', false));
+        $pushoverHandler->useFormattedMessage($configReader->bool('use_formatted_message', false));
 
-        return $handler;
+        return $pushoverHandler;
     }
 }

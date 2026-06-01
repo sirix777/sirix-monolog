@@ -10,7 +10,7 @@ use Sirix\Monolog\Config\ProcessorDefinition;
 
 class HostnameProcessorFactory implements ProcessorFactoryInterface
 {
-    public function create(ContainerInterface $container, ProcessorDefinition $definition): HostnameProcessor
+    public function create(ContainerInterface $container, ProcessorDefinition $processorDefinition): HostnameProcessor
     {
         return new HostnameProcessor();
     }

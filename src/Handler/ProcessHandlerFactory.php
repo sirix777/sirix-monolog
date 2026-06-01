@@ -16,17 +16,17 @@ use function is_int;
 
 class ProcessHandlerFactory implements HandlerFactoryInterface
 {
-    public function create(ContainerInterface $container, HandlerDefinition $definition): ProcessHandler
+    public function create(ContainerInterface $container, HandlerDefinition $handlerDefinition): ProcessHandler
     {
-        $options = ConfigReader::fromArray($definition->options, self::class);
-        $level = $options->enum('level', Level::class, Level::Debug);
+        $configReader = ConfigReader::fromArray($handlerDefinition->options, self::class);
+        $level = $configReader->enum('level', Level::class, Level::Debug);
 
         return new ProcessHandler(
-            $options->requiredNonEmptyString('command'),
+            $configReader->requiredNonEmptyString('command'),
             $level,
-            $options->bool('bubble', true),
-            $options->optionalNonEmptyString('cwd'),
-            $this->timeout($definition->options['timeout'] ?? 1.0),
+            $configReader->bool('bubble', true),
+            $configReader->optionalNonEmptyString('cwd'),
+            $this->timeout($handlerDefinition->options['timeout'] ?? 1.0),
         );
     }
 

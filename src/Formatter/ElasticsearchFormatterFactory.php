@@ -11,13 +11,13 @@ use Sirix\Monolog\Config\FormatterDefinition;
 
 class ElasticsearchFormatterFactory implements FormatterFactoryInterface
 {
-    public function create(ContainerInterface $container, FormatterDefinition $definition): ElasticsearchFormatter
+    public function create(ContainerInterface $container, FormatterDefinition $formatterDefinition): ElasticsearchFormatter
     {
-        $options = ConfigReader::fromArray($definition->options, self::class);
+        $configReader = ConfigReader::fromArray($formatterDefinition->options, self::class);
 
         return new ElasticsearchFormatter(
-            $options->requiredNonEmptyString('index'),
-            $options->requiredNonEmptyString('document_type'),
+            $configReader->requiredNonEmptyString('index'),
+            $configReader->requiredNonEmptyString('document_type'),
         );
     }
 }

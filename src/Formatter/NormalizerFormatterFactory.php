@@ -11,10 +11,10 @@ use Sirix\Monolog\Config\FormatterDefinition;
 
 class NormalizerFormatterFactory implements FormatterFactoryInterface
 {
-    public function create(ContainerInterface $container, FormatterDefinition $definition): NormalizerFormatter
+    public function create(ContainerInterface $container, FormatterDefinition $formatterDefinition): NormalizerFormatter
     {
-        $options = ConfigReader::fromArray($definition->options, self::class);
+        $configReader = ConfigReader::fromArray($formatterDefinition->options, self::class);
 
-        return new NormalizerFormatter($options->optionalString('date_format'));
+        return new NormalizerFormatter($configReader->optionalString('date_format'));
     }
 }

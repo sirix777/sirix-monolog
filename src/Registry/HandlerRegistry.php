@@ -16,9 +16,9 @@ final class HandlerRegistry
     /** @var array<string, true> */
     private array $building = [];
 
-    public function __construct(private readonly HandlerBuilder $builder)
+    public function __construct(private readonly HandlerBuilder $handlerBuilder)
     {
-        $this->builder->setHandlerRegistry($this);
+        $this->handlerBuilder->setHandlerRegistry($this);
     }
 
     public function get(string $handlerId): HandlerInterface
@@ -34,7 +34,7 @@ final class HandlerRegistry
         $this->building[$handlerId] = true;
 
         try {
-            return $this->handlers[$handlerId] = $this->builder->build($handlerId);
+            return $this->handlers[$handlerId] = $this->handlerBuilder->build($handlerId);
         } finally {
             unset($this->building[$handlerId]);
         }

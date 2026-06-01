@@ -8,7 +8,9 @@ use Gelf\PublisherInterface;
 use Monolog\Handler\GelfHandler;
 use Monolog\Handler\HandlerInterface;
 use Monolog\Level;
+use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
+use ReflectionException;
 use Sirix\ContainerResolver\ConfigReader;
 use Sirix\Monolog\Config\HandlerDefinition;
 
@@ -16,14 +18,18 @@ class GelfHandlerFactory implements HandlerFactoryInterface
 {
     use ReflectiveHandlerFactoryTrait;
 
-    public function create(ContainerInterface $container, HandlerDefinition $definition): HandlerInterface
+    /**
+     * @throws ContainerExceptionInterface
+     * @throws ReflectionException
+     */
+    public function create(ContainerInterface $container, HandlerDefinition $handlerDefinition): HandlerInterface
     {
-        $options = ConfigReader::fromArray($definition->options, self::class);
+        $configReader = ConfigReader::fromArray($handlerDefinition->options, self::class);
 
         return $this->newHandler(GelfHandler::class, [
-            $this->serviceObject($container, $definition->options['publisher'] ?? null, 'publisher', 'GELF', [PublisherInterface::class]),
-            $options->enum('level', Level::class, Level::Debug),
-            $options->bool('bubble', true),
+            $this->serviceObject($container, $handlerDefinition->options['publisher'] ?? null, 'publisher', 'GELF', [PublisherInterface::class]),
+            $configReader->enum('level', Level::class, Level::Debug),
+            $configReader->bool('bubble', true),
         ]);
     }
 }

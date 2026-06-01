@@ -21,20 +21,20 @@ final class MonologConfigReaderTest extends TestCase
 {
     public function testReadDefaults(): void
     {
-        $config = (new MonologConfigReader())->read([]);
+        $monologConfig = (new MonologConfigReader())->read([]);
 
-        $this->assertSame('default', $config->channelForLoggerService(Logger::class));
-        $this->assertSame('default', $config->channelForLoggerService(LoggerInterface::class));
-        $this->assertSame('default', $config->channelForLoggerService('logger'));
-        $this->assertSame('app', $config->channel('default')->name);
-        $this->assertSame(['default'], $config->channel('default')->handlers);
-        $this->assertSame(HandlerType::Noop->value, $config->handler('default')->type);
-        $this->assertSame(NoopHandlerFactory::class, $config->handlerFactory(HandlerType::Noop->value));
+        $this->assertSame('default', $monologConfig->channelForLoggerService(Logger::class));
+        $this->assertSame('default', $monologConfig->channelForLoggerService(LoggerInterface::class));
+        $this->assertSame('default', $monologConfig->channelForLoggerService('logger'));
+        $this->assertSame('app', $monologConfig->channel('default')->name);
+        $this->assertSame(['default'], $monologConfig->channel('default')->handlers);
+        $this->assertSame(HandlerType::Noop->value, $monologConfig->handler('default')->type);
+        $this->assertSame(NoopHandlerFactory::class, $monologConfig->handlerFactory(HandlerType::Noop->value));
     }
 
     public function testReadEnumTypesAndReferences(): void
     {
-        $config = (new MonologConfigReader())->read([
+        $monologConfig = (new MonologConfigReader())->read([
             C::Root->value => [
                 C::LoggerServices->value => [
                     'logger' => 'default',
@@ -62,14 +62,14 @@ final class MonologConfigReaderTest extends TestCase
             ],
         ]);
 
-        $this->assertSame(HandlerType::Stream->value, $config->handler('main')->type);
-        $this->assertSame(FormatterType::Json->value, $config->formatter('json')->type);
-        $this->assertSame('json', $config->handler('main')->formatter);
+        $this->assertSame(HandlerType::Stream->value, $monologConfig->handler('main')->type);
+        $this->assertSame(FormatterType::Json->value, $monologConfig->formatter('json')->type);
+        $this->assertSame('json', $monologConfig->handler('main')->formatter);
     }
 
     public function testReadLoggerServiceNameOverride(): void
     {
-        $config = (new MonologConfigReader())->read([
+        $monologConfig = (new MonologConfigReader())->read([
             C::Root->value => [
                 C::LoggerServices->value => [
                     'logger_crypto_transaction' => [
@@ -80,7 +80,7 @@ final class MonologConfigReaderTest extends TestCase
             ],
         ]);
 
-        $loggerService = $config->loggerService('logger_crypto_transaction');
+        $loggerService = $monologConfig->loggerService('logger_crypto_transaction');
 
         $this->assertSame('default', $loggerService->channel);
         $this->assertSame('CryptoTransactionService', $loggerService->name);
@@ -88,7 +88,7 @@ final class MonologConfigReaderTest extends TestCase
 
     public function testExplicitLoggerServicesReplaceDefaults(): void
     {
-        $config = (new MonologConfigReader())->read([
+        $monologConfig = (new MonologConfigReader())->read([
             C::Root->value => [
                 C::LoggerServices->value => [
                     'logger_audit' => 'default',
@@ -96,12 +96,12 @@ final class MonologConfigReaderTest extends TestCase
             ],
         ]);
 
-        $this->assertSame('default', $config->channelForLoggerService('logger_audit'));
+        $this->assertSame('default', $monologConfig->channelForLoggerService('logger_audit'));
 
         $this->expectException(UnknownChannelException::class);
         $this->expectExceptionMessage("Unable to resolve monolog channel for logger service 'logger'.");
 
-        $config->channelForLoggerService('logger');
+        $monologConfig->channelForLoggerService('logger');
     }
 
     public function testMissingLoggerServiceChannelReferenceFailsEarly(): void
@@ -120,7 +120,7 @@ final class MonologConfigReaderTest extends TestCase
 
     public function testCustomHandlerFactoryMapOverridesBuiltIns(): void
     {
-        $config = (new MonologConfigReader())->read([
+        $monologConfig = (new MonologConfigReader())->read([
             C::Root->value => [
                 C::HandlerFactories->value => [
                     HandlerType::Noop->value => CustomNoopHandlerFactory::class,
@@ -128,7 +128,7 @@ final class MonologConfigReaderTest extends TestCase
             ],
         ]);
 
-        $this->assertSame(CustomNoopHandlerFactory::class, $config->handlerFactory(HandlerType::Noop->value));
+        $this->assertSame(CustomNoopHandlerFactory::class, $monologConfig->handlerFactory(HandlerType::Noop->value));
     }
 
     public function testMissingHandlerReferenceFailsEarly(): void

@@ -12,10 +12,10 @@ use Sirix\Monolog\Config\ProcessorDefinition;
 
 class MercurialProcessorFactory implements ProcessorFactoryInterface
 {
-    public function create(ContainerInterface $container, ProcessorDefinition $definition): MercurialProcessor
+    public function create(ContainerInterface $container, ProcessorDefinition $processorDefinition): MercurialProcessor
     {
-        $options = ConfigReader::fromArray($definition->options, self::class);
+        $configReader = ConfigReader::fromArray($processorDefinition->options, self::class);
 
-        return new MercurialProcessor($options->enum('level', Level::class, Level::Debug));
+        return new MercurialProcessor($configReader->enum('level', Level::class, Level::Debug));
     }
 }

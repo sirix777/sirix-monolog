@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace Sirix\Monolog\Handler;
 
 use Monolog\Handler\HandlerInterface;
+use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use ReflectionClass;
+use ReflectionException;
 use Sirix\ContainerResolver\ContainerResolver;
 use Sirix\Monolog\Exception\InvalidConfigException;
 
@@ -21,6 +23,8 @@ trait ReflectiveHandlerFactoryTrait
     /**
      * @param class-string $handlerClass
      * @param list<mixed>  $arguments
+     *
+     * @throws ReflectionException
      */
     private function newHandler(string $handlerClass, array $arguments): HandlerInterface
     {
@@ -35,6 +39,8 @@ trait ReflectiveHandlerFactoryTrait
 
     /**
      * @param list<string> $expectedClasses
+     *
+     * @throws ContainerExceptionInterface
      */
     private function serviceObject(
         ContainerInterface $container,
@@ -62,8 +68,8 @@ trait ReflectiveHandlerFactoryTrait
             throw new InvalidConfigException("{$handler} handler requires one of these optional classes: " . implode(', ', $expectedClasses) . '.');
         }
 
-        foreach ($availableExpectedClasses as $expectedClass) {
-            if ($value instanceof $expectedClass) {
+        foreach ($availableExpectedClasses as $availableExpectedClass) {
+            if ($value instanceof $availableExpectedClass) {
                 return $value;
             }
         }
@@ -71,6 +77,9 @@ trait ReflectiveHandlerFactoryTrait
         throw new InvalidConfigException("{$handler} handler option '{$option}' must resolve to one of: " . implode(', ', $availableExpectedClasses) . '.');
     }
 
+    /**
+     * @throws ContainerExceptionInterface
+     */
     private function optionalServiceObject(
         ContainerInterface $container,
         mixed $value,

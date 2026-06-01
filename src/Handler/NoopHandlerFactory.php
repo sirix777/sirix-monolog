@@ -10,7 +10,7 @@ use Sirix\Monolog\Config\HandlerDefinition;
 
 class NoopHandlerFactory implements HandlerFactoryInterface
 {
-    public function create(ContainerInterface $container, HandlerDefinition $definition): NoopHandler
+    public function create(ContainerInterface $container, HandlerDefinition $handlerDefinition): NoopHandler
     {
         return new NoopHandler();
     }

@@ -19,12 +19,12 @@ final class LoggerBuilderFactory
      */
     public function __invoke(ContainerInterface $container): LoggerBuilder
     {
-        $resolver = ContainerResolver::forFactory($container, self::class);
+        $containerResolver = ContainerResolver::forFactory($container, self::class);
 
         return new LoggerBuilder(
-            $resolver->get(MonologConfig::class),
-            $resolver->get(HandlerRegistry::class),
-            $resolver->get(ProcessorRegistry::class),
+            $containerResolver->get(MonologConfig::class),
+            $containerResolver->get(HandlerRegistry::class),
+            $containerResolver->get(ProcessorRegistry::class),
         );
     }
 }

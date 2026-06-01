@@ -274,7 +274,7 @@ final class WrapperHandlerFactoryTest extends TestCase
 
     public function testCircularHandlerReferenceFailsPredictably(): void
     {
-        $container = ArrayContainer::fromConfigProvider([
+        $arrayContainer = ArrayContainer::fromConfigProvider([
             C::Root->value => [
                 C::Channels->value => [
                     'default' => [
@@ -295,7 +295,7 @@ final class WrapperHandlerFactoryTest extends TestCase
         $this->expectException(InvalidConfigException::class);
         $this->expectExceptionMessage("Circular monolog handler reference detected for 'loop'.");
 
-        $container->get(LoggerInterface::class);
+        $arrayContainer->get(LoggerInterface::class);
     }
 
     /**
@@ -304,7 +304,7 @@ final class WrapperHandlerFactoryTest extends TestCase
      */
     private function logger(array $handlers, array $channelHandlers): Logger
     {
-        $container = ArrayContainer::fromConfigProvider([
+        $arrayContainer = ArrayContainer::fromConfigProvider([
             C::Root->value => [
                 C::Channels->value => [
                     'default' => [
@@ -316,7 +316,7 @@ final class WrapperHandlerFactoryTest extends TestCase
             ],
         ], (new ConfigProvider())());
 
-        $logger = $container->get(LoggerInterface::class);
+        $logger = $arrayContainer->get(LoggerInterface::class);
         $this->assertInstanceOf(Logger::class, $logger);
 
         return $logger;

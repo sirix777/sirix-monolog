@@ -10,7 +10,7 @@ use Sirix\Monolog\Config\FormatterDefinition;
 
 class ChromePHPFormatterFactory implements FormatterFactoryInterface
 {
-    public function create(ContainerInterface $container, FormatterDefinition $definition): ChromePHPFormatter
+    public function create(ContainerInterface $container, FormatterDefinition $formatterDefinition): ChromePHPFormatter
     {
         return new ChromePHPFormatter();
     }

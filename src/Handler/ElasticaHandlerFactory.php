@@ -8,7 +8,9 @@ use Elastica\Client;
 use Monolog\Handler\ElasticaHandler;
 use Monolog\Handler\HandlerInterface;
 use Monolog\Level;
+use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
+use ReflectionException;
 use Sirix\ContainerResolver\ConfigReader;
 use Sirix\Monolog\Config\HandlerDefinition;
 
@@ -16,15 +18,19 @@ class ElasticaHandlerFactory implements HandlerFactoryInterface
 {
     use ReflectiveHandlerFactoryTrait;
 
-    public function create(ContainerInterface $container, HandlerDefinition $definition): HandlerInterface
+    /**
+     * @throws ContainerExceptionInterface
+     * @throws ReflectionException
+     */
+    public function create(ContainerInterface $container, HandlerDefinition $handlerDefinition): HandlerInterface
     {
-        $options = ConfigReader::fromArray($definition->options, self::class);
+        $configReader = ConfigReader::fromArray($handlerDefinition->options, self::class);
 
         return $this->newHandler(ElasticaHandler::class, [
-            $this->serviceObject($container, $definition->options['client'] ?? null, 'client', 'Elastica', [Client::class]),
-            $options->array('handler_options', []),
-            $options->enum('level', Level::class, Level::Debug),
-            $options->bool('bubble', true),
+            $this->serviceObject($container, $handlerDefinition->options['client'] ?? null, 'client', 'Elastica', [Client::class]),
+            $configReader->array('handler_options', []),
+            $configReader->enum('level', Level::class, Level::Debug),
+            $configReader->bool('bubble', true),
         ]);
     }
 }

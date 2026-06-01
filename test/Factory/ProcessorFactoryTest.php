@@ -106,20 +106,20 @@ final class ProcessorFactoryTest extends TestCase
         $this->assertInstanceOf(Logger::class, $logger);
         $logger->info('Hello {name}', ['name' => 'Ada']);
 
-        $record = $this->firstRecord($container);
+        $logRecord = $this->firstRecord($container);
 
-        $this->assertSame('Hello Ada', $record->message);
-        $this->assertArrayNotHasKey('name', $record->context);
-        $this->assertArrayHasKey('memory_usage', $record->extra);
-        $this->assertArrayHasKey('memory_peak_usage', $record->extra);
-        $this->assertArrayHasKey('process_id', $record->extra);
-        $this->assertArrayHasKey('hostname', $record->extra);
-        $this->assertArrayHasKey('file', $record->extra);
-        $this->assertSame(12, strlen((string) $record->extra['uid']));
-        $this->assertSame(['api', 'test'], $record->extra['tags']);
-        $this->assertSame('/hello', $record->extra['url']);
-        $this->assertSame('127.0.0.1', $record->extra['ip']);
-        $this->assertSame('GET', $record->extra['http_method']);
+        $this->assertSame('Hello Ada', $logRecord->message);
+        $this->assertArrayNotHasKey('name', $logRecord->context);
+        $this->assertArrayHasKey('memory_usage', $logRecord->extra);
+        $this->assertArrayHasKey('memory_peak_usage', $logRecord->extra);
+        $this->assertArrayHasKey('process_id', $logRecord->extra);
+        $this->assertArrayHasKey('hostname', $logRecord->extra);
+        $this->assertArrayHasKey('file', $logRecord->extra);
+        $this->assertSame(12, strlen((string) $logRecord->extra['uid']));
+        $this->assertSame(['api', 'test'], $logRecord->extra['tags']);
+        $this->assertSame('/hello', $logRecord->extra['url']);
+        $this->assertSame('127.0.0.1', $logRecord->extra['ip']);
+        $this->assertSame('GET', $logRecord->extra['http_method']);
     }
 
     public function testAdditionalMonologProcessorsCanBeCreated(): void
@@ -151,16 +151,16 @@ final class ProcessorFactoryTest extends TestCase
         $registry = $container->get(ProcessorRegistry::class);
         $this->assertInstanceOf(ProcessorRegistry::class, $registry);
 
-        $closureContext = $registry->get('closure_context');
-        $this->assertInstanceOf(ClosureContextProcessor::class, $closureContext);
-        $record = $closureContext(new LogRecord(
+        $processor = $registry->get('closure_context');
+        $this->assertInstanceOf(ClosureContextProcessor::class, $processor);
+        $logRecord = $processor(new LogRecord(
             datetime: new DateTimeImmutable('@0'),
             channel: 'app',
             level: Level::Info,
             message: 'Hello',
             context: [static fn (): array => ['lazy' => true]],
         ));
-        $this->assertSame(['lazy' => true], $record->context);
+        $this->assertSame(['lazy' => true], $logRecord->context);
 
         $this->assertInstanceOf(GitProcessor::class, $registry->get('git'));
         $this->assertInstanceOf(LoadAverageProcessor::class, $registry->get('load_average'));
@@ -185,9 +185,9 @@ final class ProcessorFactoryTest extends TestCase
         $this->assertInstanceOf(Logger::class, $logger);
         $logger->info('Sensitive data', ['password' => 'secret']);
 
-        $record = $this->firstRecord($container);
+        $logRecord = $this->firstRecord($container);
 
-        $this->assertSame('******', $record->context['password']);
+        $this->assertSame('******', $logRecord->context['password']);
     }
 
     public function testChannelProcessorsKeepConfiguredOrder(): void
@@ -213,9 +213,9 @@ final class ProcessorFactoryTest extends TestCase
         $this->assertInstanceOf(Logger::class, $logger);
         $logger->info('Hello');
 
-        $record = $this->firstRecord($container);
+        $logRecord = $this->firstRecord($container);
 
-        $this->assertSame('HelloAB', $record->message);
+        $this->assertSame('HelloAB', $logRecord->message);
     }
 
     public function testCustomProcessorFactoryCanBeRegisteredAndUsed(): void
@@ -236,9 +236,9 @@ final class ProcessorFactoryTest extends TestCase
         $this->assertInstanceOf(Logger::class, $logger);
         $logger->info('Custom processor message');
 
-        $record = $this->firstRecord($container);
+        $logRecord = $this->firstRecord($container);
 
-        $this->assertSame('acme', $record->extra['tenant_id']);
+        $this->assertSame('acme', $logRecord->extra['tenant_id']);
     }
 
     /**
@@ -246,11 +246,8 @@ final class ProcessorFactoryTest extends TestCase
      * @param list<string>                        $channelProcessors
      * @param array<string, class-string>         $processorFactories
      */
-    private function container(
-        array $processors,
-        array $channelProcessors,
-        array $processorFactories = []
-    ): ArrayContainer {
+    private function container(array $processors, array $channelProcessors, array $processorFactories = []): ArrayContainer
+    {
         $providerConfig = (new ConfigProvider())();
         $dependencies = $providerConfig['dependencies'];
 
@@ -280,9 +277,9 @@ final class ProcessorFactoryTest extends TestCase
         );
     }
 
-    private function firstRecord(ArrayContainer $container): LogRecord
+    private function firstRecord(ArrayContainer $arrayContainer): LogRecord
     {
-        $handler = $container->get(HandlerRegistry::class)->get('test');
+        $handler = $arrayContainer->get(HandlerRegistry::class)->get('test');
         $this->assertInstanceOf(TestHandler::class, $handler);
         $records = $handler->getRecords();
         $this->assertCount(1, $records);

@@ -12,14 +12,14 @@ use Sirix\Monolog\Config\HandlerDefinition;
 
 class TestHandlerFactory implements HandlerFactoryInterface
 {
-    public function create(ContainerInterface $container, HandlerDefinition $definition): TestHandler
+    public function create(ContainerInterface $container, HandlerDefinition $handlerDefinition): TestHandler
     {
-        $options = ConfigReader::fromArray($definition->options, self::class);
-        $level = $options->enum('level', Level::class, Level::Debug);
+        $configReader = ConfigReader::fromArray($handlerDefinition->options, self::class);
+        $level = $configReader->enum('level', Level::class, Level::Debug);
 
         return new TestHandler(
             $level,
-            $options->bool('bubble', true),
+            $configReader->bool('bubble', true),
         );
     }
 }

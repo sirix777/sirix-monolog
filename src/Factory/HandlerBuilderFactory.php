@@ -19,13 +19,13 @@ final class HandlerBuilderFactory
      */
     public function __invoke(ContainerInterface $container): HandlerBuilder
     {
-        $resolver = ContainerResolver::forFactory($container, self::class);
+        $containerResolver = ContainerResolver::forFactory($container, self::class);
 
         return new HandlerBuilder(
             $container,
-            $resolver->get(MonologConfig::class),
-            $resolver->get(FormatterRegistry::class),
-            $resolver->get(ProcessorRegistry::class),
+            $containerResolver->get(MonologConfig::class),
+            $containerResolver->get(FormatterRegistry::class),
+            $containerResolver->get(ProcessorRegistry::class),
         );
     }
 }

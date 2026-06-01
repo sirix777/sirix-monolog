@@ -19,18 +19,18 @@ use function is_string;
 
 class SyslogUdpHandlerFactory implements HandlerFactoryInterface
 {
-    public function create(ContainerInterface $container, HandlerDefinition $definition): SyslogUdpHandler
+    public function create(ContainerInterface $container, HandlerDefinition $handlerDefinition): SyslogUdpHandler
     {
-        $options = ConfigReader::fromArray($definition->options, self::class);
+        $configReader = ConfigReader::fromArray($handlerDefinition->options, self::class);
 
         return new SyslogUdpHandler(
-            $options->requiredNonEmptyString('host'),
-            $options->int('port', 514),
-            $this->facility($definition->options['facility'] ?? LOG_USER),
-            $options->enum('level', Level::class, Level::Debug),
-            $options->bool('bubble', true),
-            $options->string('ident', 'php'),
-            $this->rfc($options->int('rfc', SyslogUdpHandler::RFC5424)),
+            $configReader->requiredNonEmptyString('host'),
+            $configReader->int('port', 514),
+            $this->facility($handlerDefinition->options['facility'] ?? LOG_USER),
+            $configReader->enum('level', Level::class, Level::Debug),
+            $configReader->bool('bubble', true),
+            $configReader->string('ident', 'php'),
+            $this->rfc($configReader->int('rfc', SyslogUdpHandler::RFC5424)),
         );
     }
 

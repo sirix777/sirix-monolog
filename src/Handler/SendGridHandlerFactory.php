@@ -16,21 +16,21 @@ class SendGridHandlerFactory implements HandlerFactoryInterface
 {
     use HandlerOptionTrait;
 
-    public function create(ContainerInterface $container, HandlerDefinition $definition): SendGridHandler
+    public function create(ContainerInterface $container, HandlerDefinition $handlerDefinition): SendGridHandler
     {
-        $options = ConfigReader::fromArray($definition->options, self::class);
+        $configReader = ConfigReader::fromArray($handlerDefinition->options, self::class);
 
-        $apiHost = $options->nonEmptyString('api_host', 'api.sendgrid.com');
+        $apiHost = $configReader->nonEmptyString('api_host', 'api.sendgrid.com');
         assert('' !== $apiHost);
 
         return new SendGridHandler(
-            $options->optionalString('api_user'),
-            $options->requiredNonEmptyString('api_key'),
-            $options->requiredNonEmptyString('from'),
-            $this->stringOrStringListOption($definition->options['to'] ?? null, 'to', 'SendGrid'),
-            $options->requiredNonEmptyString('subject'),
-            $options->enum('level', Level::class, Level::Error),
-            $options->bool('bubble', true),
+            $configReader->optionalString('api_user'),
+            $configReader->requiredNonEmptyString('api_key'),
+            $configReader->requiredNonEmptyString('from'),
+            $this->stringOrStringListOption($handlerDefinition->options['to'] ?? null, 'to', 'SendGrid'),
+            $configReader->requiredNonEmptyString('subject'),
+            $configReader->enum('level', Level::class, Level::Error),
+            $configReader->bool('bubble', true),
             $apiHost,
         );
     }

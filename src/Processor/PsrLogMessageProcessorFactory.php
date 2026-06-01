@@ -11,13 +11,13 @@ use Sirix\Monolog\Config\ProcessorDefinition;
 
 class PsrLogMessageProcessorFactory implements ProcessorFactoryInterface
 {
-    public function create(ContainerInterface $container, ProcessorDefinition $definition): PsrLogMessageProcessor
+    public function create(ContainerInterface $container, ProcessorDefinition $processorDefinition): PsrLogMessageProcessor
     {
-        $options = ConfigReader::fromArray($definition->options, self::class);
+        $configReader = ConfigReader::fromArray($processorDefinition->options, self::class);
 
         return new PsrLogMessageProcessor(
-            $options->optionalString('date_format'),
-            $options->bool('remove_used_context_fields', false),
+            $configReader->optionalString('date_format'),
+            $configReader->bool('remove_used_context_fields', false),
         );
     }
 }

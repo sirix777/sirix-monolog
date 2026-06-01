@@ -14,16 +14,16 @@ class OverflowHandlerFactory implements HandlerFactoryInterface, HandlerRegistry
 {
     use HandlerRegistryTrait;
 
-    public function create(ContainerInterface $container, HandlerDefinition $definition): OverflowHandler
+    public function create(ContainerInterface $container, HandlerDefinition $handlerDefinition): OverflowHandler
     {
-        $options = ConfigReader::fromArray($definition->options, self::class);
-        $level = $options->enum('level', Level::class, Level::Debug);
+        $configReader = ConfigReader::fromArray($handlerDefinition->options, self::class);
+        $level = $configReader->enum('level', Level::class, Level::Debug);
 
         return new OverflowHandler(
-            $this->getHandlerRegistry()->get($options->requiredNonEmptyString('handler')),
-            $this->thresholdMap($options->map('threshold_map', [])),
+            $this->getHandlerRegistry()->get($configReader->requiredNonEmptyString('handler')),
+            $this->thresholdMap($configReader->map('threshold_map', [])),
             $level,
-            $options->bool('bubble', true),
+            $configReader->bool('bubble', true),
         );
     }
 

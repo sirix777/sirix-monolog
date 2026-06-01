@@ -13,16 +13,16 @@ use Sirix\Monolog\Exception\InvalidConfigException;
 
 class ErrorLogHandlerFactory implements HandlerFactoryInterface
 {
-    public function create(ContainerInterface $container, HandlerDefinition $definition): ErrorLogHandler
+    public function create(ContainerInterface $container, HandlerDefinition $handlerDefinition): ErrorLogHandler
     {
-        $options = ConfigReader::fromArray($definition->options, self::class);
-        $level = $options->enum('level', Level::class, Level::Debug);
+        $configReader = ConfigReader::fromArray($handlerDefinition->options, self::class);
+        $level = $configReader->enum('level', Level::class, Level::Debug);
 
         return new ErrorLogHandler(
-            $this->messageType($options->int('message_type', ErrorLogHandler::OPERATING_SYSTEM)),
+            $this->messageType($configReader->int('message_type', ErrorLogHandler::OPERATING_SYSTEM)),
             $level,
-            $options->bool('bubble', true),
-            $options->bool('expand_newlines', false),
+            $configReader->bool('bubble', true),
+            $configReader->bool('expand_newlines', false),
         );
     }
 

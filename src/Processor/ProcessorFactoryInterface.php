@@ -10,5 +10,5 @@ use Sirix\Monolog\Config\ProcessorDefinition;
 
 interface ProcessorFactoryInterface
 {
-    public function create(ContainerInterface $container, ProcessorDefinition $definition): ProcessorInterface;
+    public function create(ContainerInterface $container, ProcessorDefinition $processorDefinition): ProcessorInterface;
 }

@@ -14,21 +14,21 @@ class LogEntriesHandlerFactory implements HandlerFactoryInterface
 {
     use HandlerOptionTrait;
 
-    public function create(ContainerInterface $container, HandlerDefinition $definition): LogEntriesHandler
+    public function create(ContainerInterface $container, HandlerDefinition $handlerDefinition): LogEntriesHandler
     {
-        $options = ConfigReader::fromArray($definition->options, self::class);
+        $configReader = ConfigReader::fromArray($handlerDefinition->options, self::class);
 
         return new LogEntriesHandler(
-            $options->requiredNonEmptyString('token'),
-            $options->bool('use_ssl', true),
-            $options->enum('level', Level::class, Level::Debug),
-            $options->bool('bubble', true),
-            $options->string('host', 'data.logentries.com'),
-            $options->bool('persistent', false),
-            $this->floatOption($definition->options, 'timeout', 0.0, 'LogEntries'),
-            $this->floatOption($definition->options, 'writing_timeout', 10.0, 'LogEntries'),
-            $this->nullableFloatOption($definition->options, 'connection_timeout', 'LogEntries'),
-            $this->nullableIntOption($definition->options, 'chunk_size', 'LogEntries'),
+            $configReader->requiredNonEmptyString('token'),
+            $configReader->bool('use_ssl', true),
+            $configReader->enum('level', Level::class, Level::Debug),
+            $configReader->bool('bubble', true),
+            $configReader->string('host', 'data.logentries.com'),
+            $configReader->bool('persistent', false),
+            $this->floatOption($handlerDefinition->options, 'timeout', 0.0, 'LogEntries'),
+            $this->floatOption($handlerDefinition->options, 'writing_timeout', 10.0, 'LogEntries'),
+            $this->nullableFloatOption($handlerDefinition->options, 'connection_timeout', 'LogEntries'),
+            $this->nullableIntOption($handlerDefinition->options, 'chunk_size', 'LogEntries'),
         );
     }
 }

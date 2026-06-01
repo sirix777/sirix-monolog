@@ -14,17 +14,17 @@ class SamplingHandlerFactory implements HandlerFactoryInterface, HandlerRegistry
 {
     use HandlerRegistryTrait;
 
-    public function create(ContainerInterface $container, HandlerDefinition $definition): SamplingHandler
+    public function create(ContainerInterface $container, HandlerDefinition $handlerDefinition): SamplingHandler
     {
-        $options = ConfigReader::fromArray($definition->options, self::class);
-        $factor = $options->requiredInt('factor');
+        $configReader = ConfigReader::fromArray($handlerDefinition->options, self::class);
+        $factor = $configReader->requiredInt('factor');
 
         if ($factor < 1) {
             throw new InvalidConfigException('Factor is missing or is less then 1');
         }
 
         return new SamplingHandler(
-            $this->getHandlerRegistry()->get($options->requiredNonEmptyString('handler')),
+            $this->getHandlerRegistry()->get($configReader->requiredNonEmptyString('handler')),
             $factor,
         );
     }

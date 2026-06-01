@@ -19,17 +19,17 @@ use function is_string;
 
 class SyslogHandlerFactory implements HandlerFactoryInterface
 {
-    public function create(ContainerInterface $container, HandlerDefinition $definition): SyslogHandler
+    public function create(ContainerInterface $container, HandlerDefinition $handlerDefinition): SyslogHandler
     {
-        $options = ConfigReader::fromArray($definition->options, self::class);
-        $level = $options->enum('level', Level::class, Level::Debug);
+        $configReader = ConfigReader::fromArray($handlerDefinition->options, self::class);
+        $level = $configReader->enum('level', Level::class, Level::Debug);
 
         return new SyslogHandler(
-            $options->requiredNonEmptyString('ident'),
-            $this->facility($definition->options['facility'] ?? LOG_USER),
+            $configReader->requiredNonEmptyString('ident'),
+            $this->facility($handlerDefinition->options['facility'] ?? LOG_USER),
             $level,
-            $options->bool('bubble', true),
-            $options->int('log_opts', LOG_PID),
+            $configReader->bool('bubble', true),
+            $configReader->int('log_opts', LOG_PID),
         );
     }
 

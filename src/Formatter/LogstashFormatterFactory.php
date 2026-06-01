@@ -11,15 +11,15 @@ use Sirix\Monolog\Config\FormatterDefinition;
 
 class LogstashFormatterFactory implements FormatterFactoryInterface
 {
-    public function create(ContainerInterface $container, FormatterDefinition $definition): LogstashFormatter
+    public function create(ContainerInterface $container, FormatterDefinition $formatterDefinition): LogstashFormatter
     {
-        $options = ConfigReader::fromArray($definition->options, self::class);
+        $configReader = ConfigReader::fromArray($formatterDefinition->options, self::class);
 
         return new LogstashFormatter(
-            $options->string('application_name', ''),
-            $options->optionalString('system_name'),
-            $options->string('extra_key', 'extra'),
-            $options->string('context_key', 'context'),
+            $configReader->string('application_name', ''),
+            $configReader->optionalString('system_name'),
+            $configReader->string('extra_key', 'extra'),
+            $configReader->string('context_key', 'context'),
         );
     }
 }

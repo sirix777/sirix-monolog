@@ -8,6 +8,7 @@ use Monolog\Handler\HandlerInterface;
 use Monolog\Handler\MandrillHandler;
 use Monolog\Level;
 use Psr\Container\ContainerInterface;
+use ReflectionException;
 use Sirix\ContainerResolver\ConfigReader;
 use Sirix\ContainerResolver\ContainerResolver;
 use Sirix\Monolog\Config\HandlerDefinition;
@@ -22,16 +23,19 @@ class MandrillHandlerFactory implements HandlerFactoryInterface
 {
     use ReflectiveHandlerFactoryTrait;
 
-    public function create(ContainerInterface $container, HandlerDefinition $definition): HandlerInterface
+    /**
+     * @throws ReflectionException
+     */
+    public function create(ContainerInterface $container, HandlerDefinition $handlerDefinition): HandlerInterface
     {
-        $options = ConfigReader::fromArray($definition->options, self::class);
-        $message = $this->message($container, $definition->options['message'] ?? null);
+        $configReader = ConfigReader::fromArray($handlerDefinition->options, self::class);
+        $message = $this->message($container, $handlerDefinition->options['message'] ?? null);
 
         return $this->newHandler(MandrillHandler::class, [
-            $options->requiredNonEmptyString('api_key'),
+            $configReader->requiredNonEmptyString('api_key'),
             $message,
-            $options->enum('level', Level::class, Level::Error),
-            $options->bool('bubble', true),
+            $configReader->enum('level', Level::class, Level::Error),
+            $configReader->bool('bubble', true),
         ]);
     }
 

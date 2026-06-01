@@ -17,21 +17,21 @@ use function is_int;
 
 class TelegramBotHandlerFactory implements HandlerFactoryInterface
 {
-    public function create(ContainerInterface $container, HandlerDefinition $definition): TelegramBotHandler
+    public function create(ContainerInterface $container, HandlerDefinition $handlerDefinition): TelegramBotHandler
     {
-        $options = ConfigReader::fromArray($definition->options, self::class);
+        $configReader = ConfigReader::fromArray($handlerDefinition->options, self::class);
 
         return new TelegramBotHandler(
-            $options->requiredNonEmptyString('api_key'),
-            $options->requiredNonEmptyString('channel'),
-            $options->enum('level', Level::class, Level::Debug),
-            $options->bool('bubble', true),
-            $options->optionalNonEmptyString('parse_mode'),
-            $this->nullableBool($definition->options, 'disable_web_page_preview'),
-            $this->nullableBool($definition->options, 'disable_notification'),
-            $options->bool('split_long_messages', false),
-            $options->bool('delay_between_messages', false),
-            $this->nullableInt($definition->options, 'topic'),
+            $configReader->requiredNonEmptyString('api_key'),
+            $configReader->requiredNonEmptyString('channel'),
+            $configReader->enum('level', Level::class, Level::Debug),
+            $configReader->bool('bubble', true),
+            $configReader->optionalNonEmptyString('parse_mode'),
+            $this->nullableBool($handlerDefinition->options, 'disable_web_page_preview'),
+            $this->nullableBool($handlerDefinition->options, 'disable_notification'),
+            $configReader->bool('split_long_messages', false),
+            $configReader->bool('delay_between_messages', false),
+            $this->nullableInt($handlerDefinition->options, 'topic'),
         );
     }
 

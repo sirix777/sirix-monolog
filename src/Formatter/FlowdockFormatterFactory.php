@@ -11,13 +11,13 @@ use Sirix\Monolog\Config\FormatterDefinition;
 
 class FlowdockFormatterFactory implements FormatterFactoryInterface
 {
-    public function create(ContainerInterface $container, FormatterDefinition $definition): FlowdockFormatter
+    public function create(ContainerInterface $container, FormatterDefinition $formatterDefinition): FlowdockFormatter
     {
-        $options = ConfigReader::fromArray($definition->options, self::class);
+        $configReader = ConfigReader::fromArray($formatterDefinition->options, self::class);
 
         return new FlowdockFormatter(
-            $options->requiredNonEmptyString('source'),
-            $options->requiredNonEmptyString('source_email'),
+            $configReader->requiredNonEmptyString('source'),
+            $configReader->requiredNonEmptyString('source_email'),
         );
     }
 }

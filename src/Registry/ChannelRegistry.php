@@ -12,10 +12,10 @@ final class ChannelRegistry
     /** @var array<string, LoggerInterface> */
     private array $loggers = [];
 
-    public function __construct(private readonly LoggerBuilder $builder) {}
+    public function __construct(private readonly LoggerBuilder $loggerBuilder) {}
 
     public function get(string $channelId): LoggerInterface
     {
-        return $this->loggers[$channelId] ??= $this->builder->build($channelId);
+        return $this->loggers[$channelId] ??= $this->loggerBuilder->build($channelId);
     }
 }

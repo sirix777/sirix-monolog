@@ -11,15 +11,15 @@ use Sirix\Monolog\Config\FormatterDefinition;
 
 class GelfMessageFormatterFactory implements FormatterFactoryInterface
 {
-    public function create(ContainerInterface $container, FormatterDefinition $definition): GelfMessageFormatter
+    public function create(ContainerInterface $container, FormatterDefinition $formatterDefinition): GelfMessageFormatter
     {
-        $options = ConfigReader::fromArray($definition->options, self::class);
-        $maxLength = $options->has('max_length') ? $options->requiredInt('max_length') : null;
+        $configReader = ConfigReader::fromArray($formatterDefinition->options, self::class);
+        $maxLength = $configReader->has('max_length') ? $configReader->requiredInt('max_length') : null;
 
         return new GelfMessageFormatter(
-            $options->optionalString('system_name'),
-            $options->optionalString('extra_prefix'),
-            $options->string('context_prefix', 'ctxt_'),
+            $configReader->optionalString('system_name'),
+            $configReader->optionalString('extra_prefix'),
+            $configReader->string('context_prefix', 'ctxt_'),
             $maxLength,
         );
     }

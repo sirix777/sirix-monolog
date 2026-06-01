@@ -12,13 +12,13 @@ use Sirix\Monolog\Config\HandlerDefinition;
 
 class ZendMonitorHandlerFactory implements HandlerFactoryInterface
 {
-    public function create(ContainerInterface $container, HandlerDefinition $definition): ZendMonitorHandler
+    public function create(ContainerInterface $container, HandlerDefinition $handlerDefinition): ZendMonitorHandler
     {
-        $options = ConfigReader::fromArray($definition->options, self::class);
+        $configReader = ConfigReader::fromArray($handlerDefinition->options, self::class);
 
         return new ZendMonitorHandler(
-            $options->enum('level', Level::class, Level::Debug),
-            $options->bool('bubble', true),
+            $configReader->enum('level', Level::class, Level::Debug),
+            $configReader->bool('bubble', true),
         );
     }
 }

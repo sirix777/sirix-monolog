@@ -11,13 +11,13 @@ use Sirix\Monolog\Config\ProcessorDefinition;
 
 class MemoryPeakUsageProcessorFactory implements ProcessorFactoryInterface
 {
-    public function create(ContainerInterface $container, ProcessorDefinition $definition): MemoryPeakUsageProcessor
+    public function create(ContainerInterface $container, ProcessorDefinition $processorDefinition): MemoryPeakUsageProcessor
     {
-        $options = ConfigReader::fromArray($definition->options, self::class);
+        $configReader = ConfigReader::fromArray($processorDefinition->options, self::class);
 
         return new MemoryPeakUsageProcessor(
-            $options->bool('real_usage', true),
-            $options->bool('use_formatting', true),
+            $configReader->bool('real_usage', true),
+            $configReader->bool('use_formatting', true),
         );
     }
 }

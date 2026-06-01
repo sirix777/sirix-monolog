@@ -14,19 +14,19 @@ class FlowdockHandlerFactory implements HandlerFactoryInterface
 {
     use HandlerOptionTrait;
 
-    public function create(ContainerInterface $container, HandlerDefinition $definition): FlowdockHandler
+    public function create(ContainerInterface $container, HandlerDefinition $handlerDefinition): FlowdockHandler
     {
-        $options = ConfigReader::fromArray($definition->options, self::class);
+        $configReader = ConfigReader::fromArray($handlerDefinition->options, self::class);
 
         return new FlowdockHandler(
-            $options->requiredNonEmptyString('api_token'),
-            $options->enum('level', Level::class, Level::Debug),
-            $options->bool('bubble', true),
-            $options->bool('persistent', false),
-            $this->floatOption($definition->options, 'timeout', 0.0, 'Flowdock'),
-            $this->floatOption($definition->options, 'writing_timeout', 10.0, 'Flowdock'),
-            $this->nullableFloatOption($definition->options, 'connection_timeout', 'Flowdock'),
-            $this->nullableIntOption($definition->options, 'chunk_size', 'Flowdock'),
+            $configReader->requiredNonEmptyString('api_token'),
+            $configReader->enum('level', Level::class, Level::Debug),
+            $configReader->bool('bubble', true),
+            $configReader->bool('persistent', false),
+            $this->floatOption($handlerDefinition->options, 'timeout', 0.0, 'Flowdock'),
+            $this->floatOption($handlerDefinition->options, 'writing_timeout', 10.0, 'Flowdock'),
+            $this->nullableFloatOption($handlerDefinition->options, 'connection_timeout', 'Flowdock'),
+            $this->nullableIntOption($handlerDefinition->options, 'chunk_size', 'Flowdock'),
         );
     }
 }

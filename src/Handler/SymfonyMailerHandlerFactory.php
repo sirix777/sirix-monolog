@@ -8,7 +8,9 @@ use Closure;
 use Monolog\Handler\HandlerInterface;
 use Monolog\Handler\SymfonyMailerHandler;
 use Monolog\Level;
+use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
+use ReflectionException;
 use Sirix\ContainerResolver\ConfigReader;
 use Sirix\ContainerResolver\ContainerResolver;
 use Sirix\Monolog\Config\HandlerDefinition;
@@ -23,18 +25,22 @@ class SymfonyMailerHandlerFactory implements HandlerFactoryInterface
 {
     use ReflectiveHandlerFactoryTrait;
 
-    public function create(ContainerInterface $container, HandlerDefinition $definition): HandlerInterface
+    /**
+     * @throws ReflectionException
+     * @throws ContainerExceptionInterface
+     */
+    public function create(ContainerInterface $container, HandlerDefinition $handlerDefinition): HandlerInterface
     {
-        $options = ConfigReader::fromArray($definition->options, self::class);
+        $configReader = ConfigReader::fromArray($handlerDefinition->options, self::class);
 
         return $this->newHandler(SymfonyMailerHandler::class, [
-            $this->serviceObject($container, $definition->options['mailer'] ?? null, 'mailer', 'Symfony Mailer', [
+            $this->serviceObject($container, $handlerDefinition->options['mailer'] ?? null, 'mailer', 'Symfony Mailer', [
                 'Symfony\Component\Mailer\MailerInterface',
                 'Symfony\Component\Mailer\Transport\TransportInterface',
             ]),
-            $this->email($container, $definition->options['email'] ?? null),
-            $options->enum('level', Level::class, Level::Error),
-            $options->bool('bubble', true),
+            $this->email($container, $handlerDefinition->options['email'] ?? null),
+            $configReader->enum('level', Level::class, Level::Error),
+            $configReader->bool('bubble', true),
         ]);
     }
 

@@ -12,10 +12,10 @@ use Sirix\Monolog\Config\ProcessorDefinition;
 
 class GitProcessorFactory implements ProcessorFactoryInterface
 {
-    public function create(ContainerInterface $container, ProcessorDefinition $definition): GitProcessor
+    public function create(ContainerInterface $container, ProcessorDefinition $processorDefinition): GitProcessor
     {
-        $options = ConfigReader::fromArray($definition->options, self::class);
+        $configReader = ConfigReader::fromArray($processorDefinition->options, self::class);
 
-        return new GitProcessor($options->enum('level', Level::class, Level::Debug));
+        return new GitProcessor($configReader->enum('level', Level::class, Level::Debug));
     }
 }

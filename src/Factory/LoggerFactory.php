@@ -23,23 +23,23 @@ final class LoggerFactory
     public function __invoke(
         ContainerInterface $container,
         string $requestedName = LoggerInterface::class,
-        ?array $options = null,
+        ?array $options = null
     ): LoggerInterface {
-        $resolver = ContainerResolver::forFactory($container, self::class);
-        $config = $resolver->get(MonologConfig::class);
+        $containerResolver = ContainerResolver::forFactory($container, self::class);
+        $monologConfig = $containerResolver->get(MonologConfig::class);
         $channelOption = $options['channel'] ?? null;
         $channelId = is_string($channelOption) && '' !== trim($channelOption)
             ? trim($channelOption)
             : null;
 
-        $registry = $resolver->get(ChannelRegistry::class);
+        $channelRegistry = $containerResolver->get(ChannelRegistry::class);
 
         if (null !== $channelId) {
-            return $registry->get($channelId);
+            return $channelRegistry->get($channelId);
         }
 
-        $loggerService = $config->loggerService($requestedName);
-        $logger = $registry->get($loggerService->channel);
+        $loggerService = $monologConfig->loggerService($requestedName);
+        $logger = $channelRegistry->get($loggerService->channel);
 
         if (null !== $loggerService->name && $logger instanceof Logger) {
             return $logger->withName($loggerService->name);

@@ -17,11 +17,11 @@ use function is_string;
 
 class WebProcessorFactory implements ProcessorFactoryInterface
 {
-    public function create(ContainerInterface $container, ProcessorDefinition $definition): WebProcessor
+    public function create(ContainerInterface $container, ProcessorDefinition $processorDefinition): WebProcessor
     {
         return new WebProcessor(
-            $this->serverData($container, $definition->options['server_data'] ?? null),
-            $this->optionalArray($definition->options, 'extra_fields'),
+            $this->serverData($container, $processorDefinition->options['server_data'] ?? null),
+            $this->optionalArray($processorDefinition->options, 'extra_fields'),
         );
     }
 

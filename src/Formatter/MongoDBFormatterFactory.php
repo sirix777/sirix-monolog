@@ -11,13 +11,13 @@ use Sirix\Monolog\Config\FormatterDefinition;
 
 class MongoDBFormatterFactory implements FormatterFactoryInterface
 {
-    public function create(ContainerInterface $container, FormatterDefinition $definition): MongoDBFormatter
+    public function create(ContainerInterface $container, FormatterDefinition $formatterDefinition): MongoDBFormatter
     {
-        $options = ConfigReader::fromArray($definition->options, self::class);
+        $configReader = ConfigReader::fromArray($formatterDefinition->options, self::class);
 
         return new MongoDBFormatter(
-            $options->int('max_nesting_level', 3),
-            $options->bool('exception_trace_as_string', true),
+            $configReader->int('max_nesting_level', 3),
+            $configReader->bool('exception_trace_as_string', true),
         );
     }
 }

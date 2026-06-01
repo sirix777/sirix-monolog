@@ -20,11 +20,7 @@ final class ArrayContainer implements ContainerInterface
      * @param array<string, callable(self): mixed|class-string> $factories
      * @param array<string, string>                             $aliases
      */
-    public function __construct(
-        private array $services = [],
-        private array $factories = [],
-        private array $aliases = [],
-    ) {}
+    public function __construct(private array $services = [], private array $factories = [], private array $aliases = []) {}
 
     public static function fromConfigProvider(array $appConfig, array $providerConfig): self
     {

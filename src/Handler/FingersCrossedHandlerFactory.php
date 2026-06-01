@@ -18,24 +18,22 @@ class FingersCrossedHandlerFactory implements HandlerFactoryInterface, HandlerRe
 {
     use HandlerRegistryTrait;
 
-    public function create(ContainerInterface $container, HandlerDefinition $definition): FingersCrossedHandler
+    public function create(ContainerInterface $container, HandlerDefinition $handlerDefinition): FingersCrossedHandler
     {
-        $options = ConfigReader::fromArray($definition->options, self::class);
+        $configReader = ConfigReader::fromArray($handlerDefinition->options, self::class);
 
         return new FingersCrossedHandler(
-            $this->getHandlerRegistry()->get($options->requiredNonEmptyString('handler')),
-            $this->activationStrategy($container, $definition->options['activation_strategy'] ?? null),
-            $options->int('buffer_size', 0),
-            $options->bool('bubble', true),
-            $options->bool('stop_buffering', true),
-            $this->passthruLevel($definition->options['passthru_level'] ?? null),
+            $this->getHandlerRegistry()->get($configReader->requiredNonEmptyString('handler')),
+            $this->activationStrategy($container, $handlerDefinition->options['activation_strategy'] ?? null),
+            $configReader->int('buffer_size', 0),
+            $configReader->bool('bubble', true),
+            $configReader->bool('stop_buffering', true),
+            $this->passthruLevel($handlerDefinition->options['passthru_level'] ?? null),
         );
     }
 
-    private function activationStrategy(
-        ContainerInterface $container,
-        mixed $value
-    ): ActivationStrategyInterface|Level|null {
+    private function activationStrategy(ContainerInterface $container, mixed $value): ActivationStrategyInterface|Level|null
+    {
         if (null === $value) {
             return null;
         }
@@ -48,9 +46,9 @@ class FingersCrossedHandlerFactory implements HandlerFactoryInterface, HandlerRe
             }
         }
 
-        $reader = ConfigReader::fromArray(['level' => $value], self::class);
+        $configReader = ConfigReader::fromArray(['level' => $value], self::class);
 
-        return $reader->enum('level', Level::class, Level::Warning);
+        return $configReader->enum('level', Level::class, Level::Warning);
     }
 
     private function passthruLevel(mixed $value): ?Level
@@ -59,8 +57,8 @@ class FingersCrossedHandlerFactory implements HandlerFactoryInterface, HandlerRe
             return null;
         }
 
-        $reader = ConfigReader::fromArray(['level' => $value], self::class);
+        $configReader = ConfigReader::fromArray(['level' => $value], self::class);
 
-        return $reader->enum('level', Level::class, Level::Debug);
+        return $configReader->enum('level', Level::class, Level::Debug);
     }
 }

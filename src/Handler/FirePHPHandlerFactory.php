@@ -12,13 +12,13 @@ use Sirix\Monolog\Config\HandlerDefinition;
 
 class FirePHPHandlerFactory implements HandlerFactoryInterface
 {
-    public function create(ContainerInterface $container, HandlerDefinition $definition): FirePHPHandler
+    public function create(ContainerInterface $container, HandlerDefinition $handlerDefinition): FirePHPHandler
     {
-        $options = ConfigReader::fromArray($definition->options, self::class);
+        $configReader = ConfigReader::fromArray($handlerDefinition->options, self::class);
 
         return new FirePHPHandler(
-            $options->enum('level', Level::class, Level::Debug),
-            $options->bool('bubble', true),
+            $configReader->enum('level', Level::class, Level::Debug),
+            $configReader->bool('bubble', true),
         );
     }
 }

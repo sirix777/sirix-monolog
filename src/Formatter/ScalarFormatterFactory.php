@@ -11,10 +11,10 @@ use Sirix\Monolog\Config\FormatterDefinition;
 
 class ScalarFormatterFactory implements FormatterFactoryInterface
 {
-    public function create(ContainerInterface $container, FormatterDefinition $definition): ScalarFormatter
+    public function create(ContainerInterface $container, FormatterDefinition $formatterDefinition): ScalarFormatter
     {
-        $options = ConfigReader::fromArray($definition->options, self::class);
+        $configReader = ConfigReader::fromArray($formatterDefinition->options, self::class);
 
-        return new ScalarFormatter($options->optionalString('date_format'));
+        return new ScalarFormatter($configReader->optionalString('date_format'));
     }
 }

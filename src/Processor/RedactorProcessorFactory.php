@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Sirix\Monolog\Processor;
 
+use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Sirix\ContainerResolver\ConfigReader;
 use Sirix\ContainerResolver\ContainerResolver;
@@ -22,14 +23,17 @@ use function is_int;
 
 class RedactorProcessorFactory implements ProcessorFactoryInterface
 {
-    public function create(ContainerInterface $container, ProcessorDefinition $definition): RedactorProcessor
+    /**
+     * @throws ContainerExceptionInterface
+     */
+    public function create(ContainerInterface $container, ProcessorDefinition $processorDefinition): RedactorProcessor
     {
         $this->assertRedactionAvailable();
 
-        $resolver = ContainerResolver::forContext($container, self::class);
+        $containerResolver = ContainerResolver::forContext($container, self::class);
         $redactor = $container->has(RedactorInterface::class)
-            ? $resolver->getAs(RedactorInterface::class, RedactorInterface::class)
-            : $this->createRedactorFromReader($definition->options);
+            ? $containerResolver->getAs(RedactorInterface::class, RedactorInterface::class)
+            : $this->createRedactorFromReader($processorDefinition->options);
 
         return new RedactorProcessor($redactor);
     }
@@ -53,17 +57,17 @@ class RedactorProcessorFactory implements ProcessorFactoryInterface
      */
     private function createRedactorFromReader(array $options): RedactorInterface
     {
-        $reader = ConfigReader::fromArray($options, self::class);
+        $configReader = ConfigReader::fromArray($options, self::class);
         $redactor = new Redactor(
-            $reader->array('rules', []),
-            $reader->bool('use_default_rules', true),
+            $configReader->array('rules', []),
+            $configReader->bool('use_default_rules', true),
         );
 
-        if (null !== $replacement = $reader->optionalString('replacement')) {
+        if (null !== $replacement = $configReader->optionalString('replacement')) {
             $redactor->setReplacement($replacement);
         }
 
-        if (null !== $template = $reader->optionalString('template')) {
+        if (null !== $template = $configReader->optionalString('template')) {
             $redactor->setTemplate($template);
         }
 
@@ -72,8 +76,8 @@ class RedactorProcessorFactory implements ProcessorFactoryInterface
         $this->setNullableInt($redactor, $options, 'max_items_per_container', 'setMaxItemsPerContainer');
         $this->setNullableInt($redactor, $options, 'max_total_nodes', 'setMaxTotalNodes');
 
-        if ($reader->has('object_view_mode')) {
-            $objectViewMode = $reader->requiredEnum('object_view_mode', ObjectViewModeEnum::class);
+        if ($configReader->has('object_view_mode')) {
+            $objectViewMode = $configReader->requiredEnum('object_view_mode', ObjectViewModeEnum::class);
             $redactor->setObjectViewMode($objectViewMode);
         }
 

@@ -10,7 +10,7 @@ use Sirix\Monolog\Config\ProcessorDefinition;
 
 class ProcessIdProcessorFactory implements ProcessorFactoryInterface
 {
-    public function create(ContainerInterface $container, ProcessorDefinition $definition): ProcessIdProcessor
+    public function create(ContainerInterface $container, ProcessorDefinition $processorDefinition): ProcessIdProcessor
     {
         return new ProcessIdProcessor();
     }

@@ -12,13 +12,13 @@ use Sirix\Monolog\Config\HandlerDefinition;
 
 class ChromePHPHandlerFactory implements HandlerFactoryInterface
 {
-    public function create(ContainerInterface $container, HandlerDefinition $definition): ChromePHPHandler
+    public function create(ContainerInterface $container, HandlerDefinition $handlerDefinition): ChromePHPHandler
     {
-        $options = ConfigReader::fromArray($definition->options, self::class);
+        $configReader = ConfigReader::fromArray($handlerDefinition->options, self::class);
 
         return new ChromePHPHandler(
-            $options->enum('level', Level::class, Level::Debug),
-            $options->bool('bubble', true),
+            $configReader->enum('level', Level::class, Level::Debug),
+            $configReader->bool('bubble', true),
         );
     }
 }

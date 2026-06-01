@@ -12,10 +12,10 @@ use Sirix\Monolog\Exception\InvalidConfigException;
 
 class LogglyFormatterFactory implements FormatterFactoryInterface
 {
-    public function create(ContainerInterface $container, FormatterDefinition $definition): LogglyFormatter
+    public function create(ContainerInterface $container, FormatterDefinition $formatterDefinition): LogglyFormatter
     {
-        $options = ConfigReader::fromArray($definition->options, self::class);
-        $batchMode = $options->int('batch_mode', LogglyFormatter::BATCH_MODE_NEWLINES);
+        $configReader = ConfigReader::fromArray($formatterDefinition->options, self::class);
+        $batchMode = $configReader->int('batch_mode', LogglyFormatter::BATCH_MODE_NEWLINES);
 
         if (LogglyFormatter::BATCH_MODE_JSON !== $batchMode && LogglyFormatter::BATCH_MODE_NEWLINES !== $batchMode) {
             throw new InvalidConfigException('Loggly formatter option "batch_mode" must be a valid JsonFormatter batch mode.');
@@ -23,7 +23,7 @@ class LogglyFormatterFactory implements FormatterFactoryInterface
 
         return new LogglyFormatter(
             $batchMode,
-            $options->bool('append_newline', false),
+            $configReader->bool('append_newline', false),
         );
     }
 }

@@ -32,8 +32,8 @@ final class MonologConfigReader
      */
     public function read(array $config): MonologConfig
     {
-        $reader = ConfigReader::fromArray($config, self::class);
-        $root = $reader->map(ConfigKey::Root->value, []);
+        $configReader = ConfigReader::fromArray($config, self::class);
+        $root = $configReader->map(ConfigKey::Root->value, []);
         $rootReader = ConfigReader::fromArray($root, self::class);
 
         $handlers = $this->readHandlers($rootReader);
@@ -60,9 +60,9 @@ final class MonologConfigReader
     /**
      * @return array<non-empty-string, LoggerServiceDefinition>
      */
-    private function readLoggerServices(ConfigReader $reader): array
+    private function readLoggerServices(ConfigReader $configReader): array
     {
-        $services = $reader->map(ConfigKey::LoggerServices->value, [
+        $services = $configReader->map(ConfigKey::LoggerServices->value, [
             Logger::class => 'default',
             LoggerInterface::class => 'default',
             'logger' => 'default',
@@ -91,21 +91,21 @@ final class MonologConfigReader
      */
     private function readLoggerServiceDefinition(string $serviceId, array $serviceConfig): LoggerServiceDefinition
     {
-        $serviceReader = ConfigReader::fromArray($serviceConfig, self::class);
+        $configReader = ConfigReader::fromArray($serviceConfig, self::class);
 
         return new LoggerServiceDefinition(
             serviceId: $serviceId,
-            channel: $serviceReader->requiredNonEmptyString(ConfigKey::Channel->value),
-            name: $serviceReader->optionalNonEmptyString(ConfigKey::Name->value),
+            channel: $configReader->requiredNonEmptyString(ConfigKey::Channel->value),
+            name: $configReader->optionalNonEmptyString(ConfigKey::Name->value),
         );
     }
 
     /**
      * @return array<non-empty-string, ChannelDefinition>
      */
-    private function readChannels(ConfigReader $reader): array
+    private function readChannels(ConfigReader $configReader): array
     {
-        $channels = $reader->map(ConfigKey::Channels->value, [
+        $channels = $configReader->map(ConfigKey::Channels->value, [
             'default' => [
                 ConfigKey::Name->value => 'app',
                 ConfigKey::Handlers->value => ['default'],
@@ -136,9 +136,9 @@ final class MonologConfigReader
     /**
      * @return array<non-empty-string, HandlerDefinition>
      */
-    private function readHandlers(ConfigReader $reader): array
+    private function readHandlers(ConfigReader $configReader): array
     {
-        $handlers = $reader->map(ConfigKey::Handlers->value, [
+        $handlers = $configReader->map(ConfigKey::Handlers->value, [
             'default' => [
                 ConfigKey::Type->value => HandlerType::Noop,
             ],
@@ -172,9 +172,9 @@ final class MonologConfigReader
     /**
      * @return array<non-empty-string, FormatterDefinition>
      */
-    private function readFormatters(ConfigReader $reader): array
+    private function readFormatters(ConfigReader $configReader): array
     {
-        $formatters = $reader->map(ConfigKey::Formatters->value, []);
+        $formatters = $configReader->map(ConfigKey::Formatters->value, []);
 
         /** @var array<non-empty-string, FormatterDefinition> $result */
         $result = [];
@@ -202,9 +202,9 @@ final class MonologConfigReader
     /**
      * @return array<non-empty-string, ProcessorDefinition>
      */
-    private function readProcessors(ConfigReader $reader): array
+    private function readProcessors(ConfigReader $configReader): array
     {
-        $processors = $reader->map(ConfigKey::Processors->value, []);
+        $processors = $configReader->map(ConfigKey::Processors->value, []);
 
         /** @var array<non-empty-string, ProcessorDefinition> $result */
         $result = [];
@@ -229,24 +229,24 @@ final class MonologConfigReader
         return $result;
     }
 
-    private function readFactoryMap(ConfigReader $reader): FactoryMap
+    private function readFactoryMap(ConfigReader $configReader): FactoryMap
     {
         return new FactoryMap(
             handlerFactories: $this->mergeFactoryMap(
                 BuiltInHandlerFactories::map(),
-                $reader->map(ConfigKey::HandlerFactories->value, []),
+                $configReader->map(ConfigKey::HandlerFactories->value, []),
                 ConfigKey::HandlerFactories->value,
                 HandlerFactoryInterface::class,
             ),
             formatterFactories: $this->mergeFactoryMap(
                 BuiltInFormatterFactories::map(),
-                $reader->map(ConfigKey::FormatterFactories->value, []),
+                $configReader->map(ConfigKey::FormatterFactories->value, []),
                 ConfigKey::FormatterFactories->value,
                 FormatterFactoryInterface::class,
             ),
             processorFactories: $this->mergeFactoryMap(
                 BuiltInProcessorFactories::map(),
-                $reader->map(ConfigKey::ProcessorFactories->value, []),
+                $configReader->map(ConfigKey::ProcessorFactories->value, []),
                 ConfigKey::ProcessorFactories->value,
                 ProcessorFactoryInterface::class,
             ),
@@ -350,7 +350,6 @@ final class MonologConfigReader
             throw new InvalidConfigException("Config value '{$path}' must be an array.");
         }
 
-        // @var array<string, mixed> $value
         return $value;
     }
 

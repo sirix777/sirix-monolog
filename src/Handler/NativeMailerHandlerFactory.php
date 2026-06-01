@@ -19,38 +19,38 @@ use function trim;
 
 class NativeMailerHandlerFactory implements HandlerFactoryInterface
 {
-    public function create(ContainerInterface $container, HandlerDefinition $definition): NativeMailerHandler
+    public function create(ContainerInterface $container, HandlerDefinition $handlerDefinition): NativeMailerHandler
     {
-        $options = ConfigReader::fromArray($definition->options, self::class);
+        $configReader = ConfigReader::fromArray($handlerDefinition->options, self::class);
 
-        $handler = new NativeMailerHandler(
-            $this->stringOrStringList($definition->options['to'] ?? null, 'to'),
-            $options->requiredNonEmptyString('subject'),
-            $options->requiredNonEmptyString('from'),
-            $options->enum('level', Level::class, Level::Error),
-            $options->bool('bubble', true),
-            $options->int('max_column_width', 70),
+        $nativeMailerHandler = new NativeMailerHandler(
+            $this->stringOrStringList($handlerDefinition->options['to'] ?? null, 'to'),
+            $configReader->requiredNonEmptyString('subject'),
+            $configReader->requiredNonEmptyString('from'),
+            $configReader->enum('level', Level::class, Level::Error),
+            $configReader->bool('bubble', true),
+            $configReader->int('max_column_width', 70),
         );
 
-        if (array_key_exists('headers', $definition->options)) {
-            $handler->addHeader($this->stringOrStringList($definition->options['headers'], 'headers'));
+        if (array_key_exists('headers', $handlerDefinition->options)) {
+            $nativeMailerHandler->addHeader($this->stringOrStringList($handlerDefinition->options['headers'], 'headers'));
         }
 
-        if (array_key_exists('parameters', $definition->options)) {
-            $handler->addParameter($this->stringOrStringList($definition->options['parameters'], 'parameters'));
+        if (array_key_exists('parameters', $handlerDefinition->options)) {
+            $nativeMailerHandler->addParameter($this->stringOrStringList($handlerDefinition->options['parameters'], 'parameters'));
         }
 
-        $contentType = $options->optionalNonEmptyString('content_type');
+        $contentType = $configReader->optionalNonEmptyString('content_type');
         if (null !== $contentType) {
-            $handler->setContentType($contentType);
+            $nativeMailerHandler->setContentType($contentType);
         }
 
-        $encoding = $options->optionalNonEmptyString('encoding');
+        $encoding = $configReader->optionalNonEmptyString('encoding');
         if (null !== $encoding) {
-            $handler->setEncoding($encoding);
+            $nativeMailerHandler->setEncoding($encoding);
         }
 
-        return $handler;
+        return $nativeMailerHandler;
     }
 
     /**

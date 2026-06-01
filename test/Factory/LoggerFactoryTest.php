@@ -27,9 +27,9 @@ final class LoggerFactoryTest extends TestCase
 {
     public function testDefaultLoggerCanBeUsedWithoutConfiguration(): void
     {
-        $container = ArrayContainer::fromConfigProvider([], (new ConfigProvider())());
+        $arrayContainer = ArrayContainer::fromConfigProvider([], (new ConfigProvider())());
 
-        $logger = $container->get(LoggerInterface::class);
+        $logger = $arrayContainer->get(LoggerInterface::class);
 
         $this->assertInstanceOf(Logger::class, $logger);
         $this->assertSame('app', $logger->getName());
@@ -40,7 +40,7 @@ final class LoggerFactoryTest extends TestCase
 
     public function testConfiguredHandlerOrderIsPreserved(): void
     {
-        $container = ArrayContainer::fromConfigProvider([
+        $arrayContainer = ArrayContainer::fromConfigProvider([
             C::Root->value => [
                 C::Channels->value => [
                     'default' => [
@@ -58,8 +58,8 @@ final class LoggerFactoryTest extends TestCase
             ],
         ], (new ConfigProvider())());
 
-        $logger = $container->get(LoggerInterface::class);
-        $registry = $container->get(HandlerRegistry::class);
+        $logger = $arrayContainer->get(LoggerInterface::class);
+        $registry = $arrayContainer->get(HandlerRegistry::class);
 
         $this->assertInstanceOf(Logger::class, $logger);
         $this->assertInstanceOf(HandlerRegistry::class, $registry);
@@ -74,7 +74,7 @@ final class LoggerFactoryTest extends TestCase
         $stream = fopen('php://temp', 'w+');
         $this->assertIsResource($stream);
 
-        $container = ArrayContainer::fromConfigProvider([
+        $arrayContainer = ArrayContainer::fromConfigProvider([
             C::Root->value => [
                 C::LoggerServices->value => [
                     'logger' => 'default',
@@ -108,7 +108,7 @@ final class LoggerFactoryTest extends TestCase
             ],
         ], (new ConfigProvider())());
 
-        $logger = $container->get(LoggerInterface::class);
+        $logger = $arrayContainer->get(LoggerInterface::class);
         $logger->info('Hello {name}', ['name' => 'Ada']);
 
         rewind($stream);
@@ -125,7 +125,7 @@ final class LoggerFactoryTest extends TestCase
         $providerConfig = (new ConfigProvider())();
         $providerConfig['dependencies']['factories']['logger_crypto_transaction'] = LoggerFactory::class;
 
-        $container = ArrayContainer::fromConfigProvider([
+        $arrayContainer = ArrayContainer::fromConfigProvider([
             C::Root->value => [
                 C::LoggerServices->value => [
                     'logger_crypto_transaction' => [
@@ -147,7 +147,7 @@ final class LoggerFactoryTest extends TestCase
             ],
         ], $providerConfig);
 
-        $logger = $container->get('logger_crypto_transaction');
+        $logger = $arrayContainer->get('logger_crypto_transaction');
 
         $this->assertInstanceOf(Logger::class, $logger);
         $this->assertSame('CryptoTransactionService', $logger->getName());
@@ -158,7 +158,7 @@ final class LoggerFactoryTest extends TestCase
         $providerConfig = (new ConfigProvider())();
         $providerConfig['dependencies']['factories']['logger_audit'] = LoggerFactory::class;
 
-        $container = ArrayContainer::fromConfigProvider([
+        $arrayContainer = ArrayContainer::fromConfigProvider([
             C::Root->value => [
                 C::LoggerServices->value => [
                     'logger' => 'default',
@@ -184,7 +184,7 @@ final class LoggerFactoryTest extends TestCase
             ],
         ], $providerConfig);
 
-        $logger = $container->get('logger_audit');
+        $logger = $arrayContainer->get('logger_audit');
 
         $this->assertInstanceOf(Logger::class, $logger);
         $this->assertSame('audit', $logger->getName());

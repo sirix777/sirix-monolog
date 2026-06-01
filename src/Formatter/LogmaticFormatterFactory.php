@@ -13,30 +13,30 @@ use Sirix\Monolog\Exception\InvalidConfigException;
 
 class LogmaticFormatterFactory implements FormatterFactoryInterface
 {
-    public function create(ContainerInterface $container, FormatterDefinition $definition): LogmaticFormatter
+    public function create(ContainerInterface $container, FormatterDefinition $formatterDefinition): LogmaticFormatter
     {
-        $options = ConfigReader::fromArray($definition->options, self::class);
-        $batchMode = $options->int('batch_mode', JsonFormatter::BATCH_MODE_JSON);
+        $configReader = ConfigReader::fromArray($formatterDefinition->options, self::class);
+        $batchMode = $configReader->int('batch_mode', JsonFormatter::BATCH_MODE_JSON);
 
         if (JsonFormatter::BATCH_MODE_JSON !== $batchMode && JsonFormatter::BATCH_MODE_NEWLINES !== $batchMode) {
             throw new InvalidConfigException('Logmatic formatter option "batch_mode" must be a valid JsonFormatter batch mode.');
         }
 
-        $formatter = new LogmaticFormatter(
+        $logmaticFormatter = new LogmaticFormatter(
             $batchMode,
-            $options->bool('append_newline', true),
+            $configReader->bool('append_newline', true),
         );
 
-        $hostName = $options->optionalString('hostname');
+        $hostName = $configReader->optionalString('hostname');
         if (null !== $hostName && '' !== $hostName) {
-            $formatter->setHostname($hostName);
+            $logmaticFormatter->setHostname($hostName);
         }
 
-        $appName = $options->optionalString('app_name');
+        $appName = $configReader->optionalString('app_name');
         if (null !== $appName && '' !== $appName) {
-            $formatter->setAppName($appName);
+            $logmaticFormatter->setAppName($appName);
         }
 
-        return $formatter;
+        return $logmaticFormatter;
     }
 }

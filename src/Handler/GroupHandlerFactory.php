@@ -13,18 +13,18 @@ class GroupHandlerFactory implements HandlerFactoryInterface, HandlerRegistryAwa
 {
     use HandlerRegistryTrait;
 
-    public function create(ContainerInterface $container, HandlerDefinition $definition): GroupHandler
+    public function create(ContainerInterface $container, HandlerDefinition $handlerDefinition): GroupHandler
     {
-        $options = ConfigReader::fromArray($definition->options, self::class);
+        $configReader = ConfigReader::fromArray($handlerDefinition->options, self::class);
         $handlers = [];
 
-        foreach ($options->requiredNonEmptyStringList('handlers') as $handlerId) {
+        foreach ($configReader->requiredNonEmptyStringList('handlers') as $handlerId) {
             $handlers[] = $this->getHandlerRegistry()->get($handlerId);
         }
 
         return new GroupHandler(
             $handlers,
-            $options->bool('bubble', true),
+            $configReader->bool('bubble', true),
         );
     }
 }

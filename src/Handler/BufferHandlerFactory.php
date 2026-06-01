@@ -14,17 +14,17 @@ class BufferHandlerFactory implements HandlerFactoryInterface, HandlerRegistryAw
 {
     use HandlerRegistryTrait;
 
-    public function create(ContainerInterface $container, HandlerDefinition $definition): BufferHandler
+    public function create(ContainerInterface $container, HandlerDefinition $handlerDefinition): BufferHandler
     {
-        $options = ConfigReader::fromArray($definition->options, self::class);
-        $level = $options->enum('level', Level::class, Level::Debug);
+        $configReader = ConfigReader::fromArray($handlerDefinition->options, self::class);
+        $level = $configReader->enum('level', Level::class, Level::Debug);
 
         return new BufferHandler(
-            $this->getHandlerRegistry()->get($options->requiredNonEmptyString('handler')),
-            $options->int('buffer_limit', 0),
+            $this->getHandlerRegistry()->get($configReader->requiredNonEmptyString('handler')),
+            $configReader->int('buffer_limit', 0),
             $level,
-            $options->bool('bubble', true),
-            $options->bool('flush_on_overflow', false),
+            $configReader->bool('bubble', true),
+            $configReader->bool('flush_on_overflow', false),
         );
     }
 }

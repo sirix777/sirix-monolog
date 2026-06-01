@@ -12,10 +12,10 @@ use Sirix\Monolog\Exception\InvalidConfigException;
 
 class JsonFormatterFactory implements FormatterFactoryInterface
 {
-    public function create(ContainerInterface $container, FormatterDefinition $definition): JsonFormatter
+    public function create(ContainerInterface $container, FormatterDefinition $formatterDefinition): JsonFormatter
     {
-        $options = ConfigReader::fromArray($definition->options, self::class);
-        $batchMode = $options->int('batch_mode', JsonFormatter::BATCH_MODE_JSON);
+        $configReader = ConfigReader::fromArray($formatterDefinition->options, self::class);
+        $batchMode = $configReader->int('batch_mode', JsonFormatter::BATCH_MODE_JSON);
 
         if (JsonFormatter::BATCH_MODE_JSON !== $batchMode && JsonFormatter::BATCH_MODE_NEWLINES !== $batchMode) {
             throw new InvalidConfigException('Json formatter option "batch_mode" must be a valid JsonFormatter batch mode.');
@@ -23,9 +23,9 @@ class JsonFormatterFactory implements FormatterFactoryInterface
 
         return new JsonFormatter(
             $batchMode,
-            $options->bool('append_newline', true),
-            $options->bool('ignore_empty_context_and_extra', false),
-            $options->bool('include_stacktraces', false),
+            $configReader->bool('append_newline', true),
+            $configReader->bool('ignore_empty_context_and_extra', false),
+            $configReader->bool('include_stacktraces', false),
         );
     }
 }

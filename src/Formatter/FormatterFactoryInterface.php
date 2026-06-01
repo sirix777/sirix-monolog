@@ -10,5 +10,5 @@ use Sirix\Monolog\Config\FormatterDefinition;
 
 interface FormatterFactoryInterface
 {
-    public function create(ContainerInterface $container, FormatterDefinition $definition): FormatterInterface;
+    public function create(ContainerInterface $container, FormatterDefinition $formatterDefinition): FormatterInterface;
 }

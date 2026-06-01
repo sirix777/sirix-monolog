@@ -15,9 +15,5 @@ final readonly class FactoryMap
      * @param array<non-empty-string, class-string<FormatterFactoryInterface>> $formatterFactories
      * @param array<non-empty-string, class-string<ProcessorFactoryInterface>> $processorFactories
      */
-    public function __construct(
-        public array $handlerFactories,
-        public array $formatterFactories,
-        public array $processorFactories,
-    ) {}
+    public function __construct(public array $handlerFactories, public array $formatterFactories, public array $processorFactories) {}
 }

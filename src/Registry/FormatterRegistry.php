@@ -12,10 +12,10 @@ final class FormatterRegistry
     /** @var array<string, FormatterInterface> */
     private array $formatters = [];
 
-    public function __construct(private readonly FormatterBuilder $builder) {}
+    public function __construct(private readonly FormatterBuilder $formatterBuilder) {}
 
     public function get(string $formatterId): FormatterInterface
     {
-        return $this->formatters[$formatterId] ??= $this->builder->build($formatterId);
+        return $this->formatters[$formatterId] ??= $this->formatterBuilder->build($formatterId);
     }
 }

@@ -11,10 +11,10 @@ use Sirix\Monolog\Config\FormatterDefinition;
 
 class FluentdFormatterFactory implements FormatterFactoryInterface
 {
-    public function create(ContainerInterface $container, FormatterDefinition $definition): FluentdFormatter
+    public function create(ContainerInterface $container, FormatterDefinition $formatterDefinition): FluentdFormatter
     {
-        $options = ConfigReader::fromArray($definition->options, self::class);
+        $configReader = ConfigReader::fromArray($formatterDefinition->options, self::class);
 
-        return new FluentdFormatter($options->bool('level_tag', false));
+        return new FluentdFormatter($configReader->bool('level_tag', false));
     }
 }

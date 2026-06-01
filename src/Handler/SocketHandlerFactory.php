@@ -17,19 +17,19 @@ use function is_int;
 
 class SocketHandlerFactory implements HandlerFactoryInterface
 {
-    public function create(ContainerInterface $container, HandlerDefinition $definition): SocketHandler
+    public function create(ContainerInterface $container, HandlerDefinition $handlerDefinition): SocketHandler
     {
-        $options = ConfigReader::fromArray($definition->options, self::class);
+        $configReader = ConfigReader::fromArray($handlerDefinition->options, self::class);
 
         return new SocketHandler(
-            $options->requiredNonEmptyString('connection_string'),
-            $options->enum('level', Level::class, Level::Debug),
-            $options->bool('bubble', true),
-            $options->bool('persistent', false),
-            $this->float($definition->options, 'timeout', 0.0),
-            $this->float($definition->options, 'writing_timeout', 10.0),
-            $this->nullableFloat($definition->options, 'connection_timeout'),
-            $this->nullableInt($definition->options, 'chunk_size'),
+            $configReader->requiredNonEmptyString('connection_string'),
+            $configReader->enum('level', Level::class, Level::Debug),
+            $configReader->bool('bubble', true),
+            $configReader->bool('persistent', false),
+            $this->float($handlerDefinition->options, 'timeout', 0.0),
+            $this->float($handlerDefinition->options, 'writing_timeout', 10.0),
+            $this->nullableFloat($handlerDefinition->options, 'connection_timeout'),
+            $this->nullableInt($handlerDefinition->options, 'chunk_size'),
         );
     }
 

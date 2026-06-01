@@ -12,10 +12,10 @@ use Sirix\Monolog\Config\HandlerDefinition;
 
 class NullHandlerFactory implements HandlerFactoryInterface
 {
-    public function create(ContainerInterface $container, HandlerDefinition $definition): NullHandler
+    public function create(ContainerInterface $container, HandlerDefinition $handlerDefinition): NullHandler
     {
-        $options = ConfigReader::fromArray($definition->options, self::class);
-        $level = $options->enum('level', Level::class, Level::Debug);
+        $configReader = ConfigReader::fromArray($handlerDefinition->options, self::class);
+        $level = $configReader->enum('level', Level::class, Level::Debug);
 
         return new NullHandler($level);
     }

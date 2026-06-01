@@ -10,5 +10,5 @@ use Sirix\Monolog\Config\HandlerDefinition;
 
 interface HandlerFactoryInterface
 {
-    public function create(ContainerInterface $container, HandlerDefinition $definition): HandlerInterface;
+    public function create(ContainerInterface $container, HandlerDefinition $handlerDefinition): HandlerInterface;
 }

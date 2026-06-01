@@ -7,7 +7,9 @@ namespace Sirix\Monolog\Handler;
 use Monolog\Handler\HandlerInterface;
 use Monolog\Handler\RollbarHandler;
 use Monolog\Level;
+use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
+use ReflectionException;
 use Sirix\ContainerResolver\ConfigReader;
 use Sirix\Monolog\Config\HandlerDefinition;
 
@@ -15,14 +17,18 @@ class RollbarHandlerFactory implements HandlerFactoryInterface
 {
     use ReflectiveHandlerFactoryTrait;
 
-    public function create(ContainerInterface $container, HandlerDefinition $definition): HandlerInterface
+    /**
+     * @throws ReflectionException
+     * @throws ContainerExceptionInterface
+     */
+    public function create(ContainerInterface $container, HandlerDefinition $handlerDefinition): HandlerInterface
     {
-        $options = ConfigReader::fromArray($definition->options, self::class);
+        $configReader = ConfigReader::fromArray($handlerDefinition->options, self::class);
 
         return $this->newHandler(RollbarHandler::class, [
-            $this->serviceObject($container, $definition->options['rollbar_logger'] ?? null, 'rollbar_logger', 'Rollbar', ['Rollbar\RollbarLogger']),
-            $options->enum('level', Level::class, Level::Error),
-            $options->bool('bubble', true),
+            $this->serviceObject($container, $handlerDefinition->options['rollbar_logger'] ?? null, 'rollbar_logger', 'Rollbar', ['Rollbar\RollbarLogger']),
+            $configReader->enum('level', Level::class, Level::Error),
+            $configReader->bool('bubble', true),
         ]);
     }
 }

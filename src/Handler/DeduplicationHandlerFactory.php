@@ -14,17 +14,17 @@ class DeduplicationHandlerFactory implements HandlerFactoryInterface, HandlerReg
 {
     use HandlerRegistryTrait;
 
-    public function create(ContainerInterface $container, HandlerDefinition $definition): DeduplicationHandler
+    public function create(ContainerInterface $container, HandlerDefinition $handlerDefinition): DeduplicationHandler
     {
-        $options = ConfigReader::fromArray($definition->options, self::class);
-        $deduplicationLevel = $options->enum('deduplication_level', Level::class, Level::Error);
+        $configReader = ConfigReader::fromArray($handlerDefinition->options, self::class);
+        $deduplicationLevel = $configReader->enum('deduplication_level', Level::class, Level::Error);
 
         return new DeduplicationHandler(
-            $this->getHandlerRegistry()->get($options->requiredNonEmptyString('handler')),
-            $options->optionalString('deduplication_store'),
+            $this->getHandlerRegistry()->get($configReader->requiredNonEmptyString('handler')),
+            $configReader->optionalString('deduplication_store'),
             $deduplicationLevel,
-            $options->int('time', 60),
-            $options->bool('bubble', true),
+            $configReader->int('time', 60),
+            $configReader->bool('bubble', true),
         );
     }
 }

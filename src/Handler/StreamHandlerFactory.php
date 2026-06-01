@@ -6,6 +6,7 @@ namespace Sirix\Monolog\Handler;
 
 use Monolog\Handler\StreamHandler;
 use Monolog\Level;
+use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Sirix\ContainerResolver\ConfigReader;
 use Sirix\ContainerResolver\ContainerResolver;
@@ -18,23 +19,26 @@ use function is_string;
 
 class StreamHandlerFactory implements HandlerFactoryInterface
 {
-    public function create(ContainerInterface $container, HandlerDefinition $definition): StreamHandler
+    /**
+     * @throws ContainerExceptionInterface
+     */
+    public function create(ContainerInterface $container, HandlerDefinition $handlerDefinition): StreamHandler
     {
-        $options = ConfigReader::fromArray($definition->options, self::class);
-        $stream = $options->required('stream');
+        $configReader = ConfigReader::fromArray($handlerDefinition->options, self::class);
+        $stream = $configReader->required('stream');
 
         if (is_string($stream) && $container->has($stream)) {
             $stream = ContainerResolver::forContext($container, self::class)->getExisting($stream);
         }
 
-        $level = $options->enum('level', Level::class, Level::Debug);
+        $level = $configReader->enum('level', Level::class, Level::Debug);
 
         return new StreamHandler(
             $stream,
             $level,
-            $options->bool('bubble', true),
-            $this->nullableInt($definition->options, 'file_permission'),
-            $options->bool('use_locking', false),
+            $configReader->bool('bubble', true),
+            $this->nullableInt($handlerDefinition->options, 'file_permission'),
+            $configReader->bool('use_locking', false),
         );
     }
 

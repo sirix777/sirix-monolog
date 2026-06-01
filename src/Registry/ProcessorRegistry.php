@@ -12,10 +12,10 @@ final class ProcessorRegistry
     /** @var array<string, ProcessorInterface> */
     private array $processors = [];
 
-    public function __construct(private readonly ProcessorBuilder $builder) {}
+    public function __construct(private readonly ProcessorBuilder $processorBuilder) {}
 
     public function get(string $processorId): ProcessorInterface
     {
-        return $this->processors[$processorId] ??= $this->builder->build($processorId);
+        return $this->processors[$processorId] ??= $this->processorBuilder->build($processorId);
     }
 }

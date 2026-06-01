@@ -12,14 +12,14 @@ use Sirix\Monolog\Config\HandlerDefinition;
 
 class CouchDBHandlerFactory implements HandlerFactoryInterface
 {
-    public function create(ContainerInterface $container, HandlerDefinition $definition): CouchDBHandler
+    public function create(ContainerInterface $container, HandlerDefinition $handlerDefinition): CouchDBHandler
     {
-        $options = ConfigReader::fromArray($definition->options, self::class);
+        $configReader = ConfigReader::fromArray($handlerDefinition->options, self::class);
 
         return new CouchDBHandler(
-            $options->array('connection', []),
-            $options->enum('level', Level::class, Level::Debug),
-            $options->bool('bubble', true),
+            $configReader->array('connection', []),
+            $configReader->enum('level', Level::class, Level::Debug),
+            $configReader->bool('bubble', true),
         );
     }
 }

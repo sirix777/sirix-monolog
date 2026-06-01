@@ -16,20 +16,20 @@ use function is_int;
 
 class RotatingFileHandlerFactory implements HandlerFactoryInterface
 {
-    public function create(ContainerInterface $container, HandlerDefinition $definition): RotatingFileHandler
+    public function create(ContainerInterface $container, HandlerDefinition $handlerDefinition): RotatingFileHandler
     {
-        $options = ConfigReader::fromArray($definition->options, self::class);
-        $level = $options->enum('level', Level::class, Level::Debug);
+        $configReader = ConfigReader::fromArray($handlerDefinition->options, self::class);
+        $level = $configReader->enum('level', Level::class, Level::Debug);
 
         return new RotatingFileHandler(
-            $options->requiredNonEmptyString('filename'),
-            $options->int('max_files', 0),
+            $configReader->requiredNonEmptyString('filename'),
+            $configReader->int('max_files', 0),
             $level,
-            $options->bool('bubble', true),
-            $this->nullableInt($definition->options, 'file_permission'),
-            $options->bool('use_locking', false),
-            $options->string('date_format', RotatingFileHandler::FILE_PER_DAY),
-            $options->string('filename_format', '{filename}-{date}'),
+            $configReader->bool('bubble', true),
+            $this->nullableInt($handlerDefinition->options, 'file_permission'),
+            $configReader->bool('use_locking', false),
+            $configReader->string('date_format', RotatingFileHandler::FILE_PER_DAY),
+            $configReader->string('filename_format', '{filename}-{date}'),
         );
     }
 

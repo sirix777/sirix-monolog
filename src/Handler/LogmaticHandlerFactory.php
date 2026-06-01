@@ -14,22 +14,22 @@ class LogmaticHandlerFactory implements HandlerFactoryInterface
 {
     use HandlerOptionTrait;
 
-    public function create(ContainerInterface $container, HandlerDefinition $definition): LogmaticHandler
+    public function create(ContainerInterface $container, HandlerDefinition $handlerDefinition): LogmaticHandler
     {
-        $options = ConfigReader::fromArray($definition->options, self::class);
+        $configReader = ConfigReader::fromArray($handlerDefinition->options, self::class);
 
         return new LogmaticHandler(
-            $options->requiredNonEmptyString('token'),
-            $options->string('hostname', ''),
-            $options->string('app_name', ''),
-            $options->bool('use_ssl', true),
-            $options->enum('level', Level::class, Level::Debug),
-            $options->bool('bubble', true),
-            $options->bool('persistent', false),
-            $this->floatOption($definition->options, 'timeout', 0.0, 'Logmatic'),
-            $this->floatOption($definition->options, 'writing_timeout', 10.0, 'Logmatic'),
-            $this->nullableFloatOption($definition->options, 'connection_timeout', 'Logmatic'),
-            $this->nullableIntOption($definition->options, 'chunk_size', 'Logmatic'),
+            $configReader->requiredNonEmptyString('token'),
+            $configReader->string('hostname', ''),
+            $configReader->string('app_name', ''),
+            $configReader->bool('use_ssl', true),
+            $configReader->enum('level', Level::class, Level::Debug),
+            $configReader->bool('bubble', true),
+            $configReader->bool('persistent', false),
+            $this->floatOption($handlerDefinition->options, 'timeout', 0.0, 'Logmatic'),
+            $this->floatOption($handlerDefinition->options, 'writing_timeout', 10.0, 'Logmatic'),
+            $this->nullableFloatOption($handlerDefinition->options, 'connection_timeout', 'Logmatic'),
+            $this->nullableIntOption($handlerDefinition->options, 'chunk_size', 'Logmatic'),
         );
     }
 }

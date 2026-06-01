@@ -14,10 +14,10 @@ use function in_array;
 
 class LoadAverageProcessorFactory implements ProcessorFactoryInterface
 {
-    public function create(ContainerInterface $container, ProcessorDefinition $definition): LoadAverageProcessor
+    public function create(ContainerInterface $container, ProcessorDefinition $processorDefinition): LoadAverageProcessor
     {
-        $options = ConfigReader::fromArray($definition->options, self::class);
-        $avgSystemLoad = $options->int('avg_system_load', LoadAverageProcessor::LOAD_1_MINUTE);
+        $configReader = ConfigReader::fromArray($processorDefinition->options, self::class);
+        $avgSystemLoad = $configReader->int('avg_system_load', LoadAverageProcessor::LOAD_1_MINUTE);
 
         if (! in_array($avgSystemLoad, [
             LoadAverageProcessor::LOAD_1_MINUTE,

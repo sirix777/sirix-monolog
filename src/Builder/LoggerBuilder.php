@@ -15,22 +15,22 @@ use function array_reverse;
 final readonly class LoggerBuilder
 {
     public function __construct(
-        private MonologConfig $config,
-        private HandlerRegistry $handlers,
-        private ProcessorRegistry $processors,
+        private MonologConfig $monologConfig,
+        private HandlerRegistry $handlerRegistry,
+        private ProcessorRegistry $processorRegistry,
     ) {}
 
     public function build(string $channelId): LoggerInterface
     {
-        $definition = $this->config->channel($channelId);
-        $logger = new Logger($definition->name);
+        $channelDefinition = $this->monologConfig->channel($channelId);
+        $logger = new Logger($channelDefinition->name);
 
-        foreach (array_reverse($definition->handlers) as $handlerId) {
-            $logger->pushHandler($this->handlers->get($handlerId));
+        foreach (array_reverse($channelDefinition->handlers) as $handlerId) {
+            $logger->pushHandler($this->handlerRegistry->get($handlerId));
         }
 
-        foreach (array_reverse($definition->processors) as $processorId) {
-            $logger->pushProcessor($this->processors->get($processorId));
+        foreach (array_reverse($channelDefinition->processors) as $processorId) {
+            $logger->pushProcessor($this->processorRegistry->get($processorId));
         }
 
         return $logger;

@@ -11,10 +11,10 @@ use Sirix\Monolog\Config\FormatterDefinition;
 
 class SyslogFormatterFactory implements FormatterFactoryInterface
 {
-    public function create(ContainerInterface $container, FormatterDefinition $definition): SyslogFormatter
+    public function create(ContainerInterface $container, FormatterDefinition $formatterDefinition): SyslogFormatter
     {
-        $options = ConfigReader::fromArray($definition->options, self::class);
+        $configReader = ConfigReader::fromArray($formatterDefinition->options, self::class);
 
-        return new SyslogFormatter($options->string('application_name', '-'));
+        return new SyslogFormatter($configReader->string('application_name', '-'));
     }
 }

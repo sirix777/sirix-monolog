@@ -13,11 +13,11 @@ use Sirix\Monolog\Processor\ProcessorFactoryInterface;
 
 final class CustomExtraProcessorFactory implements ProcessorFactoryInterface
 {
-    public function create(ContainerInterface $container, ProcessorDefinition $definition): ProcessorInterface
+    public function create(ContainerInterface $container, ProcessorDefinition $processorDefinition): ProcessorInterface
     {
-        $options = ConfigReader::fromArray($definition->options, self::class);
-        $field = $options->requiredNonEmptyString('field');
-        $value = $options->required('value');
+        $configReader = ConfigReader::fromArray($processorDefinition->options, self::class);
+        $field = $configReader->requiredNonEmptyString('field');
+        $value = $configReader->required('value');
 
         return new class($field, $value) implements ProcessorInterface {
             public function __construct(private readonly string $field, private readonly mixed $value) {}

@@ -14,21 +14,21 @@ class InsightOpsHandlerFactory implements HandlerFactoryInterface
 {
     use HandlerOptionTrait;
 
-    public function create(ContainerInterface $container, HandlerDefinition $definition): InsightOpsHandler
+    public function create(ContainerInterface $container, HandlerDefinition $handlerDefinition): InsightOpsHandler
     {
-        $options = ConfigReader::fromArray($definition->options, self::class);
+        $configReader = ConfigReader::fromArray($handlerDefinition->options, self::class);
 
         return new InsightOpsHandler(
-            $options->requiredNonEmptyString('token'),
-            $options->string('region', 'us'),
-            $options->bool('use_ssl', true),
-            $options->enum('level', Level::class, Level::Debug),
-            $options->bool('bubble', true),
-            $options->bool('persistent', false),
-            $this->floatOption($definition->options, 'timeout', 0.0, 'InsightOps'),
-            $this->floatOption($definition->options, 'writing_timeout', 10.0, 'InsightOps'),
-            $this->nullableFloatOption($definition->options, 'connection_timeout', 'InsightOps'),
-            $this->nullableIntOption($definition->options, 'chunk_size', 'InsightOps'),
+            $configReader->requiredNonEmptyString('token'),
+            $configReader->string('region', 'us'),
+            $configReader->bool('use_ssl', true),
+            $configReader->enum('level', Level::class, Level::Debug),
+            $configReader->bool('bubble', true),
+            $configReader->bool('persistent', false),
+            $this->floatOption($handlerDefinition->options, 'timeout', 0.0, 'InsightOps'),
+            $this->floatOption($handlerDefinition->options, 'writing_timeout', 10.0, 'InsightOps'),
+            $this->nullableFloatOption($handlerDefinition->options, 'connection_timeout', 'InsightOps'),
+            $this->nullableIntOption($handlerDefinition->options, 'chunk_size', 'InsightOps'),
         );
     }
 }

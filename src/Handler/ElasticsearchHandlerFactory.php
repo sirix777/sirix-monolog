@@ -8,7 +8,9 @@ use Elasticsearch\Client;
 use Monolog\Handler\ElasticsearchHandler;
 use Monolog\Handler\HandlerInterface;
 use Monolog\Level;
+use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
+use ReflectionException;
 use Sirix\ContainerResolver\ConfigReader;
 use Sirix\Monolog\Config\HandlerDefinition;
 
@@ -16,18 +18,22 @@ class ElasticsearchHandlerFactory implements HandlerFactoryInterface
 {
     use ReflectiveHandlerFactoryTrait;
 
-    public function create(ContainerInterface $container, HandlerDefinition $definition): HandlerInterface
+    /**
+     * @throws ContainerExceptionInterface
+     * @throws ReflectionException
+     */
+    public function create(ContainerInterface $container, HandlerDefinition $handlerDefinition): HandlerInterface
     {
-        $options = ConfigReader::fromArray($definition->options, self::class);
+        $configReader = ConfigReader::fromArray($handlerDefinition->options, self::class);
 
         return $this->newHandler(ElasticsearchHandler::class, [
-            $this->serviceObject($container, $definition->options['client'] ?? null, 'client', 'Elasticsearch', [
+            $this->serviceObject($container, $handlerDefinition->options['client'] ?? null, 'client', 'Elasticsearch', [
                 Client::class,
                 'Elastic\Elasticsearch\Client',
             ]),
-            $options->array('handler_options', []),
-            $options->enum('level', Level::class, Level::Debug),
-            $options->bool('bubble', true),
+            $configReader->array('handler_options', []),
+            $configReader->enum('level', Level::class, Level::Debug),
+            $configReader->bool('bubble', true),
         ]);
     }
 }

@@ -14,20 +14,20 @@ class LogglyHandlerFactory implements HandlerFactoryInterface
 {
     use HandlerOptionTrait;
 
-    public function create(ContainerInterface $container, HandlerDefinition $definition): LogglyHandler
+    public function create(ContainerInterface $container, HandlerDefinition $handlerDefinition): LogglyHandler
     {
-        $options = ConfigReader::fromArray($definition->options, self::class);
+        $configReader = ConfigReader::fromArray($handlerDefinition->options, self::class);
 
-        $handler = new LogglyHandler(
-            $options->requiredNonEmptyString('token'),
-            $options->enum('level', Level::class, Level::Debug),
-            $options->bool('bubble', true),
+        $logglyHandler = new LogglyHandler(
+            $configReader->requiredNonEmptyString('token'),
+            $configReader->enum('level', Level::class, Level::Debug),
+            $configReader->bool('bubble', true),
         );
 
-        if ($options->has('tag')) {
-            $handler->setTag($this->stringOrStringListOption($definition->options['tag'], 'tag', 'Loggly'));
+        if ($configReader->has('tag')) {
+            $logglyHandler->setTag($this->stringOrStringListOption($handlerDefinition->options['tag'], 'tag', 'Loggly'));
         }
 
-        return $handler;
+        return $logglyHandler;
     }
 }

@@ -11,10 +11,10 @@ use Sirix\Monolog\Config\FormatterDefinition;
 
 class HtmlFormatterFactory implements FormatterFactoryInterface
 {
-    public function create(ContainerInterface $container, FormatterDefinition $definition): HtmlFormatter
+    public function create(ContainerInterface $container, FormatterDefinition $formatterDefinition): HtmlFormatter
     {
-        $options = ConfigReader::fromArray($definition->options, self::class);
+        $configReader = ConfigReader::fromArray($formatterDefinition->options, self::class);
 
-        return new HtmlFormatter($options->optionalString('date_format'));
+        return new HtmlFormatter($configReader->optionalString('date_format'));
     }
 }

@@ -11,10 +11,10 @@ use Sirix\Monolog\Config\FormatterDefinition;
 
 class WildfireFormatterFactory implements FormatterFactoryInterface
 {
-    public function create(ContainerInterface $container, FormatterDefinition $definition): WildfireFormatter
+    public function create(ContainerInterface $container, FormatterDefinition $formatterDefinition): WildfireFormatter
     {
-        $options = ConfigReader::fromArray($definition->options, self::class);
+        $configReader = ConfigReader::fromArray($formatterDefinition->options, self::class);
 
-        return new WildfireFormatter($options->optionalString('date_format'));
+        return new WildfireFormatter($configReader->optionalString('date_format'));
     }
 }

@@ -174,9 +174,9 @@ final class FormatterFactoryTest extends TestCase
         $registry = $container->get(FormatterRegistry::class);
         $this->assertInstanceOf(FormatterRegistry::class, $registry);
 
-        $line = $registry->get('line');
-        $this->assertInstanceOf(LineFormatter::class, $line);
-        $this->assertSame('Hello', $line->format($this->record()));
+        $formatter = $registry->get('line');
+        $this->assertInstanceOf(LineFormatter::class, $formatter);
+        $this->assertSame('Hello', $formatter->format($this->record()));
 
         $json = $registry->get('json');
         $this->assertInstanceOf(JsonFormatter::class, $json);

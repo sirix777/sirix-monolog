@@ -64,7 +64,7 @@ final class BasicHandlerFactoryTest extends TestCase
 
     public function testPsrHandlerProxiesToConfiguredLogger(): void
     {
-        $innerLogger = new CollectingLogger();
+        $collectingLogger = new CollectingLogger();
         $container = $this->container([
             'psr' => [
                 C::Type->value => HandlerType::Psr,
@@ -74,7 +74,7 @@ final class BasicHandlerFactoryTest extends TestCase
                     'include_extra' => true,
                 ],
             ],
-        ], ['psr'], ['inner.logger' => $innerLogger]);
+        ], ['psr'], ['inner.logger' => $collectingLogger]);
 
         $handler = $container->get(HandlerRegistry::class)->get('psr');
         $this->assertInstanceOf(PsrHandler::class, $handler);
@@ -83,10 +83,10 @@ final class BasicHandlerFactoryTest extends TestCase
         $this->assertInstanceOf(Logger::class, $logger);
         $logger->warning('Delegated message', ['foo' => 'bar']);
 
-        $this->assertCount(1, $innerLogger->records);
-        $this->assertSame(LogLevel::WARNING, $innerLogger->records[0]['level']);
-        $this->assertSame('Delegated message', $innerLogger->records[0]['message']);
-        $this->assertSame('bar', $innerLogger->records[0]['context']['foo']);
+        $this->assertCount(1, $collectingLogger->records);
+        $this->assertSame(LogLevel::WARNING, $collectingLogger->records[0]['level']);
+        $this->assertSame('Delegated message', $collectingLogger->records[0]['message']);
+        $this->assertSame('bar', $collectingLogger->records[0]['context']['foo']);
     }
 
     public function testHandlerProcessorsKeepConfiguredOrder(): void
@@ -157,8 +157,8 @@ final class BasicHandlerFactoryTest extends TestCase
         $handler = $container->get(HandlerRegistry::class)->get('stream');
         $this->assertInstanceOf(StreamHandler::class, $handler);
 
-        $property = (new ReflectionClass(StreamHandler::class))->getProperty('filePermission');
-        $this->assertNull($property->getValue($handler));
+        $reflectionProperty = (new ReflectionClass(StreamHandler::class))->getProperty('filePermission');
+        $this->assertNull($reflectionProperty->getValue($handler));
     }
 
     public function testRotatingFileHandlerCanBeCreated(): void

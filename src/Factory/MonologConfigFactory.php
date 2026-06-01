@@ -17,8 +17,8 @@ final class MonologConfigFactory
      */
     public function __invoke(ContainerInterface $container): MonologConfig
     {
-        $resolver = ContainerResolver::forFactory($container, self::class);
+        $containerResolver = ContainerResolver::forFactory($container, self::class);
 
-        return (new MonologConfigReader())->read($resolver->optionalArray('config'));
+        return (new MonologConfigReader())->read($containerResolver->optionalArray());
     }
 }

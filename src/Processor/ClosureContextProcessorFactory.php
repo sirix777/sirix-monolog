@@ -10,7 +10,7 @@ use Sirix\Monolog\Config\ProcessorDefinition;
 
 class ClosureContextProcessorFactory implements ProcessorFactoryInterface
 {
-    public function create(ContainerInterface $container, ProcessorDefinition $definition): ClosureContextProcessor
+    public function create(ContainerInterface $container, ProcessorDefinition $processorDefinition): ClosureContextProcessor
     {
         return new ClosureContextProcessor();
     }

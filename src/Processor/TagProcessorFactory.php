@@ -11,10 +11,10 @@ use Sirix\Monolog\Config\ProcessorDefinition;
 
 class TagProcessorFactory implements ProcessorFactoryInterface
 {
-    public function create(ContainerInterface $container, ProcessorDefinition $definition): TagProcessor
+    public function create(ContainerInterface $container, ProcessorDefinition $processorDefinition): TagProcessor
     {
-        $options = ConfigReader::fromArray($definition->options, self::class);
+        $configReader = ConfigReader::fromArray($processorDefinition->options, self::class);
 
-        return new TagProcessor($options->stringList('tags', []));
+        return new TagProcessor($configReader->stringList('tags', []));
     }
 }
