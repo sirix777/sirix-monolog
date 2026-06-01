@@ -2,6 +2,8 @@
 
 All package configuration lives under the `monolog` root key. The recommended way to avoid typos is to use `Sirix\Monolog\Enum\ConfigKey` constants.
 
+The example below shows all supported top-level sections. It is a shape reference, not a minimal runnable configuration. Omit sections you do not need; an explicitly empty section is treated as an override and disables that section's defaults.
+
 ```php
 <?php
 
@@ -23,7 +25,7 @@ return [
 
 ## Defaults
 
-If no configuration is provided, the package creates a safe default logger:
+When the matching configuration section is omitted, the package creates a safe default logger:
 
 - service `logger` → channel `default`
 - service `Monolog\Logger` → channel `default`
@@ -33,9 +35,39 @@ If no configuration is provided, the package creates a safe default logger:
 
 This means an unconfigured logger is safe to request and will discard records.
 
+Defaults are applied per section only when that section is missing. For example, if you configure `channels` and `handlers` but omit `logger_services`, the default service ids still point to the `default` channel. If you explicitly set `logger_services` to an empty array, there are no configured logger services.
+
 ## Logger services
 
 `logger_services` maps container service ids to channel ids. A service value can be either a channel id string or an object-like array with a base channel id and an optional Monolog channel name override.
+
+You usually do not need this section in the basic configuration. The package already maps the common logger service ids to the `default` channel, so this is enough when your application defines a `default` channel:
+
+```php
+<?php
+
+use Sirix\Monolog\Enum\ConfigKey;
+
+return [
+    ConfigKey::Root->value => [
+        ConfigKey::Channels->value => [
+            'default' => [
+                ConfigKey::Name->value => 'app',
+                ConfigKey::Handlers->value => ['stream'],
+            ],
+        ],
+        ConfigKey::Handlers->value => [
+            'stream' => [
+                // handler definition...
+            ],
+        ],
+    ],
+];
+```
+
+Add `logger_services` only when you need to expose additional logger service ids, point the default service id to a different channel, or override the Monolog record `channel` name for a specific service.
+
+If you provide this section, it replaces the default service map for this section. Keep at least the `logger` entry when using the provided `ConfigProvider`, because `Monolog\Logger` and `Psr\Log\LoggerInterface` are registered as aliases to `logger`. Keep the class-name entries too if your container resolves those ids through `LoggerFactory` directly instead of aliases.
 
 ```php
 <?php

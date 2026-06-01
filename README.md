@@ -47,8 +47,6 @@ Create `config/autoload/monolog.global.php`:
 <?php
 
 use Monolog\Level;
-use Monolog\Logger;
-use Psr\Log\LoggerInterface;
 use Sirix\Monolog\Enum\ConfigKey;
 use Sirix\Monolog\Enum\FormatterType;
 use Sirix\Monolog\Enum\HandlerType;
@@ -56,11 +54,6 @@ use Sirix\Monolog\Enum\ProcessorType;
 
 return [
     ConfigKey::Root->value => [
-        ConfigKey::LoggerServices->value => [
-            'logger' => 'default',
-            Logger::class => 'default',
-            LoggerInterface::class => 'default',
-        ],
         ConfigKey::Channels->value => [
             'default' => [
                 ConfigKey::Name->value => 'app',
