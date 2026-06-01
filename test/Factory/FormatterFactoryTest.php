@@ -50,6 +50,7 @@ final class FormatterFactoryTest extends TestCase
                     'date_format' => 'U',
                     'allow_inline_line_breaks' => true,
                     'ignore_empty_context_and_extra' => true,
+                    'include_stacktraces' => true,
                 ],
             ],
             'json' => [
@@ -233,7 +234,11 @@ final class FormatterFactoryTest extends TestCase
 
         $googleCloudLogging = $registry->get('google_cloud_logging');
         $this->assertInstanceOf(GoogleCloudLoggingFormatter::class, $googleCloudLogging);
-        $googleCloudLoggingOutput = json_decode($googleCloudLogging->format($this->record()), true, flags: JSON_THROW_ON_ERROR);
+        $googleCloudLoggingOutput = json_decode(
+            $googleCloudLogging->format($this->record()),
+            true,
+            flags: JSON_THROW_ON_ERROR,
+        );
         $this->assertSame('INFO', $googleCloudLoggingOutput['severity']);
         $this->assertArrayHasKey('time', $googleCloudLoggingOutput);
 

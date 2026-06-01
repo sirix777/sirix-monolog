@@ -10,6 +10,8 @@ use Sirix\Monolog\Config\MonologConfig;
 use Sirix\Monolog\Registry\HandlerRegistry;
 use Sirix\Monolog\Registry\ProcessorRegistry;
 
+use function array_reverse;
+
 final readonly class LoggerBuilder
 {
     public function __construct(
@@ -23,11 +25,11 @@ final readonly class LoggerBuilder
         $definition = $this->config->channel($channelId);
         $logger = new Logger($definition->name);
 
-        foreach ($definition->handlers as $handlerId) {
+        foreach (array_reverse($definition->handlers) as $handlerId) {
             $logger->pushHandler($this->handlers->get($handlerId));
         }
 
-        foreach ($definition->processors as $processorId) {
+        foreach (array_reverse($definition->processors) as $processorId) {
             $logger->pushProcessor($this->processors->get($processorId));
         }
 

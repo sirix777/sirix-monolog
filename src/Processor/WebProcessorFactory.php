@@ -25,21 +25,26 @@ class WebProcessorFactory implements ProcessorFactoryInterface
         );
     }
 
+    /**
+     * @return null|array<string, mixed>|ArrayAccess<mixed, mixed>
+     */
     private function serverData(ContainerInterface $container, mixed $serverData): mixed
     {
         if (null === $serverData) {
             return null;
         }
 
+        if (is_string($serverData)) {
+            $serverData = ContainerResolver::forContext($container, self::class)->getExisting($serverData);
+        }
+
         if (is_array($serverData) || $serverData instanceof ArrayAccess) {
             return $serverData;
         }
 
-        if (is_string($serverData)) {
-            return ContainerResolver::forContext($container, self::class)->getExisting($serverData);
-        }
-
-        throw new InvalidConfigException('Web processor option "server_data" must be an array, ArrayAccess, service id, or null.');
+        throw new InvalidConfigException(
+            'Web processor option "server_data" must be an array, ArrayAccess, service id, or null.',
+        );
     }
 
     /**

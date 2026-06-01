@@ -10,7 +10,10 @@ use Psr\Container\ContainerInterface;
 use Sirix\ContainerResolver\ConfigReader;
 use Sirix\ContainerResolver\ContainerResolver;
 use Sirix\Monolog\Config\HandlerDefinition;
+use Sirix\Monolog\Exception\InvalidConfigException;
 
+use function array_key_exists;
+use function is_int;
 use function is_string;
 
 class StreamHandlerFactory implements HandlerFactoryInterface
@@ -30,8 +33,24 @@ class StreamHandlerFactory implements HandlerFactoryInterface
             $stream,
             $level,
             $options->bool('bubble', true),
-            $options->int('file_permission', 0o644),
+            $this->nullableInt($definition->options, 'file_permission'),
             $options->bool('use_locking', false),
         );
+    }
+
+    /**
+     * @param array<string, mixed> $options
+     */
+    private function nullableInt(array $options, string $key): ?int
+    {
+        if (! array_key_exists($key, $options) || null === $options[$key]) {
+            return null;
+        }
+
+        if (! is_int($options[$key])) {
+            throw new InvalidConfigException("Stream handler option '{$key}' must be an int or null.");
+        }
+
+        return $options[$key];
     }
 }

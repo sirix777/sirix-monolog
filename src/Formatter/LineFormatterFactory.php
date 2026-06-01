@@ -9,9 +9,6 @@ use Psr\Container\ContainerInterface;
 use Sirix\ContainerResolver\ConfigReader;
 use Sirix\Monolog\Config\FormatterDefinition;
 
-/**
- * @SuppressWarnings("LongVariable")
- */
 class LineFormatterFactory implements FormatterFactoryInterface
 {
     public function create(ContainerInterface $container, FormatterDefinition $definition): LineFormatter
@@ -23,6 +20,7 @@ class LineFormatterFactory implements FormatterFactoryInterface
             $options->optionalString('date_format'),
             $options->bool('allow_inline_line_breaks', false),
             $options->bool('ignore_empty_context_and_extra', false),
+            $options->bool('include_stacktraces', false),
         );
     }
 }

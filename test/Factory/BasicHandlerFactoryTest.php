@@ -16,6 +16,7 @@ use Monolog\Handler\ProcessHandler;
 use Monolog\Handler\PsrHandler;
 use Monolog\Handler\RotatingFileHandler;
 use Monolog\Handler\SocketHandler;
+use Monolog\Handler\StreamHandler;
 use Monolog\Handler\SyslogHandler;
 use Monolog\Handler\SyslogUdpHandler;
 use Monolog\Handler\TelegramBotHandler;
@@ -25,10 +26,14 @@ use Monolog\Logger;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
+use ReflectionClass;
 use Sirix\Monolog\ConfigProvider;
 use Sirix\Monolog\Enum\ConfigKey as C;
+use Sirix\Monolog\Enum\FormatterType;
 use Sirix\Monolog\Enum\HandlerType;
+use Sirix\Monolog\Exception\InvalidConfigException;
 use Sirix\Monolog\Registry\HandlerRegistry;
+use Sirix\Test\Monolog\Support\AppendMessageProcessorFactory;
 use Sirix\Test\Monolog\Support\ArrayContainer;
 use Sirix\Test\Monolog\Support\CollectingLogger;
 
@@ -82,6 +87,78 @@ final class BasicHandlerFactoryTest extends TestCase
         $this->assertSame(LogLevel::WARNING, $innerLogger->records[0]['level']);
         $this->assertSame('Delegated message', $innerLogger->records[0]['message']);
         $this->assertSame('bar', $innerLogger->records[0]['context']['foo']);
+    }
+
+    public function testHandlerProcessorsKeepConfiguredOrder(): void
+    {
+        $container = $this->container([
+            'test' => [
+                C::Type->value => HandlerType::Test,
+                C::Processors->value => ['append_a', 'append_b'],
+            ],
+        ], ['test'], processors: [
+            'append_a' => [
+                C::Type->value => 'append_message',
+                C::Options->value => [
+                    'suffix' => 'A',
+                ],
+            ],
+            'append_b' => [
+                C::Type->value => 'append_message',
+                C::Options->value => [
+                    'suffix' => 'B',
+                ],
+            ],
+        ], processorFactories: [
+            'append_message' => AppendMessageProcessorFactory::class,
+        ]);
+
+        $logger = $container->get(LoggerInterface::class);
+        $this->assertInstanceOf(Logger::class, $logger);
+        $logger->info('Hello');
+
+        $handler = $container->get(HandlerRegistry::class)->get('test');
+        $this->assertInstanceOf(TestHandler::class, $handler);
+        $records = $handler->getRecords();
+        $this->assertCount(1, $records);
+        $this->assertSame('HelloAB', $records[0]->message);
+    }
+
+    public function testFormatterOnUnsupportedHandlerFailsFast(): void
+    {
+        $container = $this->container([
+            'noop' => [
+                C::Type->value => HandlerType::Noop,
+                C::Formatter->value => 'line',
+            ],
+        ], ['noop'], formatters: [
+            'line' => [
+                C::Type->value => FormatterType::Line,
+            ],
+        ]);
+
+        $this->expectException(InvalidConfigException::class);
+        $this->expectExceptionMessage("Handler 'noop' has a formatter configured but does not support formatters.");
+
+        $container->get(LoggerInterface::class);
+    }
+
+    public function testStreamHandlerUsesMonologDefaultFilePermission(): void
+    {
+        $container = $this->container([
+            'stream' => [
+                C::Type->value => HandlerType::Stream,
+                C::Options->value => [
+                    'stream' => 'php://temp',
+                ],
+            ],
+        ], ['stream']);
+
+        $handler = $container->get(HandlerRegistry::class)->get('stream');
+        $this->assertInstanceOf(StreamHandler::class, $handler);
+
+        $property = (new ReflectionClass(StreamHandler::class))->getProperty('filePermission');
+        $this->assertNull($property->getValue($handler));
     }
 
     public function testRotatingFileHandlerCanBeCreated(): void
@@ -266,9 +343,18 @@ final class BasicHandlerFactoryTest extends TestCase
      * @param array<string, array<string, mixed>> $handlers
      * @param list<string>                        $channelHandlers
      * @param array<string, mixed>                $services
+     * @param array<string, array<string, mixed>> $processors
+     * @param array<string, class-string>         $processorFactories
+     * @param array<string, array<string, mixed>> $formatters
      */
-    private function container(array $handlers, array $channelHandlers, array $services = []): ArrayContainer
-    {
+    private function container(
+        array $handlers,
+        array $channelHandlers,
+        array $services = [],
+        array $processors = [],
+        array $processorFactories = [],
+        array $formatters = [],
+    ): ArrayContainer {
         $providerConfig = (new ConfigProvider())();
         $dependencies = $providerConfig['dependencies'];
 
@@ -283,6 +369,9 @@ final class BasicHandlerFactoryTest extends TestCase
                             ],
                         ],
                         C::Handlers->value => $handlers,
+                        C::Formatters->value => $formatters,
+                        C::Processors->value => $processors,
+                        C::ProcessorFactories->value => $processorFactories,
                     ],
                 ],
                 ...$services,

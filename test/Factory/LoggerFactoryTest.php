@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Sirix\Test\Monolog\Factory;
 
 use Monolog\Handler\NoopHandler;
+use Monolog\Handler\TestHandler;
 use Monolog\Logger;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
@@ -14,6 +15,7 @@ use Sirix\Monolog\Enum\FormatterType;
 use Sirix\Monolog\Enum\HandlerType;
 use Sirix\Monolog\Enum\ProcessorType;
 use Sirix\Monolog\Factory\LoggerFactory;
+use Sirix\Monolog\Registry\HandlerRegistry;
 use Sirix\Test\Monolog\Support\ArrayContainer;
 
 use function fclose;
@@ -34,6 +36,37 @@ final class LoggerFactoryTest extends TestCase
         $this->assertInstanceOf(NoopHandler::class, $logger->getHandlers()[0]);
 
         $logger->info('Message discarded by the default noop handler');
+    }
+
+    public function testConfiguredHandlerOrderIsPreserved(): void
+    {
+        $container = ArrayContainer::fromConfigProvider([
+            C::Root->value => [
+                C::Channels->value => [
+                    'default' => [
+                        C::Handlers->value => ['first', 'second'],
+                    ],
+                ],
+                C::Handlers->value => [
+                    'first' => [
+                        C::Type->value => HandlerType::Test,
+                    ],
+                    'second' => [
+                        C::Type->value => HandlerType::Test,
+                    ],
+                ],
+            ],
+        ], (new ConfigProvider())());
+
+        $logger = $container->get(LoggerInterface::class);
+        $registry = $container->get(HandlerRegistry::class);
+
+        $this->assertInstanceOf(Logger::class, $logger);
+        $this->assertInstanceOf(HandlerRegistry::class, $registry);
+        $this->assertSame($registry->get('first'), $logger->getHandlers()[0]);
+        $this->assertSame($registry->get('second'), $logger->getHandlers()[1]);
+        $this->assertInstanceOf(TestHandler::class, $logger->getHandlers()[0]);
+        $this->assertInstanceOf(TestHandler::class, $logger->getHandlers()[1]);
     }
 
     public function testLoggerWritesThroughConfiguredStreamFormatterAndProcessor(): void

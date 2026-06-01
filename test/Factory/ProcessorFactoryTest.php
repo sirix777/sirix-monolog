@@ -22,6 +22,7 @@ use Sirix\Monolog\Enum\ProcessorType;
 use Sirix\Monolog\Registry\HandlerRegistry;
 use Sirix\Monolog\Registry\ProcessorRegistry;
 use Sirix\Redaction\Rule\FullMaskRule;
+use Sirix\Test\Monolog\Support\AppendMessageProcessorFactory;
 use Sirix\Test\Monolog\Support\ArrayContainer;
 use Sirix\Test\Monolog\Support\CustomExtraProcessorFactory;
 
@@ -34,6 +35,9 @@ final class ProcessorFactoryTest extends TestCase
         $container = $this->container([
             'psr_message' => [
                 C::Type->value => ProcessorType::PsrLogMessage,
+                C::Options->value => [
+                    'remove_used_context_fields' => true,
+                ],
             ],
             'memory_usage' => [
                 C::Type->value => ProcessorType::MemoryUsage,
@@ -105,6 +109,7 @@ final class ProcessorFactoryTest extends TestCase
         $record = $this->firstRecord($container);
 
         $this->assertSame('Hello Ada', $record->message);
+        $this->assertArrayNotHasKey('name', $record->context);
         $this->assertArrayHasKey('memory_usage', $record->extra);
         $this->assertArrayHasKey('memory_peak_usage', $record->extra);
         $this->assertArrayHasKey('process_id', $record->extra);
@@ -183,6 +188,34 @@ final class ProcessorFactoryTest extends TestCase
         $record = $this->firstRecord($container);
 
         $this->assertSame('******', $record->context['password']);
+    }
+
+    public function testChannelProcessorsKeepConfiguredOrder(): void
+    {
+        $container = $this->container([
+            'append_a' => [
+                C::Type->value => 'append_message',
+                C::Options->value => [
+                    'suffix' => 'A',
+                ],
+            ],
+            'append_b' => [
+                C::Type->value => 'append_message',
+                C::Options->value => [
+                    'suffix' => 'B',
+                ],
+            ],
+        ], ['append_a', 'append_b'], [
+            'append_message' => AppendMessageProcessorFactory::class,
+        ]);
+
+        $logger = $container->get(LoggerInterface::class);
+        $this->assertInstanceOf(Logger::class, $logger);
+        $logger->info('Hello');
+
+        $record = $this->firstRecord($container);
+
+        $this->assertSame('HelloAB', $record->message);
     }
 
     public function testCustomProcessorFactoryCanBeRegisteredAndUsed(): void

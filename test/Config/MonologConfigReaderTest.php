@@ -13,6 +13,7 @@ use Sirix\Monolog\Enum\FormatterType;
 use Sirix\Monolog\Enum\HandlerType;
 use Sirix\Monolog\Exception\InvalidConfigException;
 use Sirix\Monolog\Exception\MissingConfigException;
+use Sirix\Monolog\Exception\UnknownChannelException;
 use Sirix\Monolog\Handler\NoopHandlerFactory;
 use Sirix\Test\Monolog\Support\CustomNoopHandlerFactory;
 
@@ -83,6 +84,24 @@ final class MonologConfigReaderTest extends TestCase
 
         $this->assertSame('default', $loggerService->channel);
         $this->assertSame('CryptoTransactionService', $loggerService->name);
+    }
+
+    public function testExplicitLoggerServicesReplaceDefaults(): void
+    {
+        $config = (new MonologConfigReader())->read([
+            C::Root->value => [
+                C::LoggerServices->value => [
+                    'logger_audit' => 'default',
+                ],
+            ],
+        ]);
+
+        $this->assertSame('default', $config->channelForLoggerService('logger_audit'));
+
+        $this->expectException(UnknownChannelException::class);
+        $this->expectExceptionMessage("Unable to resolve monolog channel for logger service 'logger'.");
+
+        $config->channelForLoggerService('logger');
     }
 
     public function testMissingLoggerServiceChannelReferenceFailsEarly(): void

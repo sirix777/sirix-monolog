@@ -9,9 +9,6 @@ use Psr\Container\ContainerInterface;
 use Sirix\ContainerResolver\ConfigReader;
 use Sirix\Monolog\Config\FormatterDefinition;
 
-/**
- * @SuppressWarnings("LongVariable")
- */
 class MongoDBFormatterFactory implements FormatterFactoryInterface
 {
     public function create(ContainerInterface $container, FormatterDefinition $definition): MongoDBFormatter

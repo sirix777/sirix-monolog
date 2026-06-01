@@ -8,7 +8,10 @@ Processors run for every record that reaches the logger or handler they are atta
 
 Creates `Monolog\Processor\PsrLogMessageProcessor`.
 
-No options.
+Options:
+
+- `date_format` optional
+- `remove_used_context_fields` default: `false`
 
 ## `closure_context`
 

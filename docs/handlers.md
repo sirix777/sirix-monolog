@@ -22,7 +22,7 @@ Options:
 - `stream` required: stream resource, path, or container service id resolving to a stream
 - `level` default: `Level::Debug`
 - `bubble` default: `true`
-- `file_permission` default: `0o644`
+- `file_permission` default: Monolog default when omitted/null
 - `use_locking` default: `false`
 
 Set `use_locking` to `true` when multiple processes write to the same file and you want `flock()` around each write. Keep it disabled for the Monolog default behavior and lower per-record overhead, especially when writing to `php://stderr` or container-managed streams.

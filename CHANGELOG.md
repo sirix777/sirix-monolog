@@ -12,6 +12,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Replace legacy mutable factories with strict handler, formatter, and processor factory interfaces.
 - Move built-in config to enum-backed `snake_case` type and option names.
 - Use `sirix/container-resolver` for strict container/config resolution.
+- Preserve configured logger/handler processor order when building Monolog stacks.
+- Use Monolog's default stream file permission handling when `file_permission` is omitted.
+- Move `ext-json` from runtime requirements to development requirements and suggestions.
+
+### Fixed
+- Fail fast when a formatter or handler-local processor is configured on a handler that does not support it.
+- Validate resolved `web` processor `server_data` services before constructing Monolog's processor.
 
 ### Removed
 - Remove `MonologFactory`, `ChannelChanger`, legacy service managers, mapper classes, and config wrapper classes.

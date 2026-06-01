@@ -114,6 +114,7 @@ use Sirix\Monolog\Enum\HandlerType;
 return [
     ConfigKey::Root->value => [
         ConfigKey::LoggerServices->value => [
+            'logger' => 'default',
             'logger_audit' => 'audit',
             'logger_crypto_transaction' => [
                 ConfigKey::Channel->value => 'audit',
@@ -121,12 +122,22 @@ return [
             ],
         ],
         ConfigKey::Channels->value => [
+            'default' => [
+                ConfigKey::Name->value => 'app',
+                ConfigKey::Handlers->value => ['app_file'],
+            ],
             'audit' => [
                 ConfigKey::Name->value => 'audit',
                 ConfigKey::Handlers->value => ['audit_file'],
             ],
         ],
         ConfigKey::Handlers->value => [
+            'app_file' => [
+                ConfigKey::Type->value => HandlerType::Stream,
+                ConfigKey::Options->value => [
+                    'stream' => 'data/log/app.log',
+                ],
+            ],
             'audit_file' => [
                 ConfigKey::Type->value => HandlerType::Stream,
                 ConfigKey::Options->value => [
@@ -138,7 +149,7 @@ return [
 ];
 ```
 
-Register additional logger services with `Sirix\Monolog\Factory\LoggerFactory` in your container if your framework does not auto-wire them from the dependency config.
+Providing `logger_services` replaces the default service map for that section, so keep the `logger` entry when the default logger service should remain available. Register additional logger services with `Sirix\Monolog\Factory\LoggerFactory` in your container if your framework does not auto-wire them from the dependency config.
 
 In the example above, `logger_crypto_transaction` reuses the `audit` channel's handlers and processors but writes `CryptoTransactionService` into Monolog's record `channel` field.
 

@@ -14,6 +14,7 @@ Options:
 - `date_format` optional
 - `allow_inline_line_breaks` default: `false`
 - `ignore_empty_context_and_extra` default: `false`
+- `include_stacktraces` default: `false`
 
 ## `json`
 

@@ -15,6 +15,8 @@ use Sirix\Redaction\Redactor;
 use Sirix\Redaction\RedactorInterface;
 
 use function array_key_exists;
+use function class_exists;
+use function interface_exists;
 use function is_callable;
 use function is_int;
 
@@ -22,12 +24,28 @@ class RedactorProcessorFactory implements ProcessorFactoryInterface
 {
     public function create(ContainerInterface $container, ProcessorDefinition $definition): RedactorProcessor
     {
+        $this->assertRedactionAvailable();
+
         $resolver = ContainerResolver::forContext($container, self::class);
         $redactor = $container->has(RedactorInterface::class)
             ? $resolver->getAs(RedactorInterface::class, RedactorInterface::class)
             : $this->createRedactorFromReader($definition->options);
 
         return new RedactorProcessor($redactor);
+    }
+
+    private function assertRedactionAvailable(): void
+    {
+        if (
+            class_exists(RedactorProcessor::class)
+            && class_exists(Redactor::class)
+            && interface_exists(RedactorInterface::class)
+            && class_exists(ObjectViewModeEnum::class)
+        ) {
+            return;
+        }
+
+        throw new InvalidConfigException('The redactor processor requires the optional sirix/redaction package.');
     }
 
     /**
@@ -62,7 +80,9 @@ class RedactorProcessorFactory implements ProcessorFactoryInterface
         if (array_key_exists('on_limit_exceeded_callback', $options)) {
             $callback = $options['on_limit_exceeded_callback'];
             if (null !== $callback && ! is_callable($callback)) {
-                throw new InvalidConfigException('Redactor option "on_limit_exceeded_callback" must be callable or null.');
+                throw new InvalidConfigException(
+                    'Redactor option "on_limit_exceeded_callback" must be callable or null.',
+                );
             }
 
             $redactor->setOnLimitExceededCallback($callback);
