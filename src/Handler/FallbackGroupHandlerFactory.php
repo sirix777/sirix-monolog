@@ -5,25 +5,26 @@ declare(strict_types=1);
 namespace Sirix\Monolog\Handler;
 
 use Monolog\Handler\FallbackGroupHandler;
-use Psr\Container\ContainerExceptionInterface;
-use Psr\Container\NotFoundExceptionInterface;
+use Psr\Container\ContainerInterface;
+use Sirix\ContainerResolver\ConfigReader;
+use Sirix\Monolog\Config\HandlerDefinition;
 
-class FallbackGroupHandlerFactory
+class FallbackGroupHandlerFactory implements HandlerFactoryInterface, HandlerRegistryAwareInterface
 {
-    use GetHandlersTrait;
+    use HandlerRegistryTrait;
 
-    /**
-     * @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface
-     */
-    public function __invoke(array $options): FallbackGroupHandler
+    public function create(ContainerInterface $container, HandlerDefinition $handlerDefinition): FallbackGroupHandler
     {
-        $handlers = $this->getHandlers($options);
-        $bubble = (bool) ($options['bubble'] ?? true);
+        $configReader = ConfigReader::fromArray($handlerDefinition->options, self::class);
+        $handlers = [];
+
+        foreach ($configReader->requiredNonEmptyStringList('handlers') as $handlerId) {
+            $handlers[] = $this->getHandlerRegistry()->get($handlerId);
+        }
 
         return new FallbackGroupHandler(
             $handlers,
-            $bubble
+            $configReader->bool('bubble', true),
         );
     }
 }

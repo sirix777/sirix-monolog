@@ -6,27 +6,37 @@ namespace Sirix\Monolog\Formatter;
 
 use Monolog\Formatter\JsonFormatter;
 use Monolog\Formatter\LogmaticFormatter;
-use Sirix\Monolog\FactoryInterface;
+use Psr\Container\ContainerInterface;
+use Sirix\ContainerResolver\ConfigReader;
+use Sirix\Monolog\Config\FormatterDefinition;
+use Sirix\Monolog\Exception\InvalidConfigException;
 
-class LogmaticFormatterFactory implements FactoryInterface
+class LogmaticFormatterFactory implements FormatterFactoryInterface
 {
-    public function __invoke(array $options): LogmaticFormatter
+    public function create(ContainerInterface $container, FormatterDefinition $formatterDefinition): LogmaticFormatter
     {
-        $batchMode = $options['batchMode'] ?? JsonFormatter::BATCH_MODE_JSON;
-        $appendNewline = (bool) ($options['appendNewline'] ?? true);
-        $hostName = (string) ($options['hostname'] ?? '');
-        $appName = (string) ($options['appName'] ?? '');
+        $configReader = ConfigReader::fromArray($formatterDefinition->options, self::class);
+        $batchMode = $configReader->int('batch_mode', JsonFormatter::BATCH_MODE_JSON);
 
-        $formatter = new LogmaticFormatter($batchMode, $appendNewline);
-
-        if ('' !== $hostName && '0' !== $hostName) {
-            $formatter->setHostname($hostName);
+        if (JsonFormatter::BATCH_MODE_JSON !== $batchMode && JsonFormatter::BATCH_MODE_NEWLINES !== $batchMode) {
+            throw new InvalidConfigException('Logmatic formatter option "batch_mode" must be a valid JsonFormatter batch mode.');
         }
 
-        if ('' !== $appName && '0' !== $appName) {
-            $formatter->setAppname($appName);
+        $logmaticFormatter = new LogmaticFormatter(
+            $batchMode,
+            $configReader->bool('append_newline', true),
+        );
+
+        $hostName = $configReader->optionalString('hostname');
+        if (null !== $hostName && '' !== $hostName) {
+            $logmaticFormatter->setHostname($hostName);
         }
 
-        return $formatter;
+        $appName = $configReader->optionalString('app_name');
+        if (null !== $appName && '' !== $appName) {
+            $logmaticFormatter->setAppName($appName);
+        }
+
+        return $logmaticFormatter;
     }
 }

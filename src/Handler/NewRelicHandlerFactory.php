@@ -6,24 +6,22 @@ namespace Sirix\Monolog\Handler;
 
 use Monolog\Handler\NewRelicHandler;
 use Monolog\Level;
-use Sirix\Monolog\FactoryInterface;
+use Psr\Container\ContainerInterface;
+use Sirix\ContainerResolver\ConfigReader;
+use Sirix\Monolog\Config\HandlerDefinition;
 
-class NewRelicHandlerFactory implements FactoryInterface
+class NewRelicHandlerFactory implements HandlerFactoryInterface
 {
-    public function __invoke(array $options): NewRelicHandler
+    public function create(ContainerInterface $container, HandlerDefinition $handlerDefinition): NewRelicHandler
     {
-        $level = $options['level'] ?? Level::Debug;
-        $bubble = (bool) ($options['bubble'] ?? true);
-        $appName = $options['appName'] ?? null;
-        $explodeArrays = (bool) ($options['explodeArrays'] ?? false);
-        $transactionName = $options['transactionName'] ?? null;
+        $configReader = ConfigReader::fromArray($handlerDefinition->options, self::class);
 
         return new NewRelicHandler(
-            $level,
-            $bubble,
-            $appName,
-            $explodeArrays,
-            $transactionName
+            $configReader->enum('level', Level::class, Level::Error),
+            $configReader->bool('bubble', true),
+            $configReader->optionalString('app_name'),
+            $configReader->bool('explode_arrays', false),
+            $configReader->optionalString('transaction_name'),
         );
     }
 }

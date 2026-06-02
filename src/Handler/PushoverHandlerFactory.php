@@ -6,47 +6,37 @@ namespace Sirix\Monolog\Handler;
 
 use Monolog\Handler\PushoverHandler;
 use Monolog\Level;
-use ReflectionException;
-use ReflectionProperty;
-use Sirix\Monolog\FactoryInterface;
+use Psr\Container\ContainerInterface;
+use Sirix\ContainerResolver\ConfigReader;
+use Sirix\Monolog\Config\HandlerDefinition;
 
-// phpcs:disable WebimpressCodingStandard.NamingConventions.ValidVariableName
-class PushoverHandlerFactory implements FactoryInterface
+class PushoverHandlerFactory implements HandlerFactoryInterface
 {
-    /**
-     * @throws ReflectionException
-     */
-    public function __invoke(array $options): PushoverHandler
+    use HandlerOptionTrait;
+
+    public function create(ContainerInterface $container, HandlerDefinition $handlerDefinition): PushoverHandler
     {
-        $token = (string) ($options['token'] ?? '');
-        $users = (array) ($options['users'] ?? []);
-        $title = $options['title'] ?? null;
-        $level = $options['level'] ?? Level::Debug;
-        $bubble = (bool) ($options['bubble'] ?? true);
-        $useSSL = (bool) ($options['useSSL'] ?? true);
-        $highPriorityLevel = $options['highPriorityLevel'] ?? Level::Critical;
-        $emergencyLevel = $options['emergencyLevel'] ?? Level::Emergency;
-        $retry = (int) ($options['retry'] ?? 30);
-        $expire = (int) ($options['expire'] ?? 25200);
-        $useFormattedMessage = (bool) ($options['useFormattedMessage'] ?? false);
+        $configReader = ConfigReader::fromArray($handlerDefinition->options, self::class);
 
         $pushoverHandler = new PushoverHandler(
-            $token,
-            $users,
-            $title,
-            $level,
-            $bubble,
-            $useSSL,
-            $highPriorityLevel,
-            $emergencyLevel,
-            $retry,
-            $expire
+            $configReader->requiredNonEmptyString('token'),
+            $this->stringOrStringListOption($handlerDefinition->options['users'] ?? null, 'users', 'Pushover'),
+            $configReader->optionalString('title'),
+            $configReader->enum('level', Level::class, Level::Critical),
+            $configReader->bool('bubble', true),
+            $configReader->bool('use_ssl', true),
+            $configReader->enum('high_priority_level', Level::class, Level::Critical),
+            $configReader->enum('emergency_level', Level::class, Level::Emergency),
+            $configReader->int('retry', 30),
+            $configReader->int('expire', 25200),
+            $configReader->bool('persistent', false),
+            $this->floatOption($handlerDefinition->options, 'timeout', 0.0, 'Pushover'),
+            $this->floatOption($handlerDefinition->options, 'writing_timeout', 10.0, 'Pushover'),
+            $this->nullableFloatOption($handlerDefinition->options, 'connection_timeout', 'Pushover'),
+            $this->nullableIntOption($handlerDefinition->options, 'chunk_size', 'Pushover'),
         );
 
-        if ($useFormattedMessage) {
-            $pushoverUseFormattedMessage = new ReflectionProperty($pushoverHandler::class, 'useFormattedMessage');
-            $pushoverUseFormattedMessage->setValue($pushoverHandler, true);
-        }
+        $pushoverHandler->useFormattedMessage($configReader->bool('use_formatted_message', false));
 
         return $pushoverHandler;
     }

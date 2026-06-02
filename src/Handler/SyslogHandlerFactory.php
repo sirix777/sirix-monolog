@@ -9,18 +9,36 @@ use const LOG_USER;
 
 use Monolog\Handler\SyslogHandler;
 use Monolog\Level;
-use Sirix\Monolog\FactoryInterface;
+use Psr\Container\ContainerInterface;
+use Sirix\ContainerResolver\ConfigReader;
+use Sirix\Monolog\Config\HandlerDefinition;
+use Sirix\Monolog\Exception\InvalidConfigException;
 
-class SyslogHandlerFactory implements FactoryInterface
+use function is_int;
+use function is_string;
+
+class SyslogHandlerFactory implements HandlerFactoryInterface
 {
-    public function __invoke(array $options): SyslogHandler
+    public function create(ContainerInterface $container, HandlerDefinition $handlerDefinition): SyslogHandler
     {
-        $ident = (string) ($options['ident'] ?? '');
-        $facility = (int) ($options['facility'] ?? LOG_USER);
-        $level = $options['level'] ?? Level::Debug;
-        $bubble = (bool) ($options['bubble'] ?? true);
-        $logOpts = (int) ($options['logOpts'] ?? LOG_PID);
+        $configReader = ConfigReader::fromArray($handlerDefinition->options, self::class);
+        $level = $configReader->enum('level', Level::class, Level::Debug);
 
-        return new SyslogHandler($ident, $facility, $level, $bubble, $logOpts);
+        return new SyslogHandler(
+            $configReader->requiredNonEmptyString('ident'),
+            $this->facility($handlerDefinition->options['facility'] ?? LOG_USER),
+            $level,
+            $configReader->bool('bubble', true),
+            $configReader->int('log_opts', LOG_PID),
+        );
+    }
+
+    private function facility(mixed $facility): int|string
+    {
+        if (is_int($facility) || is_string($facility)) {
+            return $facility;
+        }
+
+        throw new InvalidConfigException('Syslog handler option "facility" must be an int or string.');
     }
 }

@@ -4,32 +4,32 @@ declare(strict_types=1);
 
 namespace Sirix\Monolog\Handler;
 
+use Gelf\PublisherInterface;
 use Monolog\Handler\GelfHandler;
+use Monolog\Handler\HandlerInterface;
 use Monolog\Level;
 use Psr\Container\ContainerExceptionInterface;
-use Psr\Container\NotFoundExceptionInterface;
-use Sirix\Monolog\ContainerAwareInterface;
-use Sirix\Monolog\FactoryInterface;
-use Sirix\Monolog\ServiceTrait;
+use Psr\Container\ContainerInterface;
+use ReflectionException;
+use Sirix\ContainerResolver\ConfigReader;
+use Sirix\Monolog\Config\HandlerDefinition;
 
-class GelfHandlerFactory implements FactoryInterface, ContainerAwareInterface
+class GelfHandlerFactory implements HandlerFactoryInterface
 {
-    use ServiceTrait;
+    use ReflectiveHandlerFactoryTrait;
 
     /**
      * @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface
+     * @throws ReflectionException
      */
-    public function __invoke(array $options): GelfHandler
+    public function create(ContainerInterface $container, HandlerDefinition $handlerDefinition): HandlerInterface
     {
-        $publisher = $this->getService($options['publisher'] ?? null);
-        $level = $options['level'] ?? Level::Debug;
-        $bubble = (bool) ($options['bubble'] ?? true);
+        $configReader = ConfigReader::fromArray($handlerDefinition->options, self::class);
 
-        return new GelfHandler(
-            $publisher,
-            $level,
-            $bubble
-        );
+        return $this->newHandler(GelfHandler::class, [
+            $this->serviceObject($container, $handlerDefinition->options['publisher'] ?? null, 'publisher', 'GELF', [PublisherInterface::class]),
+            $configReader->enum('level', Level::class, Level::Debug),
+            $configReader->bool('bubble', true),
+        ]);
     }
 }

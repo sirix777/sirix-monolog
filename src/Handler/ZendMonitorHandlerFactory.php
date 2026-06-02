@@ -4,29 +4,21 @@ declare(strict_types=1);
 
 namespace Sirix\Monolog\Handler;
 
-use Monolog\Handler\MissingExtensionException;
 use Monolog\Handler\ZendMonitorHandler;
 use Monolog\Level;
-use Sirix\Monolog\FactoryInterface;
+use Psr\Container\ContainerInterface;
+use Sirix\ContainerResolver\ConfigReader;
+use Sirix\Monolog\Config\HandlerDefinition;
 
-/**
- * @codeCoverageIgnore
- *
- * No Zend Server available to test against
- */
-class ZendMonitorHandlerFactory implements FactoryInterface
+class ZendMonitorHandlerFactory implements HandlerFactoryInterface
 {
-    /**
-     * @throws MissingExtensionException
-     */
-    public function __invoke(array $options): ZendMonitorHandler
+    public function create(ContainerInterface $container, HandlerDefinition $handlerDefinition): ZendMonitorHandler
     {
-        $level = $options['level'] ?? Level::Debug;
-        $bubble = (bool) ($options['bubble'] ?? true);
+        $configReader = ConfigReader::fromArray($handlerDefinition->options, self::class);
 
         return new ZendMonitorHandler(
-            $level,
-            $bubble
+            $configReader->enum('level', Level::class, Level::Debug),
+            $configReader->bool('bubble', true),
         );
     }
 }

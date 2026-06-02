@@ -6,30 +6,20 @@ namespace Sirix\Monolog\Handler;
 
 use Monolog\Handler\CouchDBHandler;
 use Monolog\Level;
-use Sirix\Monolog\FactoryInterface;
+use Psr\Container\ContainerInterface;
+use Sirix\ContainerResolver\ConfigReader;
+use Sirix\Monolog\Config\HandlerDefinition;
 
-class CouchDBHandlerFactory implements FactoryInterface
+class CouchDBHandlerFactory implements HandlerFactoryInterface
 {
-    public function __invoke(array $options): CouchDBHandler
+    public function create(ContainerInterface $container, HandlerDefinition $handlerDefinition): CouchDBHandler
     {
-        $host = (string) ($options['host'] ?? 'localhost');
-        $port = (int) ($options['port'] ?? 5984);
-        $dbname = (string) ($options['port'] ?? 'logger');
-        $userName = (string) ($options['username'] ?? '');
-        $password = (string) ($options['password'] ?? '');
-        $level = $options['level'] ?? Level::Debug;
-        $bubble = (bool) ($options['bubble'] ?? true);
+        $configReader = ConfigReader::fromArray($handlerDefinition->options, self::class);
 
         return new CouchDBHandler(
-            [
-                'host' => $host,
-                'port' => $port,
-                'dbname' => $dbname,
-                'username' => $userName,
-                'password' => $password,
-            ],
-            $level,
-            $bubble
+            $configReader->array('connection', []),
+            $configReader->enum('level', Level::class, Level::Debug),
+            $configReader->bool('bubble', true),
         );
     }
 }

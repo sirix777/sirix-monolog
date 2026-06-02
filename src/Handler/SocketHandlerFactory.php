@@ -6,35 +6,78 @@ namespace Sirix\Monolog\Handler;
 
 use Monolog\Handler\SocketHandler;
 use Monolog\Level;
-use Sirix\Monolog\FactoryInterface;
+use Psr\Container\ContainerInterface;
+use Sirix\ContainerResolver\ConfigReader;
+use Sirix\Monolog\Config\HandlerDefinition;
+use Sirix\Monolog\Exception\InvalidConfigException;
 
-use function ini_get;
+use function array_key_exists;
+use function is_float;
+use function is_int;
 
-class SocketHandlerFactory implements FactoryInterface
+class SocketHandlerFactory implements HandlerFactoryInterface
 {
-    public function __invoke(array $options): SocketHandler
+    public function create(ContainerInterface $container, HandlerDefinition $handlerDefinition): SocketHandler
     {
-        $connectionString = (string) ($options['connectionString'] ?? '');
-        $timeout = (float) ($options['timeout'] ?? ini_get('default_socket_timeout'));
-        $writeTimeout = (int) ($options['writeTimeout'] ?? ini_get('default_socket_timeout'));
-        $level = $options['level'] ?? Level::Debug;
-        $bubble = (bool) ($options['bubble'] ?? true);
+        $configReader = ConfigReader::fromArray($handlerDefinition->options, self::class);
 
-        $handler = new SocketHandler(
-            $connectionString,
-            $level,
-            $bubble
+        return new SocketHandler(
+            $configReader->requiredNonEmptyString('connection_string'),
+            $configReader->enum('level', Level::class, Level::Debug),
+            $configReader->bool('bubble', true),
+            $configReader->bool('persistent', false),
+            $this->float($handlerDefinition->options, 'timeout', 0.0),
+            $this->float($handlerDefinition->options, 'writing_timeout', 10.0),
+            $this->nullableFloat($handlerDefinition->options, 'connection_timeout'),
+            $this->nullableInt($handlerDefinition->options, 'chunk_size'),
         );
+    }
 
-        if (! empty($timeout)) {
-            $handler->setConnectionTimeout($timeout);
+    /**
+     * @param array<string, mixed> $options
+     */
+    private function float(array $options, string $key, float $default): float
+    {
+        if (! array_key_exists($key, $options)) {
+            return $default;
         }
 
-        if (0 !== $writeTimeout) {
-            $handler->setTimeout($writeTimeout);
-            $handler->setWritingTimeout($writeTimeout);
+        if (is_float($options[$key]) || is_int($options[$key])) {
+            return (float) $options[$key];
         }
 
-        return $handler;
+        throw new InvalidConfigException("Socket handler option '{$key}' must be a float or int.");
+    }
+
+    /**
+     * @param array<string, mixed> $options
+     */
+    private function nullableFloat(array $options, string $key): ?float
+    {
+        if (! array_key_exists($key, $options) || null === $options[$key]) {
+            return null;
+        }
+
+        if (is_float($options[$key]) || is_int($options[$key])) {
+            return (float) $options[$key];
+        }
+
+        throw new InvalidConfigException("Socket handler option '{$key}' must be a float, int, or null.");
+    }
+
+    /**
+     * @param array<string, mixed> $options
+     */
+    private function nullableInt(array $options, string $key): ?int
+    {
+        if (! array_key_exists($key, $options) || null === $options[$key]) {
+            return null;
+        }
+
+        if (is_int($options[$key])) {
+            return $options[$key];
+        }
+
+        throw new InvalidConfigException("Socket handler option '{$key}' must be an int or null.");
     }
 }

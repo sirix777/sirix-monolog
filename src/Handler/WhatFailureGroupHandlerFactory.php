@@ -5,25 +5,26 @@ declare(strict_types=1);
 namespace Sirix\Monolog\Handler;
 
 use Monolog\Handler\WhatFailureGroupHandler;
-use Psr\Container\ContainerExceptionInterface;
-use Psr\Container\NotFoundExceptionInterface;
+use Psr\Container\ContainerInterface;
+use Sirix\ContainerResolver\ConfigReader;
+use Sirix\Monolog\Config\HandlerDefinition;
 
-class WhatFailureGroupHandlerFactory
+class WhatFailureGroupHandlerFactory implements HandlerFactoryInterface, HandlerRegistryAwareInterface
 {
-    use GetHandlersTrait;
+    use HandlerRegistryTrait;
 
-    /**
-     * @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface
-     */
-    public function __invoke(array $options): WhatFailureGroupHandler
+    public function create(ContainerInterface $container, HandlerDefinition $handlerDefinition): WhatFailureGroupHandler
     {
-        $handlers = $this->getHandlers($options);
-        $bubble = (bool) ($options['bubble'] ?? true);
+        $configReader = ConfigReader::fromArray($handlerDefinition->options, self::class);
+        $handlers = [];
+
+        foreach ($configReader->requiredNonEmptyStringList('handlers') as $handlerId) {
+            $handlers[] = $this->getHandlerRegistry()->get($handlerId);
+        }
 
         return new WhatFailureGroupHandler(
             $handlers,
-            $bubble
+            $configReader->bool('bubble', true),
         );
     }
 }

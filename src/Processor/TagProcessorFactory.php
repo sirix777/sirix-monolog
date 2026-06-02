@@ -5,14 +5,16 @@ declare(strict_types=1);
 namespace Sirix\Monolog\Processor;
 
 use Monolog\Processor\TagProcessor;
-use Sirix\Monolog\FactoryInterface;
+use Psr\Container\ContainerInterface;
+use Sirix\ContainerResolver\ConfigReader;
+use Sirix\Monolog\Config\ProcessorDefinition;
 
-class TagProcessorFactory implements FactoryInterface
+class TagProcessorFactory implements ProcessorFactoryInterface
 {
-    public function __invoke(array $options): TagProcessor
+    public function create(ContainerInterface $container, ProcessorDefinition $processorDefinition): TagProcessor
     {
-        $tags = (array) ($options['tags'] ?? []);
+        $configReader = ConfigReader::fromArray($processorDefinition->options, self::class);
 
-        return new TagProcessor($tags);
+        return new TagProcessor($configReader->stringList('tags', []));
     }
 }

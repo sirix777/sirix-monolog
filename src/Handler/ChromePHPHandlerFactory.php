@@ -6,18 +6,19 @@ namespace Sirix\Monolog\Handler;
 
 use Monolog\Handler\ChromePHPHandler;
 use Monolog\Level;
-use Sirix\Monolog\FactoryInterface;
+use Psr\Container\ContainerInterface;
+use Sirix\ContainerResolver\ConfigReader;
+use Sirix\Monolog\Config\HandlerDefinition;
 
-class ChromePHPHandlerFactory implements FactoryInterface
+class ChromePHPHandlerFactory implements HandlerFactoryInterface
 {
-    public function __invoke(array $options): ChromePHPHandler
+    public function create(ContainerInterface $container, HandlerDefinition $handlerDefinition): ChromePHPHandler
     {
-        $level = $options['level'] ?? Level::Debug;
-        $bubble = (bool) ($options['bubble'] ?? true);
+        $configReader = ConfigReader::fromArray($handlerDefinition->options, self::class);
 
         return new ChromePHPHandler(
-            $level,
-            $bubble
+            $configReader->enum('level', Level::class, Level::Debug),
+            $configReader->bool('bubble', true),
         );
     }
 }

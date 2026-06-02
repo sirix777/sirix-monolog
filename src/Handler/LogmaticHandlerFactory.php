@@ -5,32 +5,31 @@ declare(strict_types=1);
 namespace Sirix\Monolog\Handler;
 
 use Monolog\Handler\LogmaticHandler;
-use Monolog\Handler\MissingExtensionException;
 use Monolog\Level;
-use Sirix\Monolog\FactoryInterface;
+use Psr\Container\ContainerInterface;
+use Sirix\ContainerResolver\ConfigReader;
+use Sirix\Monolog\Config\HandlerDefinition;
 
-// phpcs:disable WebimpressCodingStandard.NamingConventions.ValidVariableName
-class LogmaticHandlerFactory implements FactoryInterface
+class LogmaticHandlerFactory implements HandlerFactoryInterface
 {
-    /**
-     * @throws MissingExtensionException
-     */
-    public function __invoke(array $options): LogmaticHandler
+    use HandlerOptionTrait;
+
+    public function create(ContainerInterface $container, HandlerDefinition $handlerDefinition): LogmaticHandler
     {
-        $token = (string) ($options['token'] ?? '');
-        $hostname = (string) ($options['hostname'] ?? '');
-        $appname = (string) ($options['appname'] ?? '');
-        $useSSL = (bool) ($options['useSSL'] ?? true);
-        $level = $options['level'] ?? Level::Debug;
-        $bubble = (bool) ($options['bubble'] ?? true);
+        $configReader = ConfigReader::fromArray($handlerDefinition->options, self::class);
 
         return new LogmaticHandler(
-            $token,
-            $hostname,
-            $appname,
-            $useSSL,
-            $level,
-            $bubble
+            $configReader->requiredNonEmptyString('token'),
+            $configReader->string('hostname', ''),
+            $configReader->string('app_name', ''),
+            $configReader->bool('use_ssl', true),
+            $configReader->enum('level', Level::class, Level::Debug),
+            $configReader->bool('bubble', true),
+            $configReader->bool('persistent', false),
+            $this->floatOption($handlerDefinition->options, 'timeout', 0.0, 'Logmatic'),
+            $this->floatOption($handlerDefinition->options, 'writing_timeout', 10.0, 'Logmatic'),
+            $this->nullableFloatOption($handlerDefinition->options, 'connection_timeout', 'Logmatic'),
+            $this->nullableIntOption($handlerDefinition->options, 'chunk_size', 'Logmatic'),
         );
     }
 }

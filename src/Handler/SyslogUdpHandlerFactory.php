@@ -6,32 +6,52 @@ namespace Sirix\Monolog\Handler;
 
 use const LOG_USER;
 
-use Monolog\Handler\MissingExtensionException;
 use Monolog\Handler\SyslogUdpHandler;
 use Monolog\Level;
-use Sirix\Monolog\FactoryInterface;
+use Psr\Container\ContainerInterface;
+use Sirix\ContainerResolver\ConfigReader;
+use Sirix\Monolog\Config\HandlerDefinition;
+use Sirix\Monolog\Exception\InvalidConfigException;
 
-class SyslogUdpHandlerFactory implements FactoryInterface
+use function in_array;
+use function is_int;
+use function is_string;
+
+class SyslogUdpHandlerFactory implements HandlerFactoryInterface
 {
-    /**
-     * @throws MissingExtensionException
-     */
-    public function __invoke(array $options): SyslogUdpHandler
+    public function create(ContainerInterface $container, HandlerDefinition $handlerDefinition): SyslogUdpHandler
     {
-        $host = (string) ($options['host'] ?? '');
-        $port = (int) ($options['host'] ?? 514);
-        $facility = (int) ($options['facility'] ?? LOG_USER);
-        $level = $options['level'] ?? Level::Debug;
-        $bubble = (bool) ($options['bubble'] ?? true);
-        $ident = (string) ($options['ident'] ?? 'php');
+        $configReader = ConfigReader::fromArray($handlerDefinition->options, self::class);
 
         return new SyslogUdpHandler(
-            $host,
-            $port,
-            $facility,
-            $level,
-            $bubble,
-            $ident
+            $configReader->requiredNonEmptyString('host'),
+            $configReader->int('port', 514),
+            $this->facility($handlerDefinition->options['facility'] ?? LOG_USER),
+            $configReader->enum('level', Level::class, Level::Debug),
+            $configReader->bool('bubble', true),
+            $configReader->string('ident', 'php'),
+            $this->rfc($configReader->int('rfc', SyslogUdpHandler::RFC5424)),
         );
+    }
+
+    private function facility(mixed $facility): int|string
+    {
+        if (is_int($facility) || is_string($facility)) {
+            return $facility;
+        }
+
+        throw new InvalidConfigException('Syslog UDP handler option "facility" must be an int or string.');
+    }
+
+    /**
+     * @return SyslogUdpHandler::RFC*
+     */
+    private function rfc(int $rfc): int
+    {
+        if (! in_array($rfc, [SyslogUdpHandler::RFC3164, SyslogUdpHandler::RFC5424, SyslogUdpHandler::RFC5424e], true)) {
+            throw new InvalidConfigException('Syslog UDP handler option "rfc" must be a valid SyslogUdpHandler RFC constant.');
+        }
+
+        return $rfc;
     }
 }

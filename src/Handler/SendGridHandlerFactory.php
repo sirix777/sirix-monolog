@@ -4,36 +4,34 @@ declare(strict_types=1);
 
 namespace Sirix\Monolog\Handler;
 
-use Monolog\Handler\MissingExtensionException;
 use Monolog\Handler\SendGridHandler;
 use Monolog\Level;
-use Sirix\Monolog\FactoryInterface;
+use Psr\Container\ContainerInterface;
+use Sirix\ContainerResolver\ConfigReader;
+use Sirix\Monolog\Config\HandlerDefinition;
 
-class SendGridHandlerFactory implements FactoryInterface
+use function assert;
+
+class SendGridHandlerFactory implements HandlerFactoryInterface
 {
-    /**
-     * * @SuppressWarnings(PHPMD.ShortVariable)
-     *
-     * @throws MissingExtensionException
-     */
-    public function __invoke(array $options): SendGridHandler
+    use HandlerOptionTrait;
+
+    public function create(ContainerInterface $container, HandlerDefinition $handlerDefinition): SendGridHandler
     {
-        $apiUser = (string) ($options['apiUser'] ?? '');
-        $apiKey = (string) ($options['apiKey'] ?? '');
-        $from = (string) ($options['from'] ?? '');
-        $to = $options['to'] ?? '';
-        $subject = (string) ($options['subject'] ?? '');
-        $level = $options['level'] ?? Level::Debug;
-        $bubble = (bool) ($options['bubble'] ?? true);
+        $configReader = ConfigReader::fromArray($handlerDefinition->options, self::class);
+
+        $apiHost = $configReader->nonEmptyString('api_host', 'api.sendgrid.com');
+        assert('' !== $apiHost);
 
         return new SendGridHandler(
-            $apiUser,
-            $apiKey,
-            $from,
-            $to,
-            $subject,
-            $level,
-            $bubble
+            $configReader->optionalString('api_user'),
+            $configReader->requiredNonEmptyString('api_key'),
+            $configReader->requiredNonEmptyString('from'),
+            $this->stringOrStringListOption($handlerDefinition->options['to'] ?? null, 'to', 'SendGrid'),
+            $configReader->requiredNonEmptyString('subject'),
+            $configReader->enum('level', Level::class, Level::Error),
+            $configReader->bool('bubble', true),
+            $apiHost,
         );
     }
 }

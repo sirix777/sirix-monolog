@@ -6,28 +6,25 @@ namespace Sirix\Monolog\Handler;
 
 use Monolog\Handler\DeduplicationHandler;
 use Monolog\Level;
-use Sirix\Monolog\FactoryInterface;
-use Sirix\Monolog\HandlerManagerAwareInterface;
-use Sirix\Monolog\HandlerManagerTrait;
+use Psr\Container\ContainerInterface;
+use Sirix\ContainerResolver\ConfigReader;
+use Sirix\Monolog\Config\HandlerDefinition;
 
-class DeduplicationHandlerFactory implements FactoryInterface, HandlerManagerAwareInterface
+class DeduplicationHandlerFactory implements HandlerFactoryInterface, HandlerRegistryAwareInterface
 {
-    use HandlerManagerTrait;
+    use HandlerRegistryTrait;
 
-    public function __invoke(array $options): DeduplicationHandler
+    public function create(ContainerInterface $container, HandlerDefinition $handlerDefinition): DeduplicationHandler
     {
-        $handler = $this->getHandlerManager()->get($options['handler']);
-        $deduplicationStore = $options['deduplicationStore'] ?? null;
-        $deduplicationLevel = $options['deduplicationLevel'] ?? Level::Debug;
-        $time = (int) ($options['time'] ?? 60);
-        $bubble = (bool) ($options['bubble'] ?? true);
+        $configReader = ConfigReader::fromArray($handlerDefinition->options, self::class);
+        $deduplicationLevel = $configReader->enum('deduplication_level', Level::class, Level::Error);
 
         return new DeduplicationHandler(
-            $handler,
-            $deduplicationStore,
+            $this->getHandlerRegistry()->get($configReader->requiredNonEmptyString('handler')),
+            $configReader->optionalString('deduplication_store'),
             $deduplicationLevel,
-            $time,
-            $bubble
+            $configReader->int('time', 60),
+            $configReader->bool('bubble', true),
         );
     }
 }

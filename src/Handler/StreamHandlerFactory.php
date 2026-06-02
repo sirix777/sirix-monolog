@@ -8,50 +8,53 @@ use Monolog\Handler\StreamHandler;
 use Monolog\Level;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
-use Psr\Container\NotFoundExceptionInterface;
-use Sirix\Monolog\ContainerAwareInterface;
-use Sirix\Monolog\ContainerTrait;
-use Sirix\Monolog\FactoryInterface;
+use Sirix\ContainerResolver\ConfigReader;
+use Sirix\ContainerResolver\ContainerResolver;
+use Sirix\Monolog\Config\HandlerDefinition;
+use Sirix\Monolog\Exception\InvalidConfigException;
 
-use function is_resource;
+use function array_key_exists;
+use function is_int;
 use function is_string;
 
-class StreamHandlerFactory implements FactoryInterface, ContainerAwareInterface
+class StreamHandlerFactory implements HandlerFactoryInterface
 {
-    use ContainerTrait;
-
-    protected ContainerInterface $container;
-
     /**
      * @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface
      */
-    public function __invoke(array $options): StreamHandler
+    public function create(ContainerInterface $container, HandlerDefinition $handlerDefinition): StreamHandler
     {
-        $stream = $this->getStream($options['stream'] ?? null);
+        $configReader = ConfigReader::fromArray($handlerDefinition->options, self::class);
+        $stream = $configReader->required('stream');
 
-        $level = $options['level'] ?? Level::Debug;
-        $bubble = (bool) ($options['bubble'] ?? true);
-        $filePermission = (int) ($options['filePermission'] ?? 0o644);
-        $useLocking = (bool) ($options['useLocking'] ?? true);
+        if (is_string($stream) && $container->has($stream)) {
+            $stream = ContainerResolver::forContext($container, self::class)->getExisting($stream);
+        }
 
-        return new StreamHandler($stream, $level, $bubble, $filePermission, $useLocking);
+        $level = $configReader->enum('level', Level::class, Level::Debug);
+
+        return new StreamHandler(
+            $stream,
+            $level,
+            $configReader->bool('bubble', true),
+            $this->nullableInt($handlerDefinition->options, 'file_permission'),
+            $configReader->bool('use_locking', false),
+        );
     }
 
     /**
-     * @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface
+     * @param array<string, mixed> $options
      */
-    protected function getStream(mixed $stream): mixed
+    private function nullableInt(array $options, string $key): ?int
     {
-        if (is_string($stream) && $this->container->has($stream)) {
-            return $this->container->get($stream);
+        if (! array_key_exists($key, $options) || null === $options[$key]) {
+            return null;
         }
 
-        if (is_resource($stream)) {
-            return $stream;
+        if (! is_int($options[$key])) {
+            throw new InvalidConfigException("Stream handler option '{$key}' must be an int or null.");
         }
 
-        return (string) $stream;
+        return $options[$key];
     }
 }

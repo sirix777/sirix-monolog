@@ -6,42 +6,52 @@ namespace Sirix\Monolog\Handler;
 
 use Monolog\Handler\OverflowHandler;
 use Monolog\Level;
-use Psr\Container\ContainerExceptionInterface;
-use Psr\Container\NotFoundExceptionInterface;
-use Sirix\Monolog\FactoryInterface;
-use Sirix\Monolog\HandlerManagerAwareInterface;
-use Sirix\Monolog\HandlerManagerTrait;
+use Psr\Container\ContainerInterface;
+use Sirix\ContainerResolver\ConfigReader;
+use Sirix\Monolog\Config\HandlerDefinition;
 
-class OverflowHandlerFactory implements FactoryInterface, HandlerManagerAwareInterface
+class OverflowHandlerFactory implements HandlerFactoryInterface, HandlerRegistryAwareInterface
 {
-    use HandlerManagerTrait;
+    use HandlerRegistryTrait;
 
-    /**
-     * @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface
-     */
-    public function __invoke(array $options): OverflowHandler
+    public function create(ContainerInterface $container, HandlerDefinition $handlerDefinition): OverflowHandler
     {
-        $handler = $this->getHandlerManager()->get($options['handler']);
-        $thresholdMap = [
-            Level::Debug->value => $options['thresholdMap']['debug'] ?? 0,
-            Level::Info->value => $options['thresholdMap']['info'] ?? 0,
-            Level::Notice->value => $options['thresholdMap']['notice'] ?? 0,
-            Level::Warning->value => $options['thresholdMap']['warning'] ?? 0,
-            Level::Error->value => $options['thresholdMap']['error'] ?? 0,
-            Level::Critical->value => $options['thresholdMap']['critical'] ?? 0,
-            Level::Alert->value => $options['thresholdMap']['alert'] ?? 0,
-            Level::Emergency->value => $options['thresholdMap']['emergency'] ?? 0,
-        ];
-
-        $level = $options['level'] ?? Level::Debug;
-        $bubble = (bool) ($options['bubble'] ?? true);
+        $configReader = ConfigReader::fromArray($handlerDefinition->options, self::class);
+        $level = $configReader->enum('level', Level::class, Level::Debug);
 
         return new OverflowHandler(
-            $handler,
-            $thresholdMap,
+            $this->getHandlerRegistry()->get($configReader->requiredNonEmptyString('handler')),
+            $this->thresholdMap($configReader->map('threshold_map', [])),
             $level,
-            $bubble
+            $configReader->bool('bubble', true),
         );
+    }
+
+    /**
+     * @param array<string, mixed> $thresholdMap
+     *
+     * @return array<int, int>
+     */
+    private function thresholdMap(array $thresholdMap): array
+    {
+        $levels = [
+            'debug' => Level::Debug,
+            'info' => Level::Info,
+            'notice' => Level::Notice,
+            'warning' => Level::Warning,
+            'error' => Level::Error,
+            'critical' => Level::Critical,
+            'alert' => Level::Alert,
+            'emergency' => Level::Emergency,
+        ];
+
+        $result = [];
+
+        foreach ($levels as $name => $level) {
+            $reader = ConfigReader::fromArray(['threshold' => $thresholdMap[$name] ?? 0], self::class);
+            $result[$level->value] = $reader->int('threshold', 0);
+        }
+
+        return $result;
     }
 }

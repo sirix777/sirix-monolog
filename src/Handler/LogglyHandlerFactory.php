@@ -5,25 +5,29 @@ declare(strict_types=1);
 namespace Sirix\Monolog\Handler;
 
 use Monolog\Handler\LogglyHandler;
-use Monolog\Handler\MissingExtensionException;
 use Monolog\Level;
-use Sirix\Monolog\FactoryInterface;
+use Psr\Container\ContainerInterface;
+use Sirix\ContainerResolver\ConfigReader;
+use Sirix\Monolog\Config\HandlerDefinition;
 
-class LogglyHandlerFactory implements FactoryInterface
+class LogglyHandlerFactory implements HandlerFactoryInterface
 {
-    /**
-     * @throws MissingExtensionException
-     */
-    public function __invoke(array $options): LogglyHandler
-    {
-        $token = (string) ($options['token'] ?? '');
-        $level = $options['level'] ?? Level::Debug;
-        $bubble = (bool) ($options['bubble'] ?? true);
+    use HandlerOptionTrait;
 
-        return new LogglyHandler(
-            $token,
-            $level,
-            $bubble
+    public function create(ContainerInterface $container, HandlerDefinition $handlerDefinition): LogglyHandler
+    {
+        $configReader = ConfigReader::fromArray($handlerDefinition->options, self::class);
+
+        $logglyHandler = new LogglyHandler(
+            $configReader->requiredNonEmptyString('token'),
+            $configReader->enum('level', Level::class, Level::Debug),
+            $configReader->bool('bubble', true),
         );
+
+        if ($configReader->has('tag')) {
+            $logglyHandler->setTag($this->stringOrStringListOption($handlerDefinition->options['tag'], 'tag', 'Loggly'));
+        }
+
+        return $logglyHandler;
     }
 }

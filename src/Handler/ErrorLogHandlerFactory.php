@@ -6,26 +6,35 @@ namespace Sirix\Monolog\Handler;
 
 use Monolog\Handler\ErrorLogHandler;
 use Monolog\Level;
-use Sirix\Monolog\FactoryInterface;
+use Psr\Container\ContainerInterface;
+use Sirix\ContainerResolver\ConfigReader;
+use Sirix\Monolog\Config\HandlerDefinition;
+use Sirix\Monolog\Exception\InvalidConfigException;
 
-use function in_array;
-
-class ErrorLogHandlerFactory implements FactoryInterface
+class ErrorLogHandlerFactory implements HandlerFactoryInterface
 {
-    public function __invoke(array $options): ErrorLogHandler
+    public function create(ContainerInterface $container, HandlerDefinition $handlerDefinition): ErrorLogHandler
     {
-        $rawMessageType = (int) ($options['messageType'] ?? ErrorLogHandler::OPERATING_SYSTEM);
+        $configReader = ConfigReader::fromArray($handlerDefinition->options, self::class);
+        $level = $configReader->enum('level', Level::class, Level::Debug);
 
-        // Only 0 (OPERATING_SYSTEM) or 4 (SAPI) are supported by Monolog\Handler\ErrorLogHandler
-        /** @var 0|4 $messageType */
-        $messageType = in_array($rawMessageType, [ErrorLogHandler::OPERATING_SYSTEM, ErrorLogHandler::SAPI], true)
-            ? $rawMessageType
-            : ErrorLogHandler::OPERATING_SYSTEM;
+        return new ErrorLogHandler(
+            $this->messageType($configReader->int('message_type', ErrorLogHandler::OPERATING_SYSTEM)),
+            $level,
+            $configReader->bool('bubble', true),
+            $configReader->bool('expand_newlines', false),
+        );
+    }
 
-        $level = $options['level'] ?? Level::Debug;
-        $bubble = (bool) ($options['bubble'] ?? true);
-        $expandNewlines = (bool) ($options['expandNewlines'] ?? false);
-
-        return new ErrorLogHandler($messageType, $level, $bubble, $expandNewlines);
+    /**
+     * @return 0|4
+     */
+    private function messageType(int $messageType): int
+    {
+        return match ($messageType) {
+            ErrorLogHandler::OPERATING_SYSTEM => ErrorLogHandler::OPERATING_SYSTEM,
+            ErrorLogHandler::SAPI => ErrorLogHandler::SAPI,
+            default => throw new InvalidConfigException('Error log handler option "message_type" is not supported.'),
+        };
     }
 }

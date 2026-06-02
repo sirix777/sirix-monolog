@@ -5,6 +5,31 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0] — 2026-06-02
+
+### Changed
+- Rebuild the package around a Mezzio-first `ConfigProvider` architecture.
+- Replace legacy mutable factories with strict handler, formatter, and processor factory interfaces.
+- Move built-in config to enum-backed `snake_case` type and option names.
+- Use `sirix/container-resolver` for strict container/config resolution.
+- Preserve configured logger/handler processor order when building Monolog stacks.
+- Use Monolog's default stream file permission handling when `file_permission` is omitted.
+- Move `ext-json` from runtime requirements to development requirements and suggestions.
+
+### Fixed
+- Fail fast when a formatter or handler-local processor is configured on a handler that does not support it.
+- Validate resolved `web` processor `server_data` services before constructing Monolog's processor.
+
+### Removed
+- Remove `MonologFactory`, `ChannelChanger`, legacy service managers, mapper classes, and config wrapper classes.
+- Remove `FactoryInterface`, container-aware traits/interfaces, and `__invoke(array $options)` factory API.
+- Remove legacy integration handlers that are no longer part of the focused built-in handler set.
+- Remove Git, Mercurial, and Pushover-device processors.
+
+### Added
+- Add builders, registries, DTO-style config definitions, built-in factory maps, and integration tests for the new architecture.
+- Add dedicated documentation under `docs/`, including migration notes from 1.x.
+
 ## [1.1.7] — 2026-05-10
 
 ### Fixed

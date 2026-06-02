@@ -1,10 +1,10 @@
 BSD 2-Clause License
 
-Copyright (c) 2025, Sirix
+Copyright (c) 2025-2026, Sirix
 All rights reserved.
 
 This software includes code based on blazon/psr11-monolog
-(https://github.com/blazon/psr11-monolog)
+(https://gitlab.com/blazon/psr11-monolog)
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:

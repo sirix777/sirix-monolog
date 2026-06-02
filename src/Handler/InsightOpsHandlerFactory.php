@@ -5,30 +5,30 @@ declare(strict_types=1);
 namespace Sirix\Monolog\Handler;
 
 use Monolog\Handler\InsightOpsHandler;
-use Monolog\Handler\MissingExtensionException;
 use Monolog\Level;
-use Sirix\Monolog\FactoryInterface;
+use Psr\Container\ContainerInterface;
+use Sirix\ContainerResolver\ConfigReader;
+use Sirix\Monolog\Config\HandlerDefinition;
 
-// phpcs:disable WebimpressCodingStandard.NamingConventions.ValidVariableName
-class InsightOpsHandlerFactory implements FactoryInterface
+class InsightOpsHandlerFactory implements HandlerFactoryInterface
 {
-    /**
-     * @throws MissingExtensionException
-     */
-    public function __invoke(array $options): InsightOpsHandler
+    use HandlerOptionTrait;
+
+    public function create(ContainerInterface $container, HandlerDefinition $handlerDefinition): InsightOpsHandler
     {
-        $token = (string) ($options['token'] ?? '');
-        $region = (string) ($options['region'] ?? '');
-        $useSSL = (bool) ($options['useSSL'] ?? true);
-        $level = $options['level'] ?? Level::Debug;
-        $bubble = (bool) ($options['bubble'] ?? true);
+        $configReader = ConfigReader::fromArray($handlerDefinition->options, self::class);
 
         return new InsightOpsHandler(
-            $token,
-            $region,
-            $useSSL,
-            $level,
-            $bubble
+            $configReader->requiredNonEmptyString('token'),
+            $configReader->string('region', 'us'),
+            $configReader->bool('use_ssl', true),
+            $configReader->enum('level', Level::class, Level::Debug),
+            $configReader->bool('bubble', true),
+            $configReader->bool('persistent', false),
+            $this->floatOption($handlerDefinition->options, 'timeout', 0.0, 'InsightOps'),
+            $this->floatOption($handlerDefinition->options, 'writing_timeout', 10.0, 'InsightOps'),
+            $this->nullableFloatOption($handlerDefinition->options, 'connection_timeout', 'InsightOps'),
+            $this->nullableIntOption($handlerDefinition->options, 'chunk_size', 'InsightOps'),
         );
     }
 }

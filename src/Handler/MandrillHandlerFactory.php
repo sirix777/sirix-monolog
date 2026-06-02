@@ -4,33 +4,55 @@ declare(strict_types=1);
 
 namespace Sirix\Monolog\Handler;
 
+use Monolog\Handler\HandlerInterface;
 use Monolog\Handler\MandrillHandler;
 use Monolog\Level;
-use Psr\Container\ContainerExceptionInterface;
-use Psr\Container\NotFoundExceptionInterface;
-use Sirix\Monolog\ContainerAwareInterface;
-use Sirix\Monolog\FactoryInterface;
+use Psr\Container\ContainerInterface;
+use ReflectionException;
+use Sirix\ContainerResolver\ConfigReader;
+use Sirix\ContainerResolver\ContainerResolver;
+use Sirix\Monolog\Config\HandlerDefinition;
+use Sirix\Monolog\Exception\InvalidConfigException;
 
-class MandrillHandlerFactory implements FactoryInterface, ContainerAwareInterface
+use function is_a;
+use function is_callable;
+use function is_object;
+use function is_string;
+
+class MandrillHandlerFactory implements HandlerFactoryInterface
 {
-    use SwiftMessageTrait;
+    use ReflectiveHandlerFactoryTrait;
 
     /**
-     * @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface
+     * @throws ReflectionException
      */
-    public function __invoke(array $options): MandrillHandler
+    public function create(ContainerInterface $container, HandlerDefinition $handlerDefinition): HandlerInterface
     {
-        $apiKey = (string) ($options['apiKey'] ?? '');
-        $message = $this->getSwiftMessage($options);
-        $level = $options['level'] ?? Level::Debug;
-        $bubble = (bool) ($options['bubble'] ?? true);
+        $configReader = ConfigReader::fromArray($handlerDefinition->options, self::class);
+        $message = $this->message($container, $handlerDefinition->options['message'] ?? null);
 
-        return new MandrillHandler(
-            $apiKey,
+        return $this->newHandler(MandrillHandler::class, [
+            $configReader->requiredNonEmptyString('api_key'),
             $message,
-            $level,
-            $bubble
-        );
+            $configReader->enum('level', Level::class, Level::Error),
+            $configReader->bool('bubble', true),
+        ]);
+    }
+
+    private function message(ContainerInterface $container, mixed $message): callable|object
+    {
+        if (is_string($message) && $container->has($message)) {
+            $message = ContainerResolver::forContext($container, self::class)->getExisting($message);
+        }
+
+        if (is_callable($message)) {
+            return $message;
+        }
+
+        if (is_object($message) && is_a($message, 'Swift_Message')) {
+            return $message;
+        }
+
+        throw new InvalidConfigException('Mandrill handler option "message" must be a callable, Swift_Message instance, or service id resolving to one.');
     }
 }

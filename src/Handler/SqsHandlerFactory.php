@@ -4,30 +4,32 @@ declare(strict_types=1);
 
 namespace Sirix\Monolog\Handler;
 
+use Monolog\Handler\HandlerInterface;
 use Monolog\Handler\SqsHandler;
 use Monolog\Level;
 use Psr\Container\ContainerExceptionInterface;
-use Psr\Container\NotFoundExceptionInterface;
-use Sirix\Monolog\ContainerAwareInterface;
-use Sirix\Monolog\FactoryInterface;
-use Sirix\Monolog\ServiceTrait;
+use Psr\Container\ContainerInterface;
+use ReflectionException;
+use Sirix\ContainerResolver\ConfigReader;
+use Sirix\Monolog\Config\HandlerDefinition;
 
-class SqsHandlerFactory implements FactoryInterface, ContainerAwareInterface
+class SqsHandlerFactory implements HandlerFactoryInterface
 {
-    use ServiceTrait;
+    use ReflectiveHandlerFactoryTrait;
 
     /**
+     * @throws ReflectionException
      * @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface
      */
-    public function __invoke(array $options): SqsHandler
+    public function create(ContainerInterface $container, HandlerDefinition $handlerDefinition): HandlerInterface
     {
-        $sqsClient = $this->getService($options['sqsClient'] ?? null);
+        $configReader = ConfigReader::fromArray($handlerDefinition->options, self::class);
 
-        $queueUrl = (string) $options['queueUrl'];
-        $level = $options['level'] ?? Level::Debug;
-        $bubble = (bool) ($options['bubble'] ?? true);
-
-        return new SqsHandler($sqsClient, $queueUrl, $level, $bubble);
+        return $this->newHandler(SqsHandler::class, [
+            $this->serviceObject($container, $handlerDefinition->options['client'] ?? null, 'client', 'SQS', ['Aws\Sqs\SqsClient']),
+            $configReader->requiredNonEmptyString('queue_url'),
+            $configReader->enum('level', Level::class, Level::Debug),
+            $configReader->bool('bubble', true),
+        ]);
     }
 }

@@ -5,11 +5,12 @@ declare(strict_types=1);
 namespace Sirix\Monolog\Formatter;
 
 use Monolog\Formatter\ChromePHPFormatter;
-use Sirix\Monolog\FactoryInterface;
+use Psr\Container\ContainerInterface;
+use Sirix\Monolog\Config\FormatterDefinition;
 
-class ChromePHPFormatterFactory implements FactoryInterface
+class ChromePHPFormatterFactory implements FormatterFactoryInterface
 {
-    public function __invoke(array $options): ChromePHPFormatter
+    public function create(ContainerInterface $container, FormatterDefinition $formatterDefinition): ChromePHPFormatter
     {
         return new ChromePHPFormatter();
     }

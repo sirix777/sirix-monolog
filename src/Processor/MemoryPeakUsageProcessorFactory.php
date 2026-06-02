@@ -5,12 +5,19 @@ declare(strict_types=1);
 namespace Sirix\Monolog\Processor;
 
 use Monolog\Processor\MemoryPeakUsageProcessor;
-use Sirix\Monolog\FactoryInterface;
+use Psr\Container\ContainerInterface;
+use Sirix\ContainerResolver\ConfigReader;
+use Sirix\Monolog\Config\ProcessorDefinition;
 
-class MemoryPeakUsageProcessorFactory implements FactoryInterface
+class MemoryPeakUsageProcessorFactory implements ProcessorFactoryInterface
 {
-    public function __invoke(array $options): MemoryPeakUsageProcessor
+    public function create(ContainerInterface $container, ProcessorDefinition $processorDefinition): MemoryPeakUsageProcessor
     {
-        return new MemoryPeakUsageProcessor();
+        $configReader = ConfigReader::fromArray($processorDefinition->options, self::class);
+
+        return new MemoryPeakUsageProcessor(
+            $configReader->bool('real_usage', true),
+            $configReader->bool('use_formatting', true),
+        );
     }
 }

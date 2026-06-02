@@ -4,40 +4,33 @@ declare(strict_types=1);
 
 namespace Sirix\Monolog\Handler;
 
+use Elastica\Client;
 use Monolog\Handler\ElasticaHandler;
+use Monolog\Handler\HandlerInterface;
 use Monolog\Level;
 use Psr\Container\ContainerExceptionInterface;
-use Psr\Container\NotFoundExceptionInterface;
-use Sirix\Monolog\ContainerAwareInterface;
-use Sirix\Monolog\FactoryInterface;
-use Sirix\Monolog\ServiceTrait;
+use Psr\Container\ContainerInterface;
+use ReflectionException;
+use Sirix\ContainerResolver\ConfigReader;
+use Sirix\Monolog\Config\HandlerDefinition;
 
-class ElasticaHandlerFactory implements FactoryInterface, ContainerAwareInterface
+class ElasticaHandlerFactory implements HandlerFactoryInterface
 {
-    use ServiceTrait;
+    use ReflectiveHandlerFactoryTrait;
 
     /**
      * @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface
+     * @throws ReflectionException
      */
-    public function __invoke(array $options): ElasticaHandler
+    public function create(ContainerInterface $container, HandlerDefinition $handlerDefinition): HandlerInterface
     {
-        $client = $this->getService($options['client'] ?? null);
-        $index = (string) ($options['index'] ?? 'monolog');
-        $type = (string) ($options['type'] ?? 'record');
-        $ignoreError = (bool) ($options['ignoreError'] ?? false);
-        $level = $options['level'] ?? Level::Debug;
-        $bubble = (bool) ($options['bubble'] ?? true);
+        $configReader = ConfigReader::fromArray($handlerDefinition->options, self::class);
 
-        return new ElasticaHandler(
-            $client,
-            [
-                'index' => $index,
-                'type' => $type,
-                'ignore_error' => $ignoreError,
-            ],
-            $level,
-            $bubble
-        );
+        return $this->newHandler(ElasticaHandler::class, [
+            $this->serviceObject($container, $handlerDefinition->options['client'] ?? null, 'client', 'Elastica', [Client::class]),
+            $configReader->array('handler_options', []),
+            $configReader->enum('level', Level::class, Level::Debug),
+            $configReader->bool('bubble', true),
+        ]);
     }
 }

@@ -5,28 +5,30 @@ declare(strict_types=1);
 namespace Sirix\Monolog\Handler;
 
 use Monolog\Handler\LogEntriesHandler;
-use Monolog\Handler\MissingExtensionException;
 use Monolog\Level;
-use Sirix\Monolog\FactoryInterface;
+use Psr\Container\ContainerInterface;
+use Sirix\ContainerResolver\ConfigReader;
+use Sirix\Monolog\Config\HandlerDefinition;
 
-// phpcs:disable WebimpressCodingStandard.NamingConventions.ValidVariableName
-class LogEntriesHandlerFactory implements FactoryInterface
+class LogEntriesHandlerFactory implements HandlerFactoryInterface
 {
-    /**
-     * @throws MissingExtensionException
-     */
-    public function __invoke(array $options): LogEntriesHandler
+    use HandlerOptionTrait;
+
+    public function create(ContainerInterface $container, HandlerDefinition $handlerDefinition): LogEntriesHandler
     {
-        $token = (string) ($options['token'] ?? '');
-        $useSSL = (bool) ($options['useSSL'] ?? true);
-        $level = $options['level'] ?? Level::Debug;
-        $bubble = (bool) ($options['bubble'] ?? true);
+        $configReader = ConfigReader::fromArray($handlerDefinition->options, self::class);
 
         return new LogEntriesHandler(
-            $token,
-            $useSSL,
-            $level,
-            $bubble
+            $configReader->requiredNonEmptyString('token'),
+            $configReader->bool('use_ssl', true),
+            $configReader->enum('level', Level::class, Level::Debug),
+            $configReader->bool('bubble', true),
+            $configReader->string('host', 'data.logentries.com'),
+            $configReader->bool('persistent', false),
+            $this->floatOption($handlerDefinition->options, 'timeout', 0.0, 'LogEntries'),
+            $this->floatOption($handlerDefinition->options, 'writing_timeout', 10.0, 'LogEntries'),
+            $this->nullableFloatOption($handlerDefinition->options, 'connection_timeout', 'LogEntries'),
+            $this->nullableIntOption($handlerDefinition->options, 'chunk_size', 'LogEntries'),
         );
     }
 }

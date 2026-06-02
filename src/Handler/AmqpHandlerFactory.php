@@ -5,35 +5,28 @@ declare(strict_types=1);
 namespace Sirix\Monolog\Handler;
 
 use Monolog\Handler\AmqpHandler;
+use Monolog\Handler\HandlerInterface;
 use Monolog\Level;
-use PhpAmqpLib\Channel\AMQPChannel;
-use Psr\Container\ContainerExceptionInterface;
-use Psr\Container\NotFoundExceptionInterface;
-use Sirix\Monolog\ContainerAwareInterface;
-use Sirix\Monolog\FactoryInterface;
-use Sirix\Monolog\ServiceTrait;
+use Psr\Container\ContainerInterface;
+use Sirix\ContainerResolver\ConfigReader;
+use Sirix\Monolog\Config\HandlerDefinition;
 
-class AmqpHandlerFactory implements FactoryInterface, ContainerAwareInterface
+class AmqpHandlerFactory implements HandlerFactoryInterface
 {
-    use ServiceTrait;
+    use ReflectiveHandlerFactoryTrait;
 
-    /**
-     * @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface
-     */
-    public function __invoke(array $options): AmqpHandler
+    public function create(ContainerInterface $container, HandlerDefinition $handlerDefinition): HandlerInterface
     {
-        /** @var AMQPChannel $exchange */
-        $exchange = $this->getService($options['exchange'] ?? null);
-        $exchangeName = (string) ($options['exchangeName'] ?? 'log');
-        $level = $options['level'] ?? Level::Debug;
-        $bubble = (bool) ($options['bubble'] ?? true);
+        $configReader = ConfigReader::fromArray($handlerDefinition->options, self::class);
 
-        return new AmqpHandler(
-            $exchange,
-            $exchangeName,
-            $level,
-            $bubble
-        );
+        return $this->newHandler(AmqpHandler::class, [
+            $this->serviceObject($container, $handlerDefinition->options['exchange'] ?? null, 'exchange', 'AMQP', [
+                'AMQPExchange',
+                'PhpAmqpLib\Channel\AMQPChannel',
+            ]),
+            $configReader->optionalString('exchange_name'),
+            $configReader->enum('level', Level::class, Level::Debug),
+            $configReader->bool('bubble', true),
+        ]);
     }
 }

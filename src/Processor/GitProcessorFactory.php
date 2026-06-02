@@ -6,14 +6,16 @@ namespace Sirix\Monolog\Processor;
 
 use Monolog\Level;
 use Monolog\Processor\GitProcessor;
-use Sirix\Monolog\FactoryInterface;
+use Psr\Container\ContainerInterface;
+use Sirix\ContainerResolver\ConfigReader;
+use Sirix\Monolog\Config\ProcessorDefinition;
 
-class GitProcessorFactory implements FactoryInterface
+class GitProcessorFactory implements ProcessorFactoryInterface
 {
-    public function __invoke(array $options): GitProcessor
+    public function create(ContainerInterface $container, ProcessorDefinition $processorDefinition): GitProcessor
     {
-        $level = $options['level'] ?? Level::Debug;
+        $configReader = ConfigReader::fromArray($processorDefinition->options, self::class);
 
-        return new GitProcessor($level);
+        return new GitProcessor($configReader->enum('level', Level::class, Level::Debug));
     }
 }

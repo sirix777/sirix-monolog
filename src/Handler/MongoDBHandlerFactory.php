@@ -4,36 +4,35 @@ declare(strict_types=1);
 
 namespace Sirix\Monolog\Handler;
 
+use MongoDB\Client;
+use MongoDB\Driver\Manager;
+use Monolog\Handler\HandlerInterface;
 use Monolog\Handler\MongoDBHandler;
 use Monolog\Level;
 use Psr\Container\ContainerExceptionInterface;
-use Psr\Container\NotFoundExceptionInterface;
-use Sirix\Monolog\ContainerAwareInterface;
-use Sirix\Monolog\FactoryInterface;
-use Sirix\Monolog\ServiceTrait;
+use Psr\Container\ContainerInterface;
+use ReflectionException;
+use Sirix\ContainerResolver\ConfigReader;
+use Sirix\Monolog\Config\HandlerDefinition;
 
-class MongoDBHandlerFactory implements FactoryInterface, ContainerAwareInterface
+class MongoDBHandlerFactory implements HandlerFactoryInterface
 {
-    use ServiceTrait;
+    use ReflectiveHandlerFactoryTrait;
 
     /**
      * @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface
+     * @throws ReflectionException
      */
-    public function __invoke(array $options): MongoDBHandler
+    public function create(ContainerInterface $container, HandlerDefinition $handlerDefinition): HandlerInterface
     {
-        $client = $this->getService($options['client'] ?? null);
-        $database = (string) ($options['database'] ?? '');
-        $collection = (string) ($options['collection'] ?? '');
-        $level = $options['level'] ?? Level::Debug;
-        $bubble = (bool) ($options['bubble'] ?? true);
+        $configReader = ConfigReader::fromArray($handlerDefinition->options, self::class);
 
-        return new MongoDBHandler(
-            $client,
-            $database,
-            $collection,
-            $level,
-            $bubble
-        );
+        return $this->newHandler(MongoDBHandler::class, [
+            $this->serviceObject($container, $handlerDefinition->options['mongodb'] ?? null, 'mongodb', 'MongoDB', [Client::class, Manager::class]),
+            $configReader->requiredNonEmptyString('database'),
+            $configReader->requiredNonEmptyString('collection'),
+            $configReader->enum('level', Level::class, Level::Debug),
+            $configReader->bool('bubble', true),
+        ]);
     }
 }

@@ -5,15 +5,19 @@ declare(strict_types=1);
 namespace Sirix\Monolog\Formatter;
 
 use Monolog\Formatter\FlowdockFormatter;
-use Sirix\Monolog\FactoryInterface;
+use Psr\Container\ContainerInterface;
+use Sirix\ContainerResolver\ConfigReader;
+use Sirix\Monolog\Config\FormatterDefinition;
 
-class FlowdockFormatterFactory implements FactoryInterface
+class FlowdockFormatterFactory implements FormatterFactoryInterface
 {
-    public function __invoke(array $options): FlowdockFormatter
+    public function create(ContainerInterface $container, FormatterDefinition $formatterDefinition): FlowdockFormatter
     {
-        $source = (string) ($options['source'] ?? null);
-        $sourceEmail = (string) ($options['sourceEmail'] ?? null);
+        $configReader = ConfigReader::fromArray($formatterDefinition->options, self::class);
 
-        return new FlowdockFormatter($source, $sourceEmail);
+        return new FlowdockFormatter(
+            $configReader->requiredNonEmptyString('source'),
+            $configReader->requiredNonEmptyString('source_email'),
+        );
     }
 }

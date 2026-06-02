@@ -5,15 +5,25 @@ declare(strict_types=1);
 namespace Sirix\Monolog\Formatter;
 
 use Monolog\Formatter\LogglyFormatter;
-use Sirix\Monolog\FactoryInterface;
+use Psr\Container\ContainerInterface;
+use Sirix\ContainerResolver\ConfigReader;
+use Sirix\Monolog\Config\FormatterDefinition;
+use Sirix\Monolog\Exception\InvalidConfigException;
 
-class LogglyFormatterFactory implements FactoryInterface
+class LogglyFormatterFactory implements FormatterFactoryInterface
 {
-    public function __invoke(array $options): LogglyFormatter
+    public function create(ContainerInterface $container, FormatterDefinition $formatterDefinition): LogglyFormatter
     {
-        $batchMode = $options['batchMode'] ?? LogglyFormatter::BATCH_MODE_NEWLINES;
-        $appendNewline = (bool) ($options['appendNewline'] ?? true);
+        $configReader = ConfigReader::fromArray($formatterDefinition->options, self::class);
+        $batchMode = $configReader->int('batch_mode', LogglyFormatter::BATCH_MODE_NEWLINES);
 
-        return new LogglyFormatter($batchMode, $appendNewline);
+        if (LogglyFormatter::BATCH_MODE_JSON !== $batchMode && LogglyFormatter::BATCH_MODE_NEWLINES !== $batchMode) {
+            throw new InvalidConfigException('Loggly formatter option "batch_mode" must be a valid JsonFormatter batch mode.');
+        }
+
+        return new LogglyFormatter(
+            $batchMode,
+            $configReader->bool('append_newline', false),
+        );
     }
 }

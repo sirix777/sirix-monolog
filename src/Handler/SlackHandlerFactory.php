@@ -4,40 +4,36 @@ declare(strict_types=1);
 
 namespace Sirix\Monolog\Handler;
 
-use Monolog\Handler\MissingExtensionException;
 use Monolog\Handler\SlackHandler;
 use Monolog\Level;
-use Sirix\Monolog\FactoryInterface;
+use Psr\Container\ContainerInterface;
+use Sirix\ContainerResolver\ConfigReader;
+use Sirix\Monolog\Config\HandlerDefinition;
 
-class SlackHandlerFactory implements FactoryInterface
+class SlackHandlerFactory implements HandlerFactoryInterface
 {
-    /**
-     * @throws MissingExtensionException
-     */
-    public function __invoke(array $options): SlackHandler
+    use HandlerOptionTrait;
+
+    public function create(ContainerInterface $container, HandlerDefinition $handlerDefinition): SlackHandler
     {
-        $token = (string) ($options['token'] ?? '');
-        $channel = (string) ($options['channel'] ?? '');
-        $userName = $options['userName'] ?? null;
-        $useAttachment = (bool) ($options['useAttachment'] ?? true);
-        $iconEmoji = $options['iconEmoji'] ?? null;
-        $level = $options['level'] ?? Level::Debug;
-        $bubble = (bool) ($options['bubble'] ?? true);
-        $useShortAttachment = (bool) ($options['useShortAttachment'] ?? false);
-        $includeContext = (bool) ($options['includeContextAndExtra'] ?? false);
-        $excludeFields = (array) ($options['excludeFields'] ?? []);
+        $configReader = ConfigReader::fromArray($handlerDefinition->options, self::class);
 
         return new SlackHandler(
-            $token,
-            $channel,
-            $userName,
-            $useAttachment,
-            $iconEmoji,
-            $level,
-            $bubble,
-            $useShortAttachment,
-            $includeContext,
-            $excludeFields
+            $configReader->requiredNonEmptyString('token'),
+            $configReader->requiredNonEmptyString('channel'),
+            $configReader->optionalString('username'),
+            $configReader->bool('use_attachment', true),
+            $configReader->optionalString('icon_emoji'),
+            $configReader->enum('level', Level::class, Level::Critical),
+            $configReader->bool('bubble', true),
+            $configReader->bool('use_short_attachment', false),
+            $configReader->bool('include_context_and_extra', false),
+            $configReader->stringList('exclude_fields', []),
+            $configReader->bool('persistent', false),
+            $this->floatOption($handlerDefinition->options, 'timeout', 0.0, 'Slack'),
+            $this->floatOption($handlerDefinition->options, 'writing_timeout', 10.0, 'Slack'),
+            $this->nullableFloatOption($handlerDefinition->options, 'connection_timeout', 'Slack'),
+            $this->nullableIntOption($handlerDefinition->options, 'chunk_size', 'Slack'),
         );
     }
 }

@@ -6,14 +6,16 @@ namespace Sirix\Monolog\Processor;
 
 use Monolog\Level;
 use Monolog\Processor\MercurialProcessor;
-use Sirix\Monolog\FactoryInterface;
+use Psr\Container\ContainerInterface;
+use Sirix\ContainerResolver\ConfigReader;
+use Sirix\Monolog\Config\ProcessorDefinition;
 
-class MercurialProcessorFactory implements FactoryInterface
+class MercurialProcessorFactory implements ProcessorFactoryInterface
 {
-    public function __invoke(array $options): MercurialProcessor
+    public function create(ContainerInterface $container, ProcessorDefinition $processorDefinition): MercurialProcessor
     {
-        $level = $options['level'] ?? Level::Debug;
+        $configReader = ConfigReader::fromArray($processorDefinition->options, self::class);
 
-        return new MercurialProcessor($level);
+        return new MercurialProcessor($configReader->enum('level', Level::class, Level::Debug));
     }
 }

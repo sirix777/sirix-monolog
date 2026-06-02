@@ -4,44 +4,34 @@ declare(strict_types=1);
 
 namespace Sirix\Monolog\Handler;
 
-use Monolog\Handler\MissingExtensionException;
 use Monolog\Handler\SlackWebhookHandler;
 use Monolog\Level;
-use Sirix\Monolog\FactoryInterface;
+use Psr\Container\ContainerInterface;
+use Sirix\ContainerResolver\ConfigReader;
+use Sirix\Monolog\Config\HandlerDefinition;
 
-class SlackWebhookHandlerFactory implements FactoryInterface
+use function assert;
+
+class SlackWebhookHandlerFactory implements HandlerFactoryInterface
 {
-    /**
-     * @throws MissingExtensionException
-     */
-    public function __invoke(array $options): SlackWebhookHandler
+    public function create(ContainerInterface $container, HandlerDefinition $handlerDefinition): SlackWebhookHandler
     {
-        $webhookUrl = (string) ($options['webhookUrl'] ?? '');
+        $configReader = ConfigReader::fromArray($handlerDefinition->options, self::class);
 
-        if ('' === $webhookUrl) {
-            throw new MissingExtensionException('webhookUrl must not be empty');
-        }
-        $channel = $options['channel'] ?? null;
-        $userName = $options['userName'] ?? null;
-        $useAttachment = (bool) ($options['useAttachment'] ?? true);
-        $iconEmoji = $options['iconEmoji'] ?? null;
-        $useShortAttachment = (bool) ($options['useShortAttachment'] ?? false);
-        $includeContext = (bool) ($options['includeContextAndExtra'] ?? false);
-        $level = $options['level'] ?? Level::Debug;
-        $bubble = (bool) ($options['bubble'] ?? true);
-        $excludeFields = (array) ($options['excludeFields'] ?? []);
+        $webhookUrl = $configReader->requiredNonEmptyString('webhook_url');
+        assert('' !== $webhookUrl);
 
         return new SlackWebhookHandler(
             $webhookUrl,
-            $channel,
-            $userName,
-            $useAttachment,
-            $iconEmoji,
-            $useShortAttachment,
-            $includeContext,
-            $level,
-            $bubble,
-            $excludeFields
+            $configReader->optionalString('channel'),
+            $configReader->optionalString('username'),
+            $configReader->bool('use_attachment', true),
+            $configReader->optionalString('icon_emoji'),
+            $configReader->bool('use_short_attachment', false),
+            $configReader->bool('include_context_and_extra', false),
+            $configReader->enum('level', Level::class, Level::Critical),
+            $configReader->bool('bubble', true),
+            $configReader->stringList('exclude_fields', []),
         );
     }
 }

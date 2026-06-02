@@ -6,28 +6,25 @@ namespace Sirix\Monolog\Handler;
 
 use Monolog\Handler\BufferHandler;
 use Monolog\Level;
-use Sirix\Monolog\FactoryInterface;
-use Sirix\Monolog\HandlerManagerAwareInterface;
-use Sirix\Monolog\HandlerManagerTrait;
+use Psr\Container\ContainerInterface;
+use Sirix\ContainerResolver\ConfigReader;
+use Sirix\Monolog\Config\HandlerDefinition;
 
-class BufferHandlerFactory implements FactoryInterface, HandlerManagerAwareInterface
+class BufferHandlerFactory implements HandlerFactoryInterface, HandlerRegistryAwareInterface
 {
-    use HandlerManagerTrait;
+    use HandlerRegistryTrait;
 
-    public function __invoke(array $options): BufferHandler
+    public function create(ContainerInterface $container, HandlerDefinition $handlerDefinition): BufferHandler
     {
-        $handler = $this->getHandlerManager()->get($options['handler']);
-        $bufferLimit = (int) ($options['bufferLimit'] ?? 0);
-        $level = $options['level'] ?? Level::Debug;
-        $bubble = (bool) ($options['bubble'] ?? true);
-        $flushOnOverflow = (bool) ($options['flushOnOverflow'] ?? true);
+        $configReader = ConfigReader::fromArray($handlerDefinition->options, self::class);
+        $level = $configReader->enum('level', Level::class, Level::Debug);
 
         return new BufferHandler(
-            $handler,
-            $bufferLimit,
+            $this->getHandlerRegistry()->get($configReader->requiredNonEmptyString('handler')),
+            $configReader->int('buffer_limit', 0),
             $level,
-            $bubble,
-            $flushOnOverflow
+            $configReader->bool('bubble', true),
+            $configReader->bool('flush_on_overflow', false),
         );
     }
 }

@@ -5,25 +5,30 @@ declare(strict_types=1);
 namespace Sirix\Monolog\Handler;
 
 use Monolog\Handler\DoctrineCouchDBHandler;
+use Monolog\Handler\HandlerInterface;
 use Monolog\Level;
-use Sirix\Monolog\ContainerAwareInterface;
-use Sirix\Monolog\FactoryInterface;
-use Sirix\Monolog\ServiceTrait;
+use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\ContainerInterface;
+use ReflectionException;
+use Sirix\ContainerResolver\ConfigReader;
+use Sirix\Monolog\Config\HandlerDefinition;
 
-class DoctrineCouchDBHandlerFactory implements FactoryInterface, ContainerAwareInterface
+class DoctrineCouchDBHandlerFactory implements HandlerFactoryInterface
 {
-    use ServiceTrait;
+    use ReflectiveHandlerFactoryTrait;
 
-    public function __invoke(array $options): DoctrineCouchDBHandler
+    /**
+     * @throws ReflectionException
+     * @throws ContainerExceptionInterface
+     */
+    public function create(ContainerInterface $container, HandlerDefinition $handlerDefinition): HandlerInterface
     {
-        $client = $this->getService($options['client'] ?? null);
-        $level = $options['level'] ?? Level::Debug;
-        $bubble = (bool) ($options['bubble'] ?? true);
+        $configReader = ConfigReader::fromArray($handlerDefinition->options, self::class);
 
-        return new DoctrineCouchDBHandler(
-            $client,
-            $level,
-            $bubble
-        );
+        return $this->newHandler(DoctrineCouchDBHandler::class, [
+            $this->serviceObject($container, $handlerDefinition->options['client'] ?? null, 'client', 'Doctrine CouchDB', ['Doctrine\CouchDB\CouchDBClient']),
+            $configReader->enum('level', Level::class, Level::Debug),
+            $configReader->bool('bubble', true),
+        ]);
     }
 }

@@ -5,27 +5,22 @@ declare(strict_types=1);
 namespace Sirix\Monolog\Handler;
 
 use Monolog\Handler\IFTTTHandler;
-use Monolog\Handler\MissingExtensionException;
 use Monolog\Level;
-use Sirix\Monolog\FactoryInterface;
+use Psr\Container\ContainerInterface;
+use Sirix\ContainerResolver\ConfigReader;
+use Sirix\Monolog\Config\HandlerDefinition;
 
-class IFTTTHandlerFactory implements FactoryInterface
+class IFTTTHandlerFactory implements HandlerFactoryInterface
 {
-    /**
-     * @throws MissingExtensionException
-     */
-    public function __invoke(array $options): IFTTTHandler
+    public function create(ContainerInterface $container, HandlerDefinition $handlerDefinition): IFTTTHandler
     {
-        $eventName = (string) ($options['eventName'] ?? '');
-        $secretKey = (string) ($options['secretKey'] ?? '');
-        $level = $options['level'] ?? Level::Debug;
-        $bubble = (bool) ($options['bubble'] ?? true);
+        $configReader = ConfigReader::fromArray($handlerDefinition->options, self::class);
 
         return new IFTTTHandler(
-            $eventName,
-            $secretKey,
-            $level,
-            $bubble
+            $configReader->requiredNonEmptyString('event_name'),
+            $configReader->requiredNonEmptyString('secret_key'),
+            $configReader->enum('level', Level::class, Level::Error),
+            $configReader->bool('bubble', true),
         );
     }
 }

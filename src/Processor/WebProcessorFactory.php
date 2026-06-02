@@ -6,57 +6,60 @@ namespace Sirix\Monolog\Processor;
 
 use ArrayAccess;
 use Monolog\Processor\WebProcessor;
-use Psr\Container\ContainerExceptionInterface;
-use Psr\Container\NotFoundExceptionInterface;
-use Sirix\Monolog\ContainerAwareInterface;
-use Sirix\Monolog\ContainerTrait;
-use Sirix\Monolog\Exception\MissingServiceException;
-use Sirix\Monolog\FactoryInterface;
+use Psr\Container\ContainerInterface;
+use Sirix\ContainerResolver\ContainerResolver;
+use Sirix\Monolog\Config\ProcessorDefinition;
+use Sirix\Monolog\Exception\InvalidConfigException;
 
+use function array_key_exists;
 use function is_array;
+use function is_string;
 
-class WebProcessorFactory implements FactoryInterface, ContainerAwareInterface
+class WebProcessorFactory implements ProcessorFactoryInterface
 {
-    use ContainerTrait;
-
-    /**
-     * @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface
-     */
-    public function __invoke(array $options): WebProcessor
+    public function create(ContainerInterface $container, ProcessorDefinition $processorDefinition): WebProcessor
     {
-        $serverData = $this->getServerDataService($options);
-        $extraFields = $options['extraFields'] ?? null;
-
         return new WebProcessor(
-            $serverData,
-            $extraFields
+            $this->serverData($container, $processorDefinition->options['server_data'] ?? null),
+            $this->optionalArray($processorDefinition->options, 'extra_fields'),
         );
     }
 
     /**
-     * @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface
+     * @return null|array<string, mixed>|ArrayAccess<mixed, mixed>
      */
-    public function getServerDataService(array $options): mixed
+    private function serverData(ContainerInterface $container, mixed $serverData): mixed
     {
-        if (empty($options['serverData'])) {
+        if (null === $serverData) {
             return null;
         }
 
-        if (
-            is_array($options['serverData'])
-            || $options['serverData'] instanceof ArrayAccess
-        ) {
-            return $options['serverData'];
+        if (is_string($serverData)) {
+            $serverData = ContainerResolver::forContext($container, self::class)->getExisting($serverData);
         }
 
-        if (! $this->getContainer()->has($options['serverData'])) {
-            throw new MissingServiceException(
-                'No serverData service found'
-            );
+        if (is_array($serverData) || $serverData instanceof ArrayAccess) {
+            return $serverData;
         }
 
-        return $this->getContainer()->get($options['serverData']);
+        throw new InvalidConfigException(
+            'Web processor option "server_data" must be an array, ArrayAccess, service id, or null.',
+        );
+    }
+
+    /**
+     * @param array<string, mixed> $options
+     */
+    private function optionalArray(array $options, string $key): ?array
+    {
+        if (! array_key_exists($key, $options) || null === $options[$key]) {
+            return null;
+        }
+
+        if (! is_array($options[$key])) {
+            throw new InvalidConfigException("Web processor option '{$key}' must be an array or null.");
+        }
+
+        return $options[$key];
     }
 }

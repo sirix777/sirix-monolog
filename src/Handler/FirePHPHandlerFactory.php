@@ -6,18 +6,19 @@ namespace Sirix\Monolog\Handler;
 
 use Monolog\Handler\FirePHPHandler;
 use Monolog\Level;
-use Sirix\Monolog\FactoryInterface;
+use Psr\Container\ContainerInterface;
+use Sirix\ContainerResolver\ConfigReader;
+use Sirix\Monolog\Config\HandlerDefinition;
 
-class FirePHPHandlerFactory implements FactoryInterface
+class FirePHPHandlerFactory implements HandlerFactoryInterface
 {
-    public function __invoke(array $options): FirePHPHandler
+    public function create(ContainerInterface $container, HandlerDefinition $handlerDefinition): FirePHPHandler
     {
-        $level = $options['level'] ?? Level::Debug;
-        $bubble = (bool) ($options['bubble'] ?? true);
+        $configReader = ConfigReader::fromArray($handlerDefinition->options, self::class);
 
         return new FirePHPHandler(
-            $level,
-            $bubble
+            $configReader->enum('level', Level::class, Level::Debug),
+            $configReader->bool('bubble', true),
         );
     }
 }

@@ -6,24 +6,29 @@ namespace Sirix\Monolog\Handler;
 
 use Monolog\Handler\PsrHandler;
 use Monolog\Level;
-use Sirix\Monolog\ContainerAwareInterface;
-use Sirix\Monolog\FactoryInterface;
-use Sirix\Monolog\ServiceTrait;
+use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\ContainerInterface;
+use Psr\Log\LoggerInterface;
+use Sirix\ContainerResolver\ConfigReader;
+use Sirix\ContainerResolver\ContainerResolver;
+use Sirix\Monolog\Config\HandlerDefinition;
 
-class PsrHandlerFactory implements FactoryInterface, ContainerAwareInterface
+class PsrHandlerFactory implements HandlerFactoryInterface
 {
-    use ServiceTrait;
-
-    public function __invoke(array $options): PsrHandler
+    /**
+     * @throws ContainerExceptionInterface
+     */
+    public function create(ContainerInterface $container, HandlerDefinition $handlerDefinition): PsrHandler
     {
-        $logger = $this->getService($options['logger'] ?? null);
-        $level = $options['level'] ?? Level::Debug;
-        $bubble = (bool) ($options['bubble'] ?? true);
+        $configReader = ConfigReader::fromArray($handlerDefinition->options, self::class);
+        $level = $configReader->enum('level', Level::class, Level::Debug);
+        $loggerId = $configReader->requiredNonEmptyString('logger');
 
         return new PsrHandler(
-            $logger,
+            ContainerResolver::forContext($container, self::class)->getAs($loggerId, LoggerInterface::class),
             $level,
-            $bubble
+            $configReader->bool('bubble', true),
+            $configReader->bool('include_extra', false),
         );
     }
 }

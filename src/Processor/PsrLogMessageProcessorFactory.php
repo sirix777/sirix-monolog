@@ -5,12 +5,19 @@ declare(strict_types=1);
 namespace Sirix\Monolog\Processor;
 
 use Monolog\Processor\PsrLogMessageProcessor;
-use Sirix\Monolog\FactoryInterface;
+use Psr\Container\ContainerInterface;
+use Sirix\ContainerResolver\ConfigReader;
+use Sirix\Monolog\Config\ProcessorDefinition;
 
-class PsrLogMessageProcessorFactory implements FactoryInterface
+class PsrLogMessageProcessorFactory implements ProcessorFactoryInterface
 {
-    public function __invoke(array $options): PsrLogMessageProcessor
+    public function create(ContainerInterface $container, ProcessorDefinition $processorDefinition): PsrLogMessageProcessor
     {
-        return new PsrLogMessageProcessor();
+        $configReader = ConfigReader::fromArray($processorDefinition->options, self::class);
+
+        return new PsrLogMessageProcessor(
+            $configReader->optionalString('date_format'),
+            $configReader->bool('remove_used_context_fields', false),
+        );
     }
 }

@@ -5,14 +5,16 @@ declare(strict_types=1);
 namespace Sirix\Monolog\Formatter;
 
 use Monolog\Formatter\WildfireFormatter;
-use Sirix\Monolog\FactoryInterface;
+use Psr\Container\ContainerInterface;
+use Sirix\ContainerResolver\ConfigReader;
+use Sirix\Monolog\Config\FormatterDefinition;
 
-class WildfireFormatterFactory implements FactoryInterface
+class WildfireFormatterFactory implements FormatterFactoryInterface
 {
-    public function __invoke(array $options): WildfireFormatter
+    public function create(ContainerInterface $container, FormatterDefinition $formatterDefinition): WildfireFormatter
     {
-        $dateFormat = $options['dateFormat'] ?? null;
+        $configReader = ConfigReader::fromArray($formatterDefinition->options, self::class);
 
-        return new WildfireFormatter($dateFormat);
+        return new WildfireFormatter($configReader->optionalString('date_format'));
     }
 }
