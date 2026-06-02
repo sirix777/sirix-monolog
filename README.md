@@ -306,6 +306,7 @@ Custom factories must implement one of:
 - [Formatters](docs/formatters.md)
 - [Processors](docs/processors.md)
 - [Migration from 1.x](docs/migration-from-1.x.md)
+- [Official Monolog documentation](https://seldaek.github.io/monolog/)
 
 ## Notes for 2.x
 
