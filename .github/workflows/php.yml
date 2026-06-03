@@ -35,7 +35,7 @@ jobs:
         run: composer validate --strict --no-check-lock
 
       - name: Install dependencies
-        run: composer update sirix/redaction --with "sirix/redaction:${{ matrix.redaction-version }}" --prefer-dist --no-progress --ignore-platform-req=ext-mongodb
+        run: composer update --with "sirix/redaction:${{ matrix.redaction-version }}" --prefer-dist --no-progress --ignore-platform-req=ext-mongodb --bump-after-update=no
 
       - name: Install tools
         run: composer bin all install --prefer-dist --no-progress
