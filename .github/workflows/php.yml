@@ -17,8 +17,9 @@ jobs:
       fail-fast: false
       matrix:
         php-version: ["8.2", "8.3", "8.4", "8.5"]
+        redaction-version: ["^1.3.1", "^2.0"]
 
-    name: PHP ${{ matrix.php-version }}
+    name: PHP ${{ matrix.php-version }} / sirix/redaction ${{ matrix.redaction-version }}
 
     steps:
       - uses: actions/checkout@v4
@@ -34,7 +35,7 @@ jobs:
         run: composer validate --strict --no-check-lock
 
       - name: Install dependencies
-        run: composer install --prefer-dist --no-progress --ignore-platform-req=ext-mongodb
+        run: composer update --with "sirix/redaction:${{ matrix.redaction-version }}" --prefer-dist --no-progress --ignore-platform-req=ext-mongodb --bump-after-update=no
 
       - name: Install tools
         run: composer bin all install --prefer-dist --no-progress

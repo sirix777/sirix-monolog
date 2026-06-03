@@ -20,6 +20,8 @@ use function class_exists;
 use function interface_exists;
 use function is_callable;
 use function is_int;
+use function is_string;
+use function method_exists;
 
 class RedactorProcessorFactory implements ProcessorFactoryInterface
 {
@@ -64,21 +66,32 @@ class RedactorProcessorFactory implements ProcessorFactoryInterface
         );
 
         if (null !== $replacement = $configReader->optionalString('replacement')) {
-            $redactor->setReplacement($replacement);
+            $redactor = $this->applyRedactorOption($redactor, 'setReplacement', 'withReplacement', $replacement);
         }
 
         if (null !== $template = $configReader->optionalString('template')) {
-            $redactor->setTemplate($template);
+            $redactor = $this->applyRedactorOption($redactor, 'setTemplate', 'withTemplate', $template);
         }
 
-        $this->setNullableInt($redactor, $options, 'length_limit', 'setLengthLimit');
-        $this->setNullableInt($redactor, $options, 'max_depth', 'setMaxDepth');
-        $this->setNullableInt($redactor, $options, 'max_items_per_container', 'setMaxItemsPerContainer');
-        $this->setNullableInt($redactor, $options, 'max_total_nodes', 'setMaxTotalNodes');
+        $redactor = $this->setNullableInt($redactor, $options, 'length_limit', 'setLengthLimit', 'withLengthLimit');
+        $redactor = $this->setNullableInt($redactor, $options, 'max_depth', 'setMaxDepth', 'withMaxDepth');
+        $redactor = $this->setNullableInt(
+            $redactor,
+            $options,
+            'max_items_per_container',
+            'setMaxItemsPerContainer',
+            'withMaxItemsPerContainer',
+        );
+        $redactor = $this->setNullableInt($redactor, $options, 'max_total_nodes', 'setMaxTotalNodes', 'withMaxTotalNodes');
 
         if ($configReader->has('object_view_mode')) {
             $objectViewMode = $configReader->requiredEnum('object_view_mode', ObjectViewModeEnum::class);
-            $redactor->setObjectViewMode($objectViewMode);
+            $redactor = $this->applyRedactorOption(
+                $redactor,
+                'setObjectViewMode',
+                'withObjectViewMode',
+                $objectViewMode,
+            );
         }
 
         if (array_key_exists('on_limit_exceeded_callback', $options)) {
@@ -89,11 +102,26 @@ class RedactorProcessorFactory implements ProcessorFactoryInterface
                 );
             }
 
-            $redactor->setOnLimitExceededCallback($callback);
+            $redactor = $this->applyRedactorOption(
+                $redactor,
+                'setOnLimitExceededCallback',
+                'withOnLimitExceededCallback',
+                $callback,
+            );
         }
 
         if (array_key_exists('overflow_placeholder', $options)) {
-            $redactor->setOverflowPlaceholder($options['overflow_placeholder']);
+            $overflowPlaceholder = $options['overflow_placeholder'];
+            if (null !== $overflowPlaceholder && ! is_string($overflowPlaceholder)) {
+                throw new InvalidConfigException('Redactor option "overflow_placeholder" must be a string or null.');
+            }
+
+            return $this->applyRedactorOption(
+                $redactor,
+                'setOverflowPlaceholder',
+                'withOverflowPlaceholder',
+                $overflowPlaceholder,
+            );
         }
 
         return $redactor;
@@ -101,12 +129,18 @@ class RedactorProcessorFactory implements ProcessorFactoryInterface
 
     /**
      * @param array<string, mixed> $options
-     * @param non-empty-string     $method
+     * @param non-empty-string     $setter
+     * @param non-empty-string     $wither
      */
-    private function setNullableInt(Redactor $redactor, array $options, string $key, string $method): void
-    {
+    private function setNullableInt(
+        RedactorInterface $redactor,
+        array $options,
+        string $key,
+        string $setter,
+        string $wither,
+    ): RedactorInterface {
         if (! array_key_exists($key, $options)) {
-            return;
+            return $redactor;
         }
 
         $value = $options[$key];
@@ -114,6 +148,25 @@ class RedactorProcessorFactory implements ProcessorFactoryInterface
             throw new InvalidConfigException("Redactor option '{$key}' must be an int or null.");
         }
 
-        $redactor->{$method}($value);
+        return $this->applyRedactorOption($redactor, $setter, $wither, $value);
+    }
+
+    /**
+     * @param non-empty-string $setter
+     * @param non-empty-string $wither
+     */
+    private function applyRedactorOption(RedactorInterface $redactor, string $setter, string $wither, mixed $value): RedactorInterface
+    {
+        $method = method_exists($redactor, $wither) ? $wither : $setter;
+        if (! method_exists($redactor, $method)) {
+            throw new InvalidConfigException('The installed sirix/redaction package is not compatible.');
+        }
+
+        $configuredRedactor = $redactor->{$method}($value);
+        if (! $configuredRedactor instanceof RedactorInterface) {
+            throw new InvalidConfigException('The installed sirix/redaction package is not compatible.');
+        }
+
+        return $configuredRedactor;
     }
 }

@@ -1,9 +1,6 @@
 # Mezzio Monolog Factory
 
-[![Latest Stable Version](http://poser.pugx.org/sirix/monolog/v)](https://packagist.org/packages/sirix/monolog)
-[![Total Downloads](http://poser.pugx.org/sirix/monolog/downloads)](https://packagist.org/packages/sirix/monolog)
-[![License](http://poser.pugx.org/sirix/monolog/license)](https://packagist.org/packages/sirix/monolog)
-[![PHP Version Require](http://poser.pugx.org/sirix/monolog/require/php)](https://packagist.org/packages/sirix/monolog)
+[![Latest Stable Version](http://poser.pugx.org/sirix/monolog/v)](https://packagist.org/packages/sirix/monolog) [![Total Downloads](http://poser.pugx.org/sirix/monolog/downloads)](https://packagist.org/packages/sirix/monolog) [![License](http://poser.pugx.org/sirix/monolog/license)](https://packagist.org/packages/sirix/monolog) [![PHP Version Require](http://poser.pugx.org/sirix/monolog/require/php)](https://packagist.org/packages/sirix/monolog)
 
 Explicit Mezzio Monolog factory integration built around PSR-11, strict configuration, and predictable factories.
 
