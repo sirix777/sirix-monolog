@@ -11,6 +11,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 use Sirix\Monolog\Config\ProcessorDefinition;
+use Sirix\Monolog\Exception\InvalidConfigException;
 use Sirix\Monolog\Processor\RedactorProcessorFactory;
 use Sirix\Redaction\Bridge\Monolog\RedactorProcessor;
 use Sirix\Redaction\RedactorInterface;
@@ -118,6 +119,16 @@ final class RedactorProcessorFactoryTest extends TestCase
         $logRecord = $processorWithDefaults($record);
 
         $this->assertNotSame('john.doe@example.com', $logRecord->context['email']);
+    }
+
+    public function testInvalidOverflowPlaceholderFailsWithConfigException(): void
+    {
+        $this->expectException(InvalidConfigException::class);
+        $this->expectExceptionMessage('Redactor option "overflow_placeholder" must be a string or null.');
+
+        $this->createProcessor([
+            'overflow_placeholder' => 123,
+        ]);
     }
 
     /**

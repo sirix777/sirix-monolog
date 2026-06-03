@@ -20,6 +20,7 @@ use function class_exists;
 use function interface_exists;
 use function is_callable;
 use function is_int;
+use function is_string;
 use function method_exists;
 
 class RedactorProcessorFactory implements ProcessorFactoryInterface
@@ -110,11 +111,16 @@ class RedactorProcessorFactory implements ProcessorFactoryInterface
         }
 
         if (array_key_exists('overflow_placeholder', $options)) {
+            $overflowPlaceholder = $options['overflow_placeholder'];
+            if (null !== $overflowPlaceholder && ! is_string($overflowPlaceholder)) {
+                throw new InvalidConfigException('Redactor option "overflow_placeholder" must be a string or null.');
+            }
+
             return $this->applyRedactorOption(
                 $redactor,
                 'setOverflowPlaceholder',
                 'withOverflowPlaceholder',
-                $options['overflow_placeholder'],
+                $overflowPlaceholder,
             );
         }
 
@@ -157,7 +163,10 @@ class RedactorProcessorFactory implements ProcessorFactoryInterface
         }
 
         $configuredRedactor = $redactor->{$method}($value);
+        if (! $configuredRedactor instanceof RedactorInterface) {
+            throw new InvalidConfigException('The installed sirix/redaction package is not compatible.');
+        }
 
-        return $configuredRedactor instanceof RedactorInterface ? $configuredRedactor : $redactor;
+        return $configuredRedactor;
     }
 }
