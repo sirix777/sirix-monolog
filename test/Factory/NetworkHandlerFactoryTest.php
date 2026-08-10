@@ -34,37 +34,37 @@ final class NetworkHandlerFactoryTest extends TestCase
         }
 
         $container = $this->container([
-            'ifttt' => [
-                C::Type->value => HandlerType::Ifttt,
+            'ifttt'         => [
+                C::Type->value    => HandlerType::Ifttt,
                 C::Options->value => [
                     'event_name' => 'deployment_failed',
                     'secret_key' => 'secret',
                 ],
             ],
-            'loggly' => [
-                C::Type->value => HandlerType::Loggly,
+            'loggly'        => [
+                C::Type->value    => HandlerType::Loggly,
                 C::Options->value => [
                     'token' => 'token',
-                    'tag' => ['api', 'error'],
+                    'tag'   => ['api', 'error'],
                 ],
             ],
-            'send_grid' => [
-                C::Type->value => HandlerType::SendGrid,
+            'send_grid'     => [
+                C::Type->value    => HandlerType::SendGrid,
                 C::Options->value => [
                     'api_key' => 'token',
-                    'from' => 'logs@example.com',
-                    'to' => ['ops@example.com'],
+                    'from'    => 'logs@example.com',
+                    'to'      => ['ops@example.com'],
                     'subject' => 'Log message',
                 ],
             ],
             'slack_webhook' => [
-                C::Type->value => HandlerType::SlackWebhook,
+                C::Type->value    => HandlerType::SlackWebhook,
                 C::Options->value => [
-                    'webhook_url' => 'https://hooks.slack.com/services/test',
-                    'channel' => '#logs',
-                    'username' => 'logger',
+                    'webhook_url'               => 'https://hooks.slack.com/services/test',
+                    'channel'                   => '#logs',
+                    'username'                  => 'logger',
                     'include_context_and_extra' => true,
-                    'exclude_fields' => ['context.password'],
+                    'exclude_fields'            => ['context.password'],
                 ],
             ],
         ], ['ifttt', 'loggly', 'send_grid', 'slack_webhook']);
@@ -85,25 +85,25 @@ final class NetworkHandlerFactoryTest extends TestCase
 
         $container = $this->container([
             'fleep_hook' => [
-                C::Type->value => HandlerType::FleepHook,
+                C::Type->value    => HandlerType::FleepHook,
                 C::Options->value => [
                     'token' => 'token',
                 ],
             ],
-            'flowdock' => [
-                C::Type->value => HandlerType::Flowdock,
+            'flowdock'   => [
+                C::Type->value    => HandlerType::Flowdock,
                 C::Options->value => [
                     'api_token' => 'token',
                 ],
             ],
-            'slack' => [
-                C::Type->value => HandlerType::Slack,
+            'slack'      => [
+                C::Type->value    => HandlerType::Slack,
                 C::Options->value => [
-                    'token' => 'token',
-                    'channel' => '#logs',
-                    'username' => 'logger',
+                    'token'                     => 'token',
+                    'channel'                   => '#logs',
+                    'username'                  => 'logger',
                     'include_context_and_extra' => true,
-                    'exclude_fields' => ['context.password'],
+                    'exclude_fields'            => ['context.password'],
                 ],
             ],
         ], ['fleep_hook', 'flowdock', 'slack']);
@@ -118,43 +118,43 @@ final class NetworkHandlerFactoryTest extends TestCase
     public function testSocketNetworkHandlersCanBeCreatedWithoutSsl(): void
     {
         $container = $this->container([
-            'cube' => [
-                C::Type->value => HandlerType::Cube,
+            'cube'        => [
+                C::Type->value    => HandlerType::Cube,
                 C::Options->value => [
                     'url' => 'udp://127.0.0.1:1180',
                 ],
             ],
             'insight_ops' => [
-                C::Type->value => HandlerType::InsightOps,
+                C::Type->value    => HandlerType::InsightOps,
                 C::Options->value => [
-                    'token' => 'token',
-                    'region' => 'us',
+                    'token'   => 'token',
+                    'region'  => 'us',
                     'use_ssl' => false,
                 ],
             ],
             'log_entries' => [
-                C::Type->value => HandlerType::LogEntries,
+                C::Type->value    => HandlerType::LogEntries,
                 C::Options->value => [
-                    'token' => 'token',
+                    'token'   => 'token',
                     'use_ssl' => false,
                 ],
             ],
-            'logmatic' => [
-                C::Type->value => HandlerType::Logmatic,
+            'logmatic'    => [
+                C::Type->value    => HandlerType::Logmatic,
                 C::Options->value => [
-                    'token' => 'token',
+                    'token'    => 'token',
                     'hostname' => 'host',
                     'app_name' => 'app',
-                    'use_ssl' => false,
+                    'use_ssl'  => false,
                 ],
             ],
-            'pushover' => [
-                C::Type->value => HandlerType::Pushover,
+            'pushover'    => [
+                C::Type->value    => HandlerType::Pushover,
                 C::Options->value => [
-                    'token' => 'token',
-                    'users' => ['user'],
-                    'title' => 'Logs',
-                    'use_ssl' => false,
+                    'token'                 => 'token',
+                    'users'                 => ['user'],
+                    'title'                 => 'Logs',
+                    'use_ssl'               => false,
                     'use_formatted_message' => true,
                 ],
             ],
@@ -176,7 +176,7 @@ final class NetworkHandlerFactoryTest extends TestCase
     private function container(array $handlers, array $channelHandlers): ArrayContainer
     {
         $providerConfig = (new ConfigProvider())();
-        $dependencies = $providerConfig['dependencies'];
+        $dependencies   = $providerConfig['dependencies'];
 
         return new ArrayContainer(
             services: [
@@ -184,7 +184,7 @@ final class NetworkHandlerFactoryTest extends TestCase
                     C::Root->value => [
                         C::Channels->value => [
                             'default' => [
-                                C::Name->value => 'app',
+                                C::Name->value     => 'app',
                                 C::Handlers->value => $channelHandlers,
                             ],
                         ],

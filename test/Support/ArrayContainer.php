@@ -27,7 +27,9 @@ final class ArrayContainer implements ContainerInterface
         $dependencies = $providerConfig['dependencies'] ?? [];
 
         return new self(
-            services: ['config' => $appConfig],
+            services: [
+                'config' => $appConfig,
+            ],
             factories: $dependencies['factories'] ?? [],
             aliases: $dependencies['aliases'] ?? [],
         );
@@ -45,7 +47,7 @@ final class ArrayContainer implements ContainerInterface
             throw new class("Service '{$id}' was not found.") extends RuntimeException implements NotFoundExceptionInterface {};
         }
 
-        $factory = $this->factories[$id];
+        $factory             = $this->factories[$id];
         $this->services[$id] = $this->create($factory, $id);
 
         return $this->services[$id];
@@ -64,7 +66,7 @@ final class ArrayContainer implements ContainerInterface
     private function create(callable|string $factory, string $requestedName): mixed
     {
         if (is_string($factory)) {
-            $factory = new $factory();
+            $factory    = new $factory();
             $reflection = new ReflectionMethod($factory, '__invoke');
 
             return $reflection->getNumberOfParameters() > 1

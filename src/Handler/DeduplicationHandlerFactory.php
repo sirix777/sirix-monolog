@@ -16,7 +16,7 @@ class DeduplicationHandlerFactory implements HandlerFactoryInterface, HandlerReg
 
     public function create(ContainerInterface $container, HandlerDefinition $handlerDefinition): DeduplicationHandler
     {
-        $configReader = ConfigReader::fromArray($handlerDefinition->options, self::class);
+        $configReader       = ConfigReader::fromArray($handlerDefinition->options, self::class);
         $deduplicationLevel = $configReader->enum('deduplication_level', Level::class, Level::Error);
 
         return new DeduplicationHandler(

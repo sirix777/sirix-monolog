@@ -16,7 +16,7 @@ class ErrorLogHandlerFactory implements HandlerFactoryInterface
     public function create(ContainerInterface $container, HandlerDefinition $handlerDefinition): ErrorLogHandler
     {
         $configReader = ConfigReader::fromArray($handlerDefinition->options, self::class);
-        $level = $configReader->enum('level', Level::class, Level::Debug);
+        $level        = $configReader->enum('level', Level::class, Level::Debug);
 
         return new ErrorLogHandler(
             $this->messageType($configReader->int('message_type', ErrorLogHandler::OPERATING_SYSTEM)),
@@ -33,8 +33,8 @@ class ErrorLogHandlerFactory implements HandlerFactoryInterface
     {
         return match ($messageType) {
             ErrorLogHandler::OPERATING_SYSTEM => ErrorLogHandler::OPERATING_SYSTEM,
-            ErrorLogHandler::SAPI => ErrorLogHandler::SAPI,
-            default => throw new InvalidConfigException('Error log handler option "message_type" is not supported.'),
+            ErrorLogHandler::SAPI             => ErrorLogHandler::SAPI,
+            default                           => throw new InvalidConfigException('Error log handler option "message_type" is not supported.'),
         };
     }
 }

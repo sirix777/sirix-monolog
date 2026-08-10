@@ -16,7 +16,7 @@ class LogmaticFormatterFactory implements FormatterFactoryInterface
     public function create(ContainerInterface $container, FormatterDefinition $formatterDefinition): LogmaticFormatter
     {
         $configReader = ConfigReader::fromArray($formatterDefinition->options, self::class);
-        $batchMode = $configReader->int('batch_mode', JsonFormatter::BATCH_MODE_JSON);
+        $batchMode    = $configReader->int('batch_mode', JsonFormatter::BATCH_MODE_JSON);
 
         if (JsonFormatter::BATCH_MODE_JSON !== $batchMode && JsonFormatter::BATCH_MODE_NEWLINES !== $batchMode) {
             throw new InvalidConfigException('Logmatic formatter option "batch_mode" must be a valid JsonFormatter batch mode.');

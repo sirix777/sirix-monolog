@@ -26,25 +26,25 @@ final class WrapperHandlerFactoryTest extends TestCase
 {
     public function testGroupHandlerWritesToAllNestedHandlers(): void
     {
-        $first = fopen('php://temp', 'w+');
+        $first  = fopen('php://temp', 'w+');
         $second = fopen('php://temp', 'w+');
         $this->assertIsResource($first);
         $this->assertIsResource($second);
 
         $logger = $this->logger([
-            'group' => [
-                C::Type->value => HandlerType::Group,
+            'group'  => [
+                C::Type->value    => HandlerType::Group,
                 C::Options->value => [
                     C::Handlers->value => ['first', 'second'],
                 ],
             ],
-            'first' => $this->streamHandler($first),
+            'first'  => $this->streamHandler($first),
             'second' => $this->streamHandler($second),
         ], ['group']);
 
         $logger->warning('Grouped message');
 
-        $firstContents = $this->contents($first);
+        $firstContents  = $this->contents($first);
         $secondContents = $this->contents($second);
         fclose($first);
         fclose($second);
@@ -60,9 +60,9 @@ final class WrapperHandlerFactoryTest extends TestCase
 
         $logger = $this->logger([
             'filter' => [
-                C::Type->value => HandlerType::Filter,
+                C::Type->value    => HandlerType::Filter,
                 C::Options->value => [
-                    'handler' => 'stream',
+                    'handler'           => 'stream',
                     'min_level_or_list' => Level::Error,
                 ],
             ],
@@ -86,7 +86,7 @@ final class WrapperHandlerFactoryTest extends TestCase
 
         $logger = $this->logger([
             'buffer' => [
-                C::Type->value => HandlerType::Buffer,
+                C::Type->value    => HandlerType::Buffer,
                 C::Options->value => [
                     'handler' => 'stream',
                 ],
@@ -111,13 +111,13 @@ final class WrapperHandlerFactoryTest extends TestCase
 
         $logger = $this->logger([
             'fingers' => [
-                C::Type->value => HandlerType::FingersCrossed,
+                C::Type->value    => HandlerType::FingersCrossed,
                 C::Options->value => [
-                    'handler' => 'stream',
+                    'handler'             => 'stream',
                     'activation_strategy' => Level::Warning,
                 ],
             ],
-            'stream' => $this->streamHandler($stream),
+            'stream'  => $this->streamHandler($stream),
         ], ['fingers']);
 
         $logger->info('Buffered before warning');
@@ -133,25 +133,25 @@ final class WrapperHandlerFactoryTest extends TestCase
 
     public function testWhatFailureGroupHandlerWritesToNestedHandlers(): void
     {
-        $first = fopen('php://temp', 'w+');
+        $first  = fopen('php://temp', 'w+');
         $second = fopen('php://temp', 'w+');
         $this->assertIsResource($first);
         $this->assertIsResource($second);
 
         $logger = $this->logger([
-            'group' => [
-                C::Type->value => HandlerType::WhatFailureGroup,
+            'group'  => [
+                C::Type->value    => HandlerType::WhatFailureGroup,
                 C::Options->value => [
                     C::Handlers->value => ['first', 'second'],
                 ],
             ],
-            'first' => $this->streamHandler($first),
+            'first'  => $this->streamHandler($first),
             'second' => $this->streamHandler($second),
         ], ['group']);
 
         $logger->warning('What failure message');
 
-        $firstContents = $this->contents($first);
+        $firstContents  = $this->contents($first);
         $secondContents = $this->contents($second);
         fclose($first);
         fclose($second);
@@ -162,25 +162,25 @@ final class WrapperHandlerFactoryTest extends TestCase
 
     public function testFallbackGroupHandlerStopsAfterFirstSuccessfulHandler(): void
     {
-        $first = fopen('php://temp', 'w+');
+        $first  = fopen('php://temp', 'w+');
         $second = fopen('php://temp', 'w+');
         $this->assertIsResource($first);
         $this->assertIsResource($second);
 
         $logger = $this->logger([
             'fallback' => [
-                C::Type->value => HandlerType::FallbackGroup,
+                C::Type->value    => HandlerType::FallbackGroup,
                 C::Options->value => [
                     C::Handlers->value => ['first', 'second'],
                 ],
             ],
-            'first' => $this->streamHandler($first),
-            'second' => $this->streamHandler($second),
+            'first'    => $this->streamHandler($first),
+            'second'   => $this->streamHandler($second),
         ], ['fallback']);
 
         $logger->warning('Fallback message');
 
-        $firstContents = $this->contents($first);
+        $firstContents  = $this->contents($first);
         $secondContents = $this->contents($second);
         fclose($first);
         fclose($second);
@@ -196,13 +196,13 @@ final class WrapperHandlerFactoryTest extends TestCase
 
         $logger = $this->logger([
             'sampling' => [
-                C::Type->value => HandlerType::Sampling,
+                C::Type->value    => HandlerType::Sampling,
                 C::Options->value => [
                     'handler' => 'stream',
-                    'factor' => 1,
+                    'factor'  => 1,
                 ],
             ],
-            'stream' => $this->streamHandler($stream),
+            'stream'   => $this->streamHandler($stream),
         ], ['sampling']);
 
         $logger->info('Sampled message');
@@ -219,15 +219,15 @@ final class WrapperHandlerFactoryTest extends TestCase
 
         $logger = $this->logger([
             'overflow' => [
-                C::Type->value => HandlerType::Overflow,
+                C::Type->value    => HandlerType::Overflow,
                 C::Options->value => [
-                    'handler' => 'stream',
+                    'handler'       => 'stream',
                     'threshold_map' => [
                         'warning' => 1,
                     ],
                 ],
             ],
-            'stream' => $this->streamHandler($stream),
+            'stream'   => $this->streamHandler($stream),
         ], ['overflow']);
 
         $logger->warning('Buffered warning');
@@ -244,21 +244,21 @@ final class WrapperHandlerFactoryTest extends TestCase
     public function testDeduplicationHandlerFlushesToNestedHandlerOnClose(): void
     {
         $stream = fopen('php://temp', 'w+');
-        $store = tempnam(sys_get_temp_dir(), 'sirix-monolog-dedup-');
+        $store  = tempnam(sys_get_temp_dir(), 'sirix-monolog-dedup-');
         $this->assertIsResource($stream);
         $this->assertIsString($store);
 
         $logger = $this->logger([
             'deduplication' => [
-                C::Type->value => HandlerType::Deduplication,
+                C::Type->value    => HandlerType::Deduplication,
                 C::Options->value => [
-                    'handler' => 'stream',
+                    'handler'             => 'stream',
                     'deduplication_store' => $store,
                     'deduplication_level' => Level::Debug,
-                    'time' => 60,
+                    'time'                => 60,
                 ],
             ],
-            'stream' => $this->streamHandler($stream),
+            'stream'        => $this->streamHandler($stream),
         ], ['deduplication']);
 
         $logger->error('Deduplicated message');
@@ -283,7 +283,7 @@ final class WrapperHandlerFactoryTest extends TestCase
                 ],
                 C::Handlers->value => [
                     'loop' => [
-                        C::Type->value => HandlerType::Group,
+                        C::Type->value    => HandlerType::Group,
                         C::Options->value => [
                             C::Handlers->value => ['loop'],
                         ],
@@ -308,7 +308,7 @@ final class WrapperHandlerFactoryTest extends TestCase
             C::Root->value => [
                 C::Channels->value => [
                     'default' => [
-                        C::Name->value => 'app',
+                        C::Name->value     => 'app',
                         C::Handlers->value => $channelHandlers,
                     ],
                 ],
@@ -330,7 +330,7 @@ final class WrapperHandlerFactoryTest extends TestCase
     private function streamHandler(mixed $stream): array
     {
         return [
-            C::Type->value => HandlerType::Stream,
+            C::Type->value    => HandlerType::Stream,
             C::Options->value => [
                 'stream' => $stream,
             ],

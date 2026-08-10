@@ -38,21 +38,21 @@ final class ConfigProvider
     public function dependencies(): array
     {
         return [
-            'aliases' => [
-                Logger::class => 'logger',
+            'aliases'   => [
+                Logger::class          => 'logger',
                 LoggerInterface::class => 'logger',
             ],
             'factories' => [
-                'logger' => LoggerFactory::class,
-                MonologConfig::class => MonologConfigFactory::class,
-                ChannelRegistry::class => ChannelRegistryFactory::class,
-                HandlerRegistry::class => HandlerRegistryFactory::class,
+                'logger'                 => LoggerFactory::class,
+                MonologConfig::class     => MonologConfigFactory::class,
+                ChannelRegistry::class   => ChannelRegistryFactory::class,
+                HandlerRegistry::class   => HandlerRegistryFactory::class,
                 FormatterRegistry::class => FormatterRegistryFactory::class,
                 ProcessorRegistry::class => ProcessorRegistryFactory::class,
-                LoggerBuilder::class => LoggerBuilderFactory::class,
-                HandlerBuilder::class => HandlerBuilderFactory::class,
-                FormatterBuilder::class => FormatterBuilderFactory::class,
-                ProcessorBuilder::class => ProcessorBuilderFactory::class,
+                LoggerBuilder::class     => LoggerBuilderFactory::class,
+                HandlerBuilder::class    => HandlerBuilderFactory::class,
+                FormatterBuilder::class  => FormatterBuilderFactory::class,
+                ProcessorBuilder::class  => ProcessorBuilderFactory::class,
             ],
         ];
     }

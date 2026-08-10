@@ -15,7 +15,7 @@ class IntrospectionProcessorFactory implements ProcessorFactoryInterface
     public function create(ContainerInterface $container, ProcessorDefinition $processorDefinition): IntrospectionProcessor
     {
         $configReader = ConfigReader::fromArray($processorDefinition->options, self::class);
-        $level = $configReader->enum('level', Level::class, Level::Debug);
+        $level        = $configReader->enum('level', Level::class, Level::Debug);
 
         return new IntrospectionProcessor(
             $level,

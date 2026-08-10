@@ -21,8 +21,8 @@ class PsrHandlerFactory implements HandlerFactoryInterface
     public function create(ContainerInterface $container, HandlerDefinition $handlerDefinition): PsrHandler
     {
         $configReader = ConfigReader::fromArray($handlerDefinition->options, self::class);
-        $level = $configReader->enum('level', Level::class, Level::Debug);
-        $loggerId = $configReader->requiredNonEmptyString('logger');
+        $level        = $configReader->enum('level', Level::class, Level::Debug);
+        $loggerId     = $configReader->requiredNonEmptyString('logger');
 
         return new PsrHandler(
             ContainerResolver::forContext($container, self::class)->getAs($loggerId, LoggerInterface::class),

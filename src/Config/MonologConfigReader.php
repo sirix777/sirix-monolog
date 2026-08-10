@@ -33,15 +33,15 @@ final class MonologConfigReader
     public function read(array $config): MonologConfig
     {
         $configReader = ConfigReader::fromArray($config, self::class);
-        $root = $configReader->map(ConfigKey::Root->value, []);
-        $rootReader = ConfigReader::fromArray($root, self::class);
+        $root         = $configReader->map(ConfigKey::Root->value, []);
+        $rootReader   = ConfigReader::fromArray($root, self::class);
 
-        $handlers = $this->readHandlers($rootReader);
-        $channels = $this->readChannels($rootReader);
-        $formatters = $this->readFormatters($rootReader);
-        $processors = $this->readProcessors($rootReader);
+        $handlers       = $this->readHandlers($rootReader);
+        $channels       = $this->readChannels($rootReader);
+        $formatters     = $this->readFormatters($rootReader);
+        $processors     = $this->readProcessors($rootReader);
         $loggerServices = $this->readLoggerServices($rootReader);
-        $factoryMap = $this->readFactoryMap($rootReader);
+        $factoryMap     = $this->readFactoryMap($rootReader);
 
         $this->assertLoggerServiceReferences($loggerServices, $channels);
         $this->assertChannelReferences($channels, $handlers, $processors);
@@ -63,9 +63,9 @@ final class MonologConfigReader
     private function readLoggerServices(ConfigReader $configReader): array
     {
         $services = $configReader->map(ConfigKey::LoggerServices->value, [
-            Logger::class => 'default',
+            Logger::class          => 'default',
             LoggerInterface::class => 'default',
-            'logger' => 'default',
+            'logger'               => 'default',
         ]);
 
         /** @var array<non-empty-string, LoggerServiceDefinition> $result */
@@ -73,7 +73,7 @@ final class MonologConfigReader
 
         foreach ($services as $serviceId => $serviceConfig) {
             $serviceId = $this->nonEmptyString($serviceId, ConfigKey::LoggerServices->value);
-            $path = ConfigKey::LoggerServices->value . '.' . $serviceId;
+            $path      = ConfigKey::LoggerServices->value . '.' . $serviceId;
 
             $result[$serviceId] = is_array($serviceConfig)
                 ? $this->readLoggerServiceDefinition($serviceId, $serviceConfig)
@@ -107,7 +107,7 @@ final class MonologConfigReader
     {
         $channels = $configReader->map(ConfigKey::Channels->value, [
             'default' => [
-                ConfigKey::Name->value => 'app',
+                ConfigKey::Name->value     => 'app',
                 ConfigKey::Handlers->value => ['default'],
             ],
         ]);
@@ -116,7 +116,7 @@ final class MonologConfigReader
         $result = [];
 
         foreach ($channels as $id => $channelConfig) {
-            $id = $this->nonEmptyString($id, ConfigKey::Channels->value);
+            $id            = $this->nonEmptyString($id, ConfigKey::Channels->value);
             $channelReader = ConfigReader::fromArray(
                 $this->arrayValue($channelConfig, ConfigKey::Channels->value . '.' . $id),
                 self::class,
@@ -148,7 +148,7 @@ final class MonologConfigReader
         $result = [];
 
         foreach ($handlers as $id => $handlerConfig) {
-            $id = $this->nonEmptyString($id, ConfigKey::Handlers->value);
+            $id            = $this->nonEmptyString($id, ConfigKey::Handlers->value);
             $handlerReader = ConfigReader::fromArray(
                 $this->arrayValue($handlerConfig, ConfigKey::Handlers->value . '.' . $id),
                 self::class,
@@ -180,7 +180,7 @@ final class MonologConfigReader
         $result = [];
 
         foreach ($formatters as $id => $formatterConfig) {
-            $id = $this->nonEmptyString($id, ConfigKey::Formatters->value);
+            $id              = $this->nonEmptyString($id, ConfigKey::Formatters->value);
             $formatterReader = ConfigReader::fromArray(
                 $this->arrayValue($formatterConfig, ConfigKey::Formatters->value . '.' . $id),
                 self::class,
@@ -210,7 +210,7 @@ final class MonologConfigReader
         $result = [];
 
         foreach ($processors as $id => $processorConfig) {
-            $id = $this->nonEmptyString($id, ConfigKey::Processors->value);
+            $id              = $this->nonEmptyString($id, ConfigKey::Processors->value);
             $processorReader = ConfigReader::fromArray(
                 $this->arrayValue($processorConfig, ConfigKey::Processors->value . '.' . $id),
                 self::class,

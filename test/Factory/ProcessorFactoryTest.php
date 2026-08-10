@@ -33,60 +33,60 @@ final class ProcessorFactoryTest extends TestCase
     public function testCoreProcessorsEnrichRecords(): void
     {
         $container = $this->container([
-            'psr_message' => [
-                C::Type->value => ProcessorType::PsrLogMessage,
+            'psr_message'   => [
+                C::Type->value    => ProcessorType::PsrLogMessage,
                 C::Options->value => [
                     'remove_used_context_fields' => true,
                 ],
             ],
-            'memory_usage' => [
-                C::Type->value => ProcessorType::MemoryUsage,
+            'memory_usage'  => [
+                C::Type->value    => ProcessorType::MemoryUsage,
                 C::Options->value => [
                     'use_formatting' => false,
                 ],
             ],
-            'memory_peak' => [
-                C::Type->value => ProcessorType::MemoryPeakUsage,
+            'memory_peak'   => [
+                C::Type->value    => ProcessorType::MemoryPeakUsage,
                 C::Options->value => [
                     'use_formatting' => false,
                 ],
             ],
-            'process_id' => [
+            'process_id'    => [
                 C::Type->value => ProcessorType::ProcessId,
             ],
-            'uid' => [
-                C::Type->value => ProcessorType::Uid,
+            'uid'           => [
+                C::Type->value    => ProcessorType::Uid,
                 C::Options->value => [
                     'length' => 12,
                 ],
             ],
-            'hostname' => [
+            'hostname'      => [
                 C::Type->value => ProcessorType::Hostname,
             ],
-            'tags' => [
-                C::Type->value => ProcessorType::Tags,
+            'tags'          => [
+                C::Type->value    => ProcessorType::Tags,
                 C::Options->value => [
                     'tags' => ['api', 'test'],
                 ],
             ],
-            'web' => [
-                C::Type->value => ProcessorType::Web,
+            'web'           => [
+                C::Type->value    => ProcessorType::Web,
                 C::Options->value => [
-                    'server_data' => [
-                        'REQUEST_URI' => '/hello',
-                        'REMOTE_ADDR' => '127.0.0.1',
+                    'server_data'  => [
+                        'REQUEST_URI'    => '/hello',
+                        'REMOTE_ADDR'    => '127.0.0.1',
                         'REQUEST_METHOD' => 'GET',
-                        'SERVER_NAME' => 'localhost',
-                        'HTTP_REFERER' => 'https://example.com',
+                        'SERVER_NAME'    => 'localhost',
+                        'HTTP_REFERER'   => 'https://example.com',
                     ],
                     'extra_fields' => ['url', 'ip', 'http_method'],
                 ],
             ],
             'introspection' => [
-                C::Type->value => ProcessorType::Introspection,
+                C::Type->value    => ProcessorType::Introspection,
                 C::Options->value => [
-                    'level' => Level::Debug,
-                    'skip_classes_partials' => [],
+                    'level'                   => Level::Debug,
+                    'skip_classes_partials'   => [],
                     'skip_stack_frames_count' => 0,
                 ],
             ],
@@ -104,7 +104,9 @@ final class ProcessorFactoryTest extends TestCase
 
         $logger = $container->get(LoggerInterface::class);
         $this->assertInstanceOf(Logger::class, $logger);
-        $logger->info('Hello {name}', ['name' => 'Ada']);
+        $logger->info('Hello {name}', [
+            'name' => 'Ada',
+        ]);
 
         $logRecord = $this->firstRecord($container);
 
@@ -128,20 +130,20 @@ final class ProcessorFactoryTest extends TestCase
             'closure_context' => [
                 C::Type->value => ProcessorType::ClosureContext,
             ],
-            'git' => [
-                C::Type->value => ProcessorType::Git,
+            'git'             => [
+                C::Type->value    => ProcessorType::Git,
                 C::Options->value => [
                     'level' => Level::Info,
                 ],
             ],
-            'load_average' => [
-                C::Type->value => ProcessorType::LoadAverage,
+            'load_average'    => [
+                C::Type->value    => ProcessorType::LoadAverage,
                 C::Options->value => [
                     'avg_system_load' => LoadAverageProcessor::LOAD_5_MINUTE,
                 ],
             ],
-            'mercurial' => [
-                C::Type->value => ProcessorType::Mercurial,
+            'mercurial'       => [
+                C::Type->value    => ProcessorType::Mercurial,
                 C::Options->value => [
                     'level' => Level::Info,
                 ],
@@ -158,9 +160,15 @@ final class ProcessorFactoryTest extends TestCase
             channel: 'app',
             level: Level::Info,
             message: 'Hello',
-            context: [static fn (): array => ['lazy' => true]],
+            context: [
+                static fn (): array => [
+                    'lazy' => true,
+                ],
+            ],
         ));
-        $this->assertSame(['lazy' => true], $logRecord->context);
+        $this->assertSame([
+            'lazy' => true,
+        ], $logRecord->context);
 
         $this->assertInstanceOf(GitProcessor::class, $registry->get('git'));
         $this->assertInstanceOf(LoadAverageProcessor::class, $registry->get('load_average'));
@@ -171,10 +179,10 @@ final class ProcessorFactoryTest extends TestCase
     {
         $container = $this->container([
             'redactor' => [
-                C::Type->value => ProcessorType::Redactor,
+                C::Type->value    => ProcessorType::Redactor,
                 C::Options->value => [
                     'use_default_rules' => false,
-                    'rules' => [
+                    'rules'             => [
                         'password' => new FullMaskRule(),
                     ],
                 ],
@@ -183,7 +191,9 @@ final class ProcessorFactoryTest extends TestCase
 
         $logger = $container->get(LoggerInterface::class);
         $this->assertInstanceOf(Logger::class, $logger);
-        $logger->info('Sensitive data', ['password' => 'secret']);
+        $logger->info('Sensitive data', [
+            'password' => 'secret',
+        ]);
 
         $logRecord = $this->firstRecord($container);
 
@@ -194,13 +204,13 @@ final class ProcessorFactoryTest extends TestCase
     {
         $container = $this->container([
             'append_a' => [
-                C::Type->value => 'append_message',
+                C::Type->value    => 'append_message',
                 C::Options->value => [
                     'suffix' => 'A',
                 ],
             ],
             'append_b' => [
-                C::Type->value => 'append_message',
+                C::Type->value    => 'append_message',
                 C::Options->value => [
                     'suffix' => 'B',
                 ],
@@ -222,7 +232,7 @@ final class ProcessorFactoryTest extends TestCase
     {
         $container = $this->container([
             'tenant' => [
-                C::Type->value => 'tenant',
+                C::Type->value    => 'tenant',
                 C::Options->value => [
                     'field' => 'tenant_id',
                     'value' => 'acme',
@@ -249,25 +259,25 @@ final class ProcessorFactoryTest extends TestCase
     private function container(array $processors, array $channelProcessors, array $processorFactories = []): ArrayContainer
     {
         $providerConfig = (new ConfigProvider())();
-        $dependencies = $providerConfig['dependencies'];
+        $dependencies   = $providerConfig['dependencies'];
 
         return new ArrayContainer(
             services: [
                 'config' => [
                     C::Root->value => [
-                        C::Channels->value => [
+                        C::Channels->value           => [
                             'default' => [
-                                C::Name->value => 'app',
-                                C::Handlers->value => ['test'],
+                                C::Name->value       => 'app',
+                                C::Handlers->value   => ['test'],
                                 C::Processors->value => $channelProcessors,
                             ],
                         ],
-                        C::Handlers->value => [
+                        C::Handlers->value           => [
                             'test' => [
                                 C::Type->value => HandlerType::Test,
                             ],
                         ],
-                        C::Processors->value => $processors,
+                        C::Processors->value         => $processors,
                         C::ProcessorFactories->value => $processorFactories,
                     ],
                 ],

@@ -15,7 +15,7 @@ class LogglyFormatterFactory implements FormatterFactoryInterface
     public function create(ContainerInterface $container, FormatterDefinition $formatterDefinition): LogglyFormatter
     {
         $configReader = ConfigReader::fromArray($formatterDefinition->options, self::class);
-        $batchMode = $configReader->int('batch_mode', LogglyFormatter::BATCH_MODE_NEWLINES);
+        $batchMode    = $configReader->int('batch_mode', LogglyFormatter::BATCH_MODE_NEWLINES);
 
         if (LogglyFormatter::BATCH_MODE_JSON !== $batchMode && LogglyFormatter::BATCH_MODE_NEWLINES !== $batchMode) {
             throw new InvalidConfigException('Loggly formatter option "batch_mode" must be a valid JsonFormatter batch mode.');

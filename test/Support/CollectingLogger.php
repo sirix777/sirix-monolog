@@ -19,7 +19,7 @@ final class CollectingLogger extends AbstractLogger
     public function log($level, string|Stringable $message, array $context = []): void
     {
         $this->records[] = [
-            'level' => $level,
+            'level'   => $level,
             'message' => (string) $message,
             'context' => $context,
         ];

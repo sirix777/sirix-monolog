@@ -23,7 +23,7 @@ final readonly class LoggerBuilder
     public function build(string $channelId): LoggerInterface
     {
         $channelDefinition = $this->monologConfig->channel($channelId);
-        $logger = new Logger($channelDefinition->name);
+        $logger            = new Logger($channelDefinition->name);
 
         foreach (array_reverse($channelDefinition->handlers) as $handlerId) {
             $logger->pushHandler($this->handlerRegistry->get($handlerId));

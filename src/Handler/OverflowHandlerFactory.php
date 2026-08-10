@@ -17,7 +17,7 @@ class OverflowHandlerFactory implements HandlerFactoryInterface, HandlerRegistry
     public function create(ContainerInterface $container, HandlerDefinition $handlerDefinition): OverflowHandler
     {
         $configReader = ConfigReader::fromArray($handlerDefinition->options, self::class);
-        $level = $configReader->enum('level', Level::class, Level::Debug);
+        $level        = $configReader->enum('level', Level::class, Level::Debug);
 
         return new OverflowHandler(
             $this->getHandlerRegistry()->get($configReader->requiredNonEmptyString('handler')),
@@ -35,20 +35,22 @@ class OverflowHandlerFactory implements HandlerFactoryInterface, HandlerRegistry
     private function thresholdMap(array $thresholdMap): array
     {
         $levels = [
-            'debug' => Level::Debug,
-            'info' => Level::Info,
-            'notice' => Level::Notice,
-            'warning' => Level::Warning,
-            'error' => Level::Error,
-            'critical' => Level::Critical,
-            'alert' => Level::Alert,
+            'debug'     => Level::Debug,
+            'info'      => Level::Info,
+            'notice'    => Level::Notice,
+            'warning'   => Level::Warning,
+            'error'     => Level::Error,
+            'critical'  => Level::Critical,
+            'alert'     => Level::Alert,
             'emergency' => Level::Emergency,
         ];
 
         $result = [];
 
         foreach ($levels as $name => $level) {
-            $reader = ConfigReader::fromArray(['threshold' => $thresholdMap[$name] ?? 0], self::class);
+            $reader = ConfigReader::fromArray([
+                'threshold' => $thresholdMap[$name] ?? 0,
+            ], self::class);
             $result[$level->value] = $reader->int('threshold', 0);
         }
 

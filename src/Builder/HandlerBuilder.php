@@ -39,8 +39,8 @@ final class HandlerBuilder
     public function build(string $handlerId): HandlerInterface
     {
         $handlerDefinition = $this->monologConfig->handler($handlerId);
-        $factory = $this->factory($handlerDefinition->type);
-        $handler = $factory->create($this->container, $handlerDefinition);
+        $factory           = $this->factory($handlerDefinition->type);
+        $handler           = $factory->create($this->container, $handlerDefinition);
 
         if (null !== $handlerDefinition->formatter) {
             if (! $handler instanceof FormattableHandlerInterface) {
@@ -87,7 +87,7 @@ final class HandlerBuilder
     private function factory(string $type): HandlerFactoryInterface
     {
         $factoryClass = $this->monologConfig->handlerFactory($type);
-        $factory = $this->container->has($factoryClass)
+        $factory      = $this->container->has($factoryClass)
             ? ContainerResolver::forContext($this->container, self::class)->getAs(
                 $factoryClass,
                 HandlerFactoryInterface::class,
