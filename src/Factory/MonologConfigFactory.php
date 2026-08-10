@@ -19,6 +19,6 @@ final class MonologConfigFactory
     {
         $containerResolver = ContainerResolver::forFactory($container, self::class);
 
-        return (new MonologConfigReader())->read($containerResolver->optionalArray());
+        return (new MonologConfigReader())->read($containerResolver->optionalMap());
     }
 }
