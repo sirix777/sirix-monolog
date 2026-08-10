@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Update `sirix/container-resolver` to `^0.2.0`.
 - Read the root configuration with `ContainerResolver::optionalMap()` to enforce a string-keyed configuration map.
 
+### Removed
+- Drop support for `sirix/redaction` `^1.3.1`; require `^2.0` instead.
+- Stop running CI checks against `sirix/redaction` `^1.3.1`.
+
 ## [2.0.1] - 2026-06-03
 
 ### Changed
