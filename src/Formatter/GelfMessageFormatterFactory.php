@@ -14,7 +14,7 @@ class GelfMessageFormatterFactory implements FormatterFactoryInterface
     public function create(ContainerInterface $container, FormatterDefinition $formatterDefinition): GelfMessageFormatter
     {
         $configReader = ConfigReader::fromArray($formatterDefinition->options, self::class);
-        $maxLength = $configReader->has('max_length') ? $configReader->requiredInt('max_length') : null;
+        $maxLength    = $configReader->has('max_length') ? $configReader->requiredInt('max_length') : null;
 
         return new GelfMessageFormatter(
             $configReader->optionalString('system_name'),

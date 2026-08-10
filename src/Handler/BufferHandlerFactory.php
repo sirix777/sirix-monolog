@@ -17,7 +17,7 @@ class BufferHandlerFactory implements HandlerFactoryInterface, HandlerRegistryAw
     public function create(ContainerInterface $container, HandlerDefinition $handlerDefinition): BufferHandler
     {
         $configReader = ConfigReader::fromArray($handlerDefinition->options, self::class);
-        $level = $configReader->enum('level', Level::class, Level::Debug);
+        $level        = $configReader->enum('level', Level::class, Level::Debug);
 
         return new BufferHandler(
             $this->getHandlerRegistry()->get($configReader->requiredNonEmptyString('handler')),

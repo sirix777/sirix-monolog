@@ -39,22 +39,22 @@ final class MonologConfigReaderTest extends TestCase
                 C::LoggerServices->value => [
                     'logger' => 'default',
                 ],
-                C::Channels->value => [
+                C::Channels->value       => [
                     'default' => [
-                        C::Name->value => 'app',
+                        C::Name->value     => 'app',
                         C::Handlers->value => ['main'],
                     ],
                 ],
-                C::Handlers->value => [
+                C::Handlers->value       => [
                     'main' => [
-                        C::Type->value => HandlerType::Stream,
-                        C::Options->value => [
+                        C::Type->value      => HandlerType::Stream,
+                        C::Options->value   => [
                             'stream' => 'php://stderr',
                         ],
                         C::Formatter->value => 'json',
                     ],
                 ],
-                C::Formatters->value => [
+                C::Formatters->value     => [
                     'json' => [
                         C::Type->value => FormatterType::Json,
                     ],
@@ -74,7 +74,7 @@ final class MonologConfigReaderTest extends TestCase
                 C::LoggerServices->value => [
                     'logger_crypto_transaction' => [
                         C::Channel->value => 'default',
-                        C::Name->value => 'CryptoTransactionService',
+                        C::Name->value    => 'CryptoTransactionService',
                     ],
                 ],
             ],

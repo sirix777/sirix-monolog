@@ -19,7 +19,7 @@ class RotatingFileHandlerFactory implements HandlerFactoryInterface
     public function create(ContainerInterface $container, HandlerDefinition $handlerDefinition): RotatingFileHandler
     {
         $configReader = ConfigReader::fromArray($handlerDefinition->options, self::class);
-        $level = $configReader->enum('level', Level::class, Level::Debug);
+        $level        = $configReader->enum('level', Level::class, Level::Debug);
 
         return new RotatingFileHandler(
             $configReader->requiredNonEmptyString('filename'),

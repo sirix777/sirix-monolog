@@ -22,7 +22,7 @@ final readonly class FormatterBuilder
     public function build(string $formatterId): FormatterInterface
     {
         $formatterDefinition = $this->monologConfig->formatter($formatterId);
-        $factory = $this->factory($formatterDefinition->type);
+        $factory             = $this->factory($formatterDefinition->type);
 
         return $factory->create($this->container, $formatterDefinition);
     }
@@ -33,7 +33,7 @@ final readonly class FormatterBuilder
     private function factory(string $type): FormatterFactoryInterface
     {
         $factoryClass = $this->monologConfig->formatterFactory($type);
-        $factory = $this->container->has($factoryClass)
+        $factory      = $this->container->has($factoryClass)
             ? ContainerResolver::forContext($this->container, self::class)->getAs($factoryClass, FormatterFactoryInterface::class)
             : new $factoryClass();
 

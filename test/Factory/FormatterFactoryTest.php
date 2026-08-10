@@ -43,128 +43,128 @@ final class FormatterFactoryTest extends TestCase
     public function testCoreFormattersCanBeCreated(): void
     {
         $container = $this->container([
-            'line' => [
-                C::Type->value => FormatterType::Line,
+            'line'                 => [
+                C::Type->value    => FormatterType::Line,
                 C::Options->value => [
-                    'format' => "%message%\n",
-                    'date_format' => 'U',
-                    'allow_inline_line_breaks' => true,
+                    'format'                         => "%message%\n",
+                    'date_format'                    => 'U',
+                    'allow_inline_line_breaks'       => true,
                     'ignore_empty_context_and_extra' => true,
-                    'include_stacktraces' => true,
+                    'include_stacktraces'            => true,
                 ],
             ],
-            'json' => [
-                C::Type->value => FormatterType::Json,
+            'json'                 => [
+                C::Type->value    => FormatterType::Json,
                 C::Options->value => [
-                    'batch_mode' => JsonFormatter::BATCH_MODE_NEWLINES,
-                    'append_newline' => false,
+                    'batch_mode'                     => JsonFormatter::BATCH_MODE_NEWLINES,
+                    'append_newline'                 => false,
                     'ignore_empty_context_and_extra' => true,
-                    'include_stacktraces' => true,
+                    'include_stacktraces'            => true,
                 ],
             ],
-            'html' => [
-                C::Type->value => FormatterType::Html,
+            'html'                 => [
+                C::Type->value    => FormatterType::Html,
                 C::Options->value => [
                     'date_format' => 'U',
                 ],
             ],
-            'normalizer' => [
-                C::Type->value => FormatterType::Normalizer,
+            'normalizer'           => [
+                C::Type->value    => FormatterType::Normalizer,
                 C::Options->value => [
                     'date_format' => 'U',
                 ],
             ],
-            'scalar' => [
-                C::Type->value => FormatterType::Scalar,
+            'scalar'               => [
+                C::Type->value    => FormatterType::Scalar,
                 C::Options->value => [
                     'date_format' => 'U',
                 ],
             ],
-            'logstash' => [
-                C::Type->value => FormatterType::Logstash,
+            'logstash'             => [
+                C::Type->value    => FormatterType::Logstash,
                 C::Options->value => [
                     'application_name' => 'formatter-test',
-                    'system_name' => 'test-system',
-                    'extra_key' => 'extra_fields',
-                    'context_key' => 'context_fields',
+                    'system_name'      => 'test-system',
+                    'extra_key'        => 'extra_fields',
+                    'context_key'      => 'context_fields',
                 ],
             ],
-            'wildfire' => [
-                C::Type->value => FormatterType::Wildfire,
+            'wildfire'             => [
+                C::Type->value    => FormatterType::Wildfire,
                 C::Options->value => [
                     'date_format' => 'U',
                 ],
             ],
-            'chrome_php' => [
+            'chrome_php'           => [
                 C::Type->value => FormatterType::ChromePhp,
             ],
-            'gelf' => [
-                C::Type->value => FormatterType::Gelf,
+            'gelf'                 => [
+                C::Type->value    => FormatterType::Gelf,
                 C::Options->value => [
-                    'system_name' => 'gelf-system',
-                    'extra_prefix' => 'extra_',
+                    'system_name'    => 'gelf-system',
+                    'extra_prefix'   => 'extra_',
                     'context_prefix' => 'context_',
-                    'max_length' => 32766,
+                    'max_length'     => 32766,
                 ],
             ],
-            'elastica' => [
-                C::Type->value => FormatterType::Elastica,
+            'elastica'             => [
+                C::Type->value    => FormatterType::Elastica,
                 C::Options->value => [
-                    'index' => 'logs',
+                    'index'         => 'logs',
                     'document_type' => '_doc',
                 ],
             ],
-            'elasticsearch' => [
-                C::Type->value => FormatterType::Elasticsearch,
+            'elasticsearch'        => [
+                C::Type->value    => FormatterType::Elasticsearch,
                 C::Options->value => [
-                    'index' => 'search-logs',
+                    'index'         => 'search-logs',
                     'document_type' => '_doc',
                 ],
             ],
-            'fluentd' => [
-                C::Type->value => FormatterType::Fluentd,
+            'fluentd'              => [
+                C::Type->value    => FormatterType::Fluentd,
                 C::Options->value => [
                     'level_tag' => true,
                 ],
             ],
             'google_cloud_logging' => [
-                C::Type->value => FormatterType::GoogleCloudLogging,
+                C::Type->value    => FormatterType::GoogleCloudLogging,
                 C::Options->value => [
                     'append_newline' => false,
                 ],
             ],
-            'loggly' => [
-                C::Type->value => FormatterType::Loggly,
+            'loggly'               => [
+                C::Type->value    => FormatterType::Loggly,
                 C::Options->value => [
-                    'batch_mode' => LogglyFormatter::BATCH_MODE_JSON,
+                    'batch_mode'     => LogglyFormatter::BATCH_MODE_JSON,
                     'append_newline' => false,
                 ],
             ],
-            'flowdock' => [
-                C::Type->value => FormatterType::Flowdock,
+            'flowdock'             => [
+                C::Type->value    => FormatterType::Flowdock,
                 C::Options->value => [
-                    'source' => 'formatter-test',
+                    'source'       => 'formatter-test',
                     'source_email' => 'logs@example.com',
                 ],
             ],
-            'mongo_db' => [
-                C::Type->value => FormatterType::MongoDb,
+            'mongo_db'             => [
+                C::Type->value    => FormatterType::MongoDb,
                 C::Options->value => [
-                    'max_nesting_level' => 2,
+                    'max_nesting_level'         => 2,
                     'exception_trace_as_string' => false,
                 ],
             ],
-            'logmatic' => [
-                C::Type->value => FormatterType::Logmatic,
+            'logmatic'             => [
+                C::Type->value    => FormatterType::Logmatic,
                 C::Options->value => [
-                    'batch_mode' => JsonFormatter::BATCH_MODE_JSON,
+                    'batch_mode'     => JsonFormatter::BATCH_MODE_JSON,
                     'append_newline' => false,
-                    'hostname' => 'logmatic-host',
-                    'app_name' => 'logmatic-app',
+                    'hostname'       => 'logmatic-host',
+                    'app_name'       => 'logmatic-app',
                 ],
             ],
-            'syslog' => [
-                C::Type->value => FormatterType::Syslog,
+            'syslog'               => [
+                C::Type->value    => FormatterType::Syslog,
                 C::Options->value => [
                     'application_name' => 'formatter-test',
                 ],
@@ -200,8 +200,12 @@ final class FormatterFactoryTest extends TestCase
         $logstashOutput = json_decode($logstash->format($this->record()), true, flags: JSON_THROW_ON_ERROR);
         $this->assertSame('formatter-test', $logstashOutput['type']);
         $this->assertSame('test-system', $logstashOutput['host']);
-        $this->assertSame(['request_id' => 'abc'], $logstashOutput['extra_fields']);
-        $this->assertSame(['name' => 'Ada'], $logstashOutput['context_fields']);
+        $this->assertSame([
+            'request_id' => 'abc',
+        ], $logstashOutput['extra_fields']);
+        $this->assertSame([
+            'name' => 'Ada',
+        ], $logstashOutput['context_fields']);
 
         $wildfire = $registry->get('wildfire');
         $this->assertInstanceOf(WildfireFormatter::class, $wildfire);
@@ -275,7 +279,7 @@ final class FormatterFactoryTest extends TestCase
     private function container(array $formatters): ArrayContainer
     {
         $providerConfig = (new ConfigProvider())();
-        $dependencies = $providerConfig['dependencies'];
+        $dependencies   = $providerConfig['dependencies'];
 
         return new ArrayContainer(
             services: [
@@ -297,8 +301,12 @@ final class FormatterFactoryTest extends TestCase
             channel: 'app',
             level: Level::Info,
             message: 'Hello',
-            context: ['name' => 'Ada'],
-            extra: ['request_id' => 'abc'],
+            context: [
+                'name' => 'Ada',
+            ],
+            extra: [
+                'request_id' => 'abc',
+            ],
         );
     }
 }

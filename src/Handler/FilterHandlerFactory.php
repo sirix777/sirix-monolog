@@ -18,9 +18,9 @@ class FilterHandlerFactory implements HandlerFactoryInterface, HandlerRegistryAw
 
     public function create(ContainerInterface $container, HandlerDefinition $handlerDefinition): FilterHandler
     {
-        $configReader = ConfigReader::fromArray($handlerDefinition->options, self::class);
+        $configReader   = ConfigReader::fromArray($handlerDefinition->options, self::class);
         $minLevelOrList = $this->levelOrList($handlerDefinition->options['min_level_or_list'] ?? Level::Debug);
-        $maxLevel = $configReader->enum('max_level', Level::class, Level::Emergency);
+        $maxLevel       = $configReader->enum('max_level', Level::class, Level::Emergency);
 
         return new FilterHandler(
             $this->getHandlerRegistry()->get($configReader->requiredNonEmptyString('handler')),
@@ -33,7 +33,9 @@ class FilterHandlerFactory implements HandlerFactoryInterface, HandlerRegistryAw
     private function levelOrList(mixed $value): array|Level
     {
         if (! is_array($value)) {
-            $reader = ConfigReader::fromArray(['level' => $value], self::class);
+            $reader = ConfigReader::fromArray([
+                'level' => $value,
+            ], self::class);
 
             return $reader->enum('level', Level::class, Level::Debug);
         }
@@ -41,7 +43,9 @@ class FilterHandlerFactory implements HandlerFactoryInterface, HandlerRegistryAw
         $levels = [];
 
         foreach ($value as $index => $level) {
-            $reader = ConfigReader::fromArray(['level' => $level], self::class);
+            $reader = ConfigReader::fromArray([
+                'level' => $level,
+            ], self::class);
             $levels[$index] = $reader->enum('level', Level::class, Level::Debug);
         }
 

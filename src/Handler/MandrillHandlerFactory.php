@@ -29,7 +29,7 @@ class MandrillHandlerFactory implements HandlerFactoryInterface
     public function create(ContainerInterface $container, HandlerDefinition $handlerDefinition): HandlerInterface
     {
         $configReader = ConfigReader::fromArray($handlerDefinition->options, self::class);
-        $message = $this->message($container, $handlerDefinition->options['message'] ?? null);
+        $message      = $this->message($container, $handlerDefinition->options['message'] ?? null);
 
         return $this->newHandler(MandrillHandler::class, [
             $configReader->requiredNonEmptyString('api_key'),

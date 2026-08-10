@@ -35,51 +35,51 @@ final class ClientBackedHandlerFactoryTest extends TestCase
         };
 
         $container = $this->container([
-            'couch_db' => [
-                C::Type->value => HandlerType::CouchDb,
+            'couch_db'  => [
+                C::Type->value    => HandlerType::CouchDb,
                 C::Options->value => [
                     'connection' => [
-                        'host' => 'localhost',
-                        'port' => 5984,
+                        'host'   => 'localhost',
+                        'port'   => 5984,
                         'dbname' => 'logs',
                     ],
                 ],
             ],
-            'gelf' => [
-                C::Type->value => HandlerType::Gelf,
+            'gelf'      => [
+                C::Type->value    => HandlerType::Gelf,
                 C::Options->value => [
                     'publisher' => 'gelf.publisher',
                 ],
             ],
-            'elastica' => [
-                C::Type->value => HandlerType::Elastica,
+            'elastica'  => [
+                C::Type->value    => HandlerType::Elastica,
                 C::Options->value => [
-                    'client' => 'elastica.client',
+                    'client'          => 'elastica.client',
                     'handler_options' => [
                         'index' => 'logs',
                     ],
                 ],
             ],
-            'mongo_db' => [
-                C::Type->value => HandlerType::MongoDb,
+            'mongo_db'  => [
+                C::Type->value    => HandlerType::MongoDb,
                 C::Options->value => [
-                    'mongodb' => 'mongo.client',
-                    'database' => 'logs',
+                    'mongodb'    => 'mongo.client',
+                    'database'   => 'logs',
                     'collection' => 'records',
                 ],
             ],
             'new_relic' => [
-                C::Type->value => HandlerType::NewRelic,
+                C::Type->value    => HandlerType::NewRelic,
                 C::Options->value => [
-                    'app_name' => 'sirix-monolog-test',
-                    'explode_arrays' => true,
+                    'app_name'         => 'sirix-monolog-test',
+                    'explode_arrays'   => true,
                     'transaction_name' => 'test-transaction',
                 ],
             ],
         ], ['couch_db', 'gelf', 'elastica', 'mongo_db', 'new_relic'], [
-            'gelf.publisher' => $publisher,
+            'gelf.publisher'  => $publisher,
             'elastica.client' => new ElasticaClient([]),
-            'mongo.client' => new MongoClient('mongodb://127.0.0.1:27017'),
+            'mongo.client'    => new MongoClient('mongodb://127.0.0.1:27017'),
         ]);
 
         $registry = $container->get(HandlerRegistry::class);
@@ -99,7 +99,7 @@ final class ClientBackedHandlerFactoryTest extends TestCase
     private function container(array $handlers, array $channelHandlers, array $services = []): ArrayContainer
     {
         $providerConfig = (new ConfigProvider())();
-        $dependencies = $providerConfig['dependencies'];
+        $dependencies   = $providerConfig['dependencies'];
 
         return new ArrayContainer(
             services: [
@@ -107,7 +107,7 @@ final class ClientBackedHandlerFactoryTest extends TestCase
                     C::Root->value => [
                         C::Channels->value => [
                             'default' => [
-                                C::Name->value => 'app',
+                                C::Name->value     => 'app',
                                 C::Handlers->value => $channelHandlers,
                             ],
                         ],

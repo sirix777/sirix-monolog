@@ -48,7 +48,7 @@ final class LoggerFactoryTest extends TestCase
                     ],
                 ],
                 C::Handlers->value => [
-                    'first' => [
+                    'first'  => [
                         C::Type->value => HandlerType::Test,
                     ],
                     'second' => [
@@ -58,7 +58,7 @@ final class LoggerFactoryTest extends TestCase
             ],
         ], (new ConfigProvider())());
 
-        $logger = $arrayContainer->get(LoggerInterface::class);
+        $logger   = $arrayContainer->get(LoggerInterface::class);
         $registry = $arrayContainer->get(HandlerRegistry::class);
 
         $this->assertInstanceOf(Logger::class, $logger);
@@ -79,28 +79,28 @@ final class LoggerFactoryTest extends TestCase
                 C::LoggerServices->value => [
                     'logger' => 'default',
                 ],
-                C::Channels->value => [
+                C::Channels->value       => [
                     'default' => [
-                        C::Name->value => 'app',
+                        C::Name->value     => 'app',
                         C::Handlers->value => ['main'],
                     ],
                 ],
-                C::Handlers->value => [
+                C::Handlers->value       => [
                     'main' => [
-                        C::Type->value => HandlerType::Stream,
-                        C::Options->value => [
+                        C::Type->value       => HandlerType::Stream,
+                        C::Options->value    => [
                             'stream' => $stream,
                         ],
-                        C::Formatter->value => 'json',
+                        C::Formatter->value  => 'json',
                         C::Processors->value => ['psr_message'],
                     ],
                 ],
-                C::Formatters->value => [
+                C::Formatters->value     => [
                     'json' => [
                         C::Type->value => FormatterType::Json,
                     ],
                 ],
-                C::Processors->value => [
+                C::Processors->value     => [
                     'psr_message' => [
                         C::Type->value => ProcessorType::PsrLogMessage,
                     ],
@@ -109,7 +109,9 @@ final class LoggerFactoryTest extends TestCase
         ], (new ConfigProvider())());
 
         $logger = $arrayContainer->get(LoggerInterface::class);
-        $logger->info('Hello {name}', ['name' => 'Ada']);
+        $logger->info('Hello {name}', [
+            'name' => 'Ada',
+        ]);
 
         rewind($stream);
         $contents = stream_get_contents($stream);
@@ -122,7 +124,7 @@ final class LoggerFactoryTest extends TestCase
 
     public function testLoggerServiceCanOverrideMonologChannelName(): void
     {
-        $providerConfig = (new ConfigProvider())();
+        $providerConfig                                                           = (new ConfigProvider())();
         $providerConfig['dependencies']['factories']['logger_crypto_transaction'] = LoggerFactory::class;
 
         $arrayContainer = ArrayContainer::fromConfigProvider([
@@ -130,16 +132,16 @@ final class LoggerFactoryTest extends TestCase
                 C::LoggerServices->value => [
                     'logger_crypto_transaction' => [
                         C::Channel->value => 'default',
-                        C::Name->value => 'CryptoTransactionService',
+                        C::Name->value    => 'CryptoTransactionService',
                     ],
                 ],
-                C::Channels->value => [
+                C::Channels->value       => [
                     'default' => [
-                        C::Name->value => 'app',
+                        C::Name->value     => 'app',
                         C::Handlers->value => ['default_handler'],
                     ],
                 ],
-                C::Handlers->value => [
+                C::Handlers->value       => [
                     'default_handler' => [
                         C::Type->value => HandlerType::Noop,
                     ],
@@ -155,29 +157,29 @@ final class LoggerFactoryTest extends TestCase
 
     public function testRequestedNameSelectsConfiguredChannel(): void
     {
-        $providerConfig = (new ConfigProvider())();
+        $providerConfig                                              = (new ConfigProvider())();
         $providerConfig['dependencies']['factories']['logger_audit'] = LoggerFactory::class;
 
         $arrayContainer = ArrayContainer::fromConfigProvider([
             C::Root->value => [
                 C::LoggerServices->value => [
-                    'logger' => 'default',
+                    'logger'       => 'default',
                     'logger_audit' => 'audit',
                 ],
-                C::Channels->value => [
+                C::Channels->value       => [
                     'default' => [
                         C::Handlers->value => ['default_handler'],
                     ],
-                    'audit' => [
-                        C::Name->value => 'audit',
+                    'audit'   => [
+                        C::Name->value     => 'audit',
                         C::Handlers->value => ['audit_handler'],
                     ],
                 ],
-                C::Handlers->value => [
+                C::Handlers->value       => [
                     'default_handler' => [
                         C::Type->value => HandlerType::Noop,
                     ],
-                    'audit_handler' => [
+                    'audit_handler'   => [
                         C::Type->value => HandlerType::Noop,
                     ],
                 ],

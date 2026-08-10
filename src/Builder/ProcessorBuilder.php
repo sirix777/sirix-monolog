@@ -22,7 +22,7 @@ final readonly class ProcessorBuilder
     public function build(string $processorId): ProcessorInterface
     {
         $processorDefinition = $this->monologConfig->processor($processorId);
-        $factory = $this->factory($processorDefinition->type);
+        $factory             = $this->factory($processorDefinition->type);
 
         return $factory->create($this->container, $processorDefinition);
     }
@@ -33,7 +33,7 @@ final readonly class ProcessorBuilder
     private function factory(string $type): ProcessorFactoryInterface
     {
         $factoryClass = $this->monologConfig->processorFactory($type);
-        $factory = $this->container->has($factoryClass)
+        $factory      = $this->container->has($factoryClass)
             ? ContainerResolver::forContext($this->container, self::class)->getAs($factoryClass, ProcessorFactoryInterface::class)
             : new $factoryClass();
 

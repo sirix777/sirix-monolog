@@ -46,7 +46,9 @@ class FingersCrossedHandlerFactory implements HandlerFactoryInterface, HandlerRe
             }
         }
 
-        $configReader = ConfigReader::fromArray(['level' => $value], self::class);
+        $configReader = ConfigReader::fromArray([
+            'level' => $value,
+        ], self::class);
 
         return $configReader->enum('level', Level::class, Level::Warning);
     }
@@ -57,7 +59,9 @@ class FingersCrossedHandlerFactory implements HandlerFactoryInterface, HandlerRe
             return null;
         }
 
-        $configReader = ConfigReader::fromArray(['level' => $value], self::class);
+        $configReader = ConfigReader::fromArray([
+            'level' => $value,
+        ], self::class);
 
         return $configReader->enum('level', Level::class, Level::Debug);
     }

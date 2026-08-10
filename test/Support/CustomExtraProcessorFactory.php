@@ -16,15 +16,17 @@ final class CustomExtraProcessorFactory implements ProcessorFactoryInterface
     public function create(ContainerInterface $container, ProcessorDefinition $processorDefinition): ProcessorInterface
     {
         $configReader = ConfigReader::fromArray($processorDefinition->options, self::class);
-        $field = $configReader->requiredNonEmptyString('field');
-        $value = $configReader->required('value');
+        $field        = $configReader->requiredNonEmptyString('field');
+        $value        = $configReader->required('value');
 
         return new class($field, $value) implements ProcessorInterface {
             public function __construct(private readonly string $field, private readonly mixed $value) {}
 
             public function __invoke(LogRecord $record): LogRecord
             {
-                return $record->with(extra: $record->extra + [$this->field => $this->value]);
+                return $record->with(extra: $record->extra + [
+                    $this->field => $this->value,
+                ]);
             }
         };
     }

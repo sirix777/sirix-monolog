@@ -26,9 +26,9 @@ final class LoggerFactory
         ?array $options = null
     ): LoggerInterface {
         $containerResolver = ContainerResolver::forFactory($container, self::class);
-        $monologConfig = $containerResolver->get(MonologConfig::class);
-        $channelOption = $options['channel'] ?? null;
-        $channelId = is_string($channelOption) && '' !== trim($channelOption)
+        $monologConfig     = $containerResolver->get(MonologConfig::class);
+        $channelOption     = $options['channel'] ?? null;
+        $channelId         = is_string($channelOption) && '' !== trim($channelOption)
             ? trim($channelOption)
             : null;
 
@@ -39,7 +39,7 @@ final class LoggerFactory
         }
 
         $loggerService = $monologConfig->loggerService($requestedName);
-        $logger = $channelRegistry->get($loggerService->channel);
+        $logger        = $channelRegistry->get($loggerService->channel);
 
         if (null !== $loggerService->name && $logger instanceof Logger) {
             return $logger->withName($loggerService->name);

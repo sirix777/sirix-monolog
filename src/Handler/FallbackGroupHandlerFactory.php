@@ -16,7 +16,7 @@ class FallbackGroupHandlerFactory implements HandlerFactoryInterface, HandlerReg
     public function create(ContainerInterface $container, HandlerDefinition $handlerDefinition): FallbackGroupHandler
     {
         $configReader = ConfigReader::fromArray($handlerDefinition->options, self::class);
-        $handlers = [];
+        $handlers     = [];
 
         foreach ($configReader->requiredNonEmptyStringList('handlers') as $handlerId) {
             $handlers[] = $this->getHandlerRegistry()->get($handlerId);

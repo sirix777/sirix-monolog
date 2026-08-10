@@ -17,7 +17,7 @@ class SamplingHandlerFactory implements HandlerFactoryInterface, HandlerRegistry
     public function create(ContainerInterface $container, HandlerDefinition $handlerDefinition): SamplingHandler
     {
         $configReader = ConfigReader::fromArray($handlerDefinition->options, self::class);
-        $factor = $configReader->requiredInt('factor');
+        $factor       = $configReader->requiredInt('factor');
 
         if ($factor < 1) {
             throw new InvalidConfigException('Factor is missing or is less then 1');

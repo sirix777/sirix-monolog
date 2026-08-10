@@ -65,23 +65,27 @@ final class BasicHandlerFactoryTest extends TestCase
     public function testPsrHandlerProxiesToConfiguredLogger(): void
     {
         $collectingLogger = new CollectingLogger();
-        $container = $this->container([
+        $container        = $this->container([
             'psr' => [
-                C::Type->value => HandlerType::Psr,
+                C::Type->value    => HandlerType::Psr,
                 C::Options->value => [
-                    'logger' => 'inner.logger',
-                    'level' => Level::Debug,
+                    'logger'        => 'inner.logger',
+                    'level'         => Level::Debug,
                     'include_extra' => true,
                 ],
             ],
-        ], ['psr'], ['inner.logger' => $collectingLogger]);
+        ], ['psr'], [
+            'inner.logger' => $collectingLogger,
+        ]);
 
         $handler = $container->get(HandlerRegistry::class)->get('psr');
         $this->assertInstanceOf(PsrHandler::class, $handler);
 
         $logger = $container->get(LoggerInterface::class);
         $this->assertInstanceOf(Logger::class, $logger);
-        $logger->warning('Delegated message', ['foo' => 'bar']);
+        $logger->warning('Delegated message', [
+            'foo' => 'bar',
+        ]);
 
         $this->assertCount(1, $collectingLogger->records);
         $this->assertSame(LogLevel::WARNING, $collectingLogger->records[0]['level']);
@@ -93,18 +97,18 @@ final class BasicHandlerFactoryTest extends TestCase
     {
         $container = $this->container([
             'test' => [
-                C::Type->value => HandlerType::Test,
+                C::Type->value       => HandlerType::Test,
                 C::Processors->value => ['append_a', 'append_b'],
             ],
         ], ['test'], processors: [
             'append_a' => [
-                C::Type->value => 'append_message',
+                C::Type->value    => 'append_message',
                 C::Options->value => [
                     'suffix' => 'A',
                 ],
             ],
             'append_b' => [
-                C::Type->value => 'append_message',
+                C::Type->value    => 'append_message',
                 C::Options->value => [
                     'suffix' => 'B',
                 ],
@@ -128,7 +132,7 @@ final class BasicHandlerFactoryTest extends TestCase
     {
         $container = $this->container([
             'noop' => [
-                C::Type->value => HandlerType::Noop,
+                C::Type->value      => HandlerType::Noop,
                 C::Formatter->value => 'line',
             ],
         ], ['noop'], formatters: [
@@ -147,7 +151,7 @@ final class BasicHandlerFactoryTest extends TestCase
     {
         $container = $this->container([
             'stream' => [
-                C::Type->value => HandlerType::Stream,
+                C::Type->value    => HandlerType::Stream,
                 C::Options->value => [
                     'stream' => 'php://temp',
                 ],
@@ -168,12 +172,12 @@ final class BasicHandlerFactoryTest extends TestCase
 
         $container = $this->container([
             'rotating' => [
-                C::Type->value => HandlerType::RotatingFile,
+                C::Type->value    => HandlerType::RotatingFile,
                 C::Options->value => [
-                    'filename' => $filename,
-                    'max_files' => 1,
+                    'filename'        => $filename,
+                    'max_files'       => 1,
                     'file_permission' => null,
-                    'use_locking' => true,
+                    'use_locking'     => true,
                 ],
             ],
         ], ['rotating']);
@@ -188,9 +192,9 @@ final class BasicHandlerFactoryTest extends TestCase
     {
         $container = $this->container([
             'syslog' => [
-                C::Type->value => HandlerType::Syslog,
+                C::Type->value    => HandlerType::Syslog,
                 C::Options->value => [
-                    'ident' => 'sirix-monolog-test',
+                    'ident'    => 'sirix-monolog-test',
                     'facility' => LOG_USER,
                     'log_opts' => LOG_PID,
                 ],
@@ -206,9 +210,9 @@ final class BasicHandlerFactoryTest extends TestCase
     {
         $container = $this->container([
             'error_log' => [
-                C::Type->value => HandlerType::ErrorLog,
+                C::Type->value    => HandlerType::ErrorLog,
                 C::Options->value => [
-                    'message_type' => ErrorLogHandler::OPERATING_SYSTEM,
+                    'message_type'    => ErrorLogHandler::OPERATING_SYSTEM,
                     'expand_newlines' => true,
                 ],
             ],
@@ -223,7 +227,7 @@ final class BasicHandlerFactoryTest extends TestCase
     {
         $container = $this->container([
             'process' => [
-                C::Type->value => HandlerType::Process,
+                C::Type->value    => HandlerType::Process,
                 C::Options->value => [
                     'command' => 'cat',
                     'timeout' => 0.1,
@@ -242,10 +246,10 @@ final class BasicHandlerFactoryTest extends TestCase
             'browser_console' => [
                 C::Type->value => HandlerType::BrowserConsole,
             ],
-            'chrome_php' => [
+            'chrome_php'      => [
                 C::Type->value => HandlerType::ChromePhp,
             ],
-            'fire_php' => [
+            'fire_php'        => [
                 C::Type->value => HandlerType::FirePhp,
             ],
         ], ['browser_console', 'chrome_php', 'fire_php']);
@@ -261,23 +265,23 @@ final class BasicHandlerFactoryTest extends TestCase
     {
         $container = $this->container([
             'native_mailer' => [
-                C::Type->value => HandlerType::NativeMailer,
+                C::Type->value    => HandlerType::NativeMailer,
                 C::Options->value => [
-                    'to' => ['ops@example.com'],
-                    'subject' => 'Critical log: %message%',
-                    'from' => 'logs@example.com',
-                    'headers' => ['X-App: test'],
-                    'parameters' => ['-f logs@example.com'],
+                    'to'           => ['ops@example.com'],
+                    'subject'      => 'Critical log: %message%',
+                    'from'         => 'logs@example.com',
+                    'headers'      => ['X-App: test'],
+                    'parameters'   => ['-f logs@example.com'],
                     'content_type' => 'text/plain',
-                    'encoding' => 'utf-8',
+                    'encoding'     => 'utf-8',
                 ],
             ],
-            'socket' => [
-                C::Type->value => HandlerType::Socket,
+            'socket'        => [
+                C::Type->value    => HandlerType::Socket,
                 C::Options->value => [
                     'connection_string' => 'udp://127.0.0.1:514',
-                    'timeout' => 0.0,
-                    'writing_timeout' => 1.0,
+                    'timeout'           => 0.0,
+                    'writing_timeout'   => 1.0,
                 ],
             ],
         ], ['native_mailer', 'socket']);
@@ -296,13 +300,13 @@ final class BasicHandlerFactoryTest extends TestCase
 
         $container = $this->container([
             'syslog_udp' => [
-                C::Type->value => HandlerType::SyslogUdp,
+                C::Type->value    => HandlerType::SyslogUdp,
                 C::Options->value => [
-                    'host' => '127.0.0.1',
-                    'port' => 514,
+                    'host'     => '127.0.0.1',
+                    'port'     => 514,
                     'facility' => LOG_USER,
-                    'ident' => 'sirix-monolog-test',
-                    'rfc' => SyslogUdpHandler::RFC5424,
+                    'ident'    => 'sirix-monolog-test',
+                    'rfc'      => SyslogUdpHandler::RFC5424,
                 ],
             ],
         ], ['syslog_udp']);
@@ -320,16 +324,16 @@ final class BasicHandlerFactoryTest extends TestCase
 
         $container = $this->container([
             'telegram_bot' => [
-                C::Type->value => HandlerType::TelegramBot,
+                C::Type->value    => HandlerType::TelegramBot,
                 C::Options->value => [
-                    'api_key' => '123456:test-token',
-                    'channel' => '-1001234567890',
-                    'parse_mode' => 'HTML',
+                    'api_key'                  => '123456:test-token',
+                    'channel'                  => '-1001234567890',
+                    'parse_mode'               => 'HTML',
                     'disable_web_page_preview' => true,
-                    'disable_notification' => false,
-                    'split_long_messages' => true,
-                    'delay_between_messages' => false,
-                    'topic' => 1,
+                    'disable_notification'     => false,
+                    'split_long_messages'      => true,
+                    'delay_between_messages'   => false,
+                    'topic'                    => 1,
                 ],
             ],
         ], ['telegram_bot']);
@@ -356,21 +360,21 @@ final class BasicHandlerFactoryTest extends TestCase
         array $formatters = [],
     ): ArrayContainer {
         $providerConfig = (new ConfigProvider())();
-        $dependencies = $providerConfig['dependencies'];
+        $dependencies   = $providerConfig['dependencies'];
 
         return new ArrayContainer(
             services: [
                 'config' => [
                     C::Root->value => [
-                        C::Channels->value => [
+                        C::Channels->value           => [
                             'default' => [
-                                C::Name->value => 'app',
+                                C::Name->value     => 'app',
                                 C::Handlers->value => $channelHandlers,
                             ],
                         ],
-                        C::Handlers->value => $handlers,
-                        C::Formatters->value => $formatters,
-                        C::Processors->value => $processors,
+                        C::Handlers->value           => $handlers,
+                        C::Formatters->value         => $formatters,
+                        C::Processors->value         => $processors,
                         C::ProcessorFactories->value => $processorFactories,
                     ],
                 ],

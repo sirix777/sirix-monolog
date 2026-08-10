@@ -16,7 +16,7 @@ class GroupHandlerFactory implements HandlerFactoryInterface, HandlerRegistryAwa
     public function create(ContainerInterface $container, HandlerDefinition $handlerDefinition): GroupHandler
     {
         $configReader = ConfigReader::fromArray($handlerDefinition->options, self::class);
-        $handlers = [];
+        $handlers     = [];
 
         foreach ($configReader->requiredNonEmptyStringList('handlers') as $handlerId) {
             $handlers[] = $this->getHandlerRegistry()->get($handlerId);

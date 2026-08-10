@@ -25,7 +25,7 @@ class StreamHandlerFactory implements HandlerFactoryInterface
     public function create(ContainerInterface $container, HandlerDefinition $handlerDefinition): StreamHandler
     {
         $configReader = ConfigReader::fromArray($handlerDefinition->options, self::class);
-        $stream = $configReader->required('stream');
+        $stream       = $configReader->required('stream');
 
         if (is_string($stream) && $container->has($stream)) {
             $stream = ContainerResolver::forContext($container, self::class)->getExisting($stream);

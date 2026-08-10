@@ -33,7 +33,7 @@ class RedactorProcessorFactory implements ProcessorFactoryInterface
         $this->assertRedactionAvailable();
 
         $containerResolver = ContainerResolver::forContext($container, self::class);
-        $redactor = $container->has(RedactorInterface::class)
+        $redactor          = $container->has(RedactorInterface::class)
             ? $containerResolver->getAs(RedactorInterface::class, RedactorInterface::class)
             : $this->createRedactorFromReader($processorDefinition->options);
 
@@ -60,7 +60,7 @@ class RedactorProcessorFactory implements ProcessorFactoryInterface
     private function createRedactorFromReader(array $options): RedactorInterface
     {
         $configReader = ConfigReader::fromArray($options, self::class);
-        $redactor = new Redactor(
+        $redactor     = new Redactor(
             $configReader->array('rules', []),
             $configReader->bool('use_default_rules', true),
         );
@@ -86,7 +86,7 @@ class RedactorProcessorFactory implements ProcessorFactoryInterface
 
         if ($configReader->has('object_view_mode')) {
             $objectViewMode = $configReader->requiredEnum('object_view_mode', ObjectViewModeEnum::class);
-            $redactor = $this->applyRedactorOption(
+            $redactor       = $this->applyRedactorOption(
                 $redactor,
                 'setObjectViewMode',
                 'withObjectViewMode',
