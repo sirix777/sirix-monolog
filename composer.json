@@ -16,7 +16,7 @@
     "monolog/monolog": "^3.10",
     "psr/container": "^1.0 || ^2.0.2",
     "psr/log": "^2.0 || ^3.0.2",
-    "sirix/container-resolver": "^0.2.0"
+    "sirix/container-resolver": "^1.0"
   },
   "require-dev": {
     "ext-json": "*",
@@ -25,7 +25,7 @@
     "mongodb/mongodb": "^2.1.2",
     "phpunit/phpunit": "^11.5.56",
     "ruflin/elastica": "^7.3.2",
-    "sirix/redaction": "^2.1"
+    "sirix/redaction": "^2.1.2"
   },
   "suggest": {
     "ext-amqp": "Required when using the amqp handler with the ext-amqp exchange",
