@@ -20,7 +20,7 @@ class SamplingHandlerFactory implements HandlerFactoryInterface, HandlerRegistry
         $factor       = $configReader->requiredInt('factor');
 
         if ($factor < 1) {
-            throw new InvalidConfigException('Factor is missing or is less then 1');
+            throw new InvalidConfigException('Sampling handler option "factor" must be at least 1.');
         }
 
         return new SamplingHandler(

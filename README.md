@@ -265,6 +265,8 @@ Handler and processor order is preserved as written in configuration. This matte
 
 A handler-local `formatter` requires a Monolog handler that supports formatters. Handler-local `processors` require a processable handler. Unsupported combinations fail fast with a configuration exception instead of being ignored.
 
+Configuration errors are reported with package exceptions: `Sirix\Monolog\Exception\InvalidConfigException` for invalid values and `Sirix\Monolog\Exception\MissingConfigException` for missing values or references. Option errors name the handler, formatter, or processor id and type, for example `Handler 'main' (socket): ...`, and keep the original `sirix/container-resolver` exception as the previous exception. A factory called directly, outside the configured registries, reports the `sirix/container-resolver` exception as is.
+
 For stream handlers, `file_permission` defaults to Monolog's default when omitted or set to `null`, so file permissions remain controlled by your process `umask`. `use_locking` defaults to `false`, matching Monolog. Enable it only when multiple processes write to the same file and you want `flock()` around each write.
 
 ## Optional integrations

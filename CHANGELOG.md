@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.1] - 2026-11-21
+
+### Fixed
+- Report invalid and missing configuration values with the package `InvalidConfigException` and `MissingConfigException` instead of `sirix/container-resolver` exceptions. Option errors are prefixed with the handler, formatter, or processor id and type (for example `Handler 'main' (socket): `), configuration structure errors with `Monolog config: `; the original exception is kept as the previous exception. Code that caught `sirix/container-resolver` exceptions around logger creation should catch the package exceptions instead.
+- Reject list-shaped handler, formatter, processor, channel, and logger service definitions with `InvalidConfigException` instead of a generic `InvalidArgumentException`.
+- Fix the sampling handler `factor` error message: `Sampling handler option "factor" must be at least 1.`
+
+### Added
+- Add tests for redactor options, invalid handler, formatter and processor options, client-backed handlers without their libraries, config validation, and logger and container resolution.
+
 ## [2.1.0] - 2026-11-21
 
 ### Added

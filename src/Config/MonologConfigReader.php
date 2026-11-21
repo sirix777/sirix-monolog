@@ -8,8 +8,10 @@ use BackedEnum;
 use Monolog\Logger;
 use Psr\Log\LoggerInterface;
 use Sirix\ContainerResolver\ConfigReader;
+use Sirix\ContainerResolver\Exception\ConfigReaderException;
 use Sirix\Monolog\Enum\ConfigKey;
 use Sirix\Monolog\Enum\HandlerType;
+use Sirix\Monolog\Exception\ConfigReaderExceptionTranslator;
 use Sirix\Monolog\Exception\InvalidConfigException;
 use Sirix\Monolog\Exception\MissingConfigException;
 use Sirix\Monolog\Formatter\BuiltInFormatterFactories;
@@ -19,6 +21,7 @@ use Sirix\Monolog\Handler\HandlerFactoryInterface;
 use Sirix\Monolog\Processor\BuiltInProcessorFactories;
 use Sirix\Monolog\Processor\ProcessorFactoryInterface;
 
+use function array_keys;
 use function class_exists;
 use function is_a;
 use function is_array;
@@ -29,8 +32,23 @@ final class MonologConfigReader
 {
     /**
      * @param array<string, mixed> $config
+     *
+     * @throws InvalidConfigException
+     * @throws MissingConfigException
      */
     public function read(array $config): MonologConfig
+    {
+        try {
+            return $this->readConfig($config);
+        } catch (ConfigReaderException $configReaderException) {
+            throw ConfigReaderExceptionTranslator::translate('Monolog config', $configReaderException);
+        }
+    }
+
+    /**
+     * @param array<string, mixed> $config
+     */
+    private function readConfig(array $config): MonologConfig
     {
         $configReader = ConfigReader::fromArray($config, self::class);
         $root         = $configReader->map(ConfigKey::Root->value, []);
@@ -76,7 +94,7 @@ final class MonologConfigReader
             $path      = ConfigKey::LoggerServices->value . '.' . $serviceId;
 
             $result[$serviceId] = is_array($serviceConfig)
-                ? $this->readLoggerServiceDefinition($serviceId, $serviceConfig)
+                ? $this->readLoggerServiceDefinition($serviceId, $this->arrayValue($serviceConfig, $path))
                 : new LoggerServiceDefinition(
                     serviceId: $serviceId,
                     channel: $this->nonEmptyString($serviceConfig, $path),
@@ -348,6 +366,12 @@ final class MonologConfigReader
     {
         if (! is_array($value)) {
             throw new InvalidConfigException("Config value '{$path}' must be an array.");
+        }
+
+        foreach (array_keys($value) as $key) {
+            if (! is_string($key)) {
+                throw new InvalidConfigException("Config value '{$path}' must be a string-keyed map.");
+            }
         }
 
         return $value;

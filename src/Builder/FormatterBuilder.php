@@ -8,8 +8,12 @@ use Monolog\Formatter\FormatterInterface;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Sirix\ContainerResolver\ContainerResolver;
+use Sirix\ContainerResolver\Exception\ConfigReaderException;
 use Sirix\Monolog\Config\MonologConfig;
+use Sirix\Monolog\Exception\ConfigReaderExceptionTranslator;
+use Sirix\Monolog\Exception\InvalidConfigException;
 use Sirix\Monolog\Exception\InvalidFactoryException;
+use Sirix\Monolog\Exception\MissingConfigException;
 use Sirix\Monolog\Formatter\FormatterFactoryInterface;
 
 final readonly class FormatterBuilder
@@ -18,13 +22,19 @@ final readonly class FormatterBuilder
 
     /**
      * @throws ContainerExceptionInterface
+     * @throws InvalidConfigException
+     * @throws MissingConfigException
      */
     public function build(string $formatterId): FormatterInterface
     {
         $formatterDefinition = $this->monologConfig->formatter($formatterId);
         $factory             = $this->factory($formatterDefinition->type);
 
-        return $factory->create($this->container, $formatterDefinition);
+        try {
+            return $factory->create($this->container, $formatterDefinition);
+        } catch (ConfigReaderException $configReaderException) {
+            throw ConfigReaderExceptionTranslator::translate("Formatter '{$formatterId}' ({$formatterDefinition->type})", $configReaderException);
+        }
     }
 
     /**
