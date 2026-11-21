@@ -19,6 +19,7 @@ use Sirix\Monolog\Registry\FormatterRegistry;
 use Sirix\Monolog\Registry\HandlerRegistry;
 use Sirix\Monolog\Registry\ProcessorRegistry;
 use Sirix\Test\Monolog\Support\ArrayContainer;
+use Sirix\Test\Monolog\Support\InvalidOptionHandlerFactory;
 use Throwable;
 
 final class ConfigErrorTranslationTest extends TestCase
@@ -84,6 +85,54 @@ final class ConfigErrorTranslationTest extends TestCase
         $this->assertInstanceOf(MissingConfigException::class, $exception);
         $this->assertStringStartsWith("Handler 'stream' (stream): ", $exception->getMessage());
         $this->assertInstanceOf(MissingConfigValueException::class, $exception->getPrevious());
+    }
+
+    public function testCustomHandlerFactoryErrorBecomesPackageException(): void
+    {
+        $container = $this->container([
+            C::HandlerFactories->value => [
+                'custom' => InvalidOptionHandlerFactory::class,
+            ],
+            C::Handlers->value         => [
+                'main' => [
+                    C::Type->value    => 'custom',
+                    C::Options->value => [
+                        'size' => 'large',
+                    ],
+                ],
+            ],
+        ]);
+
+        $exception = $this->catch(static fn () => $container->get(HandlerRegistry::class)->get('main'));
+
+        $this->assertInstanceOf(InvalidConfigException::class, $exception);
+        $this->assertStringStartsWith("Handler 'main' (custom): ", $exception->getMessage());
+        $this->assertInstanceOf(InvalidConfigValueException::class, $exception->getPrevious());
+    }
+
+    public function testHandlerFormatterErrorNamesFormatter(): void
+    {
+        $container = $this->container([
+            C::Handlers->value   => [
+                'main' => [
+                    C::Type->value      => HandlerType::Test,
+                    C::Formatter->value => 'json',
+                ],
+            ],
+            C::Formatters->value => [
+                'json' => [
+                    C::Type->value    => FormatterType::Json,
+                    C::Options->value => [
+                        'append_newline' => 'yes',
+                    ],
+                ],
+            ],
+        ]);
+
+        $exception = $this->catch(static fn () => $container->get(HandlerRegistry::class)->get('main'));
+
+        $this->assertInstanceOf(InvalidConfigException::class, $exception);
+        $this->assertStringStartsWith("Formatter 'json' (json): ", $exception->getMessage());
     }
 
     public function testInvalidFormatterOptionBecomesPackageException(): void

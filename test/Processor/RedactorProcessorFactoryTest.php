@@ -11,6 +11,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
+use Sirix\ContainerResolver\Exception\ConfigReaderException;
 use Sirix\Monolog\Config\ProcessorDefinition;
 use Sirix\Monolog\Exception\InvalidConfigException;
 use Sirix\Monolog\Processor\RedactorProcessorFactory;
@@ -240,6 +241,16 @@ final class RedactorProcessorFactoryTest extends TestCase
         $this->assertSame([
             'name' => 'John',
         ], $logRecord->context['user']);
+    }
+
+    public function testDirectFactoryCallReportsResolverException(): void
+    {
+        $this->expectException(ConfigReaderException::class);
+        $this->expectExceptionMessage('object_view_mode');
+
+        $this->createProcessor([
+            'object_view_mode' => 'unknown',
+        ]);
     }
 
     public function testLimitExceededCallbackReceivesLimitDetails(): void
