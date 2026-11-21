@@ -5,7 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [2.1.1] - 2026-11-21
+
+### Fixed
+- Report invalid and missing configuration values with the package `InvalidConfigException` and `MissingConfigException` instead of `sirix/container-resolver` exceptions. Messages name the handler, formatter, or processor id and type; the original exception is kept as the previous exception.
+- Fix the sampling handler `factor` error message: `Sampling handler option "factor" must be at least 1.`
 
 ### Added
 - Add tests for redactor options, invalid handler, formatter and processor options, client-backed handlers without their libraries, config validation, and logger and container resolution.
