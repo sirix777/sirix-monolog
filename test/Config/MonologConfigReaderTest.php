@@ -247,6 +247,27 @@ final class MonologConfigReaderTest extends TestCase
             "Config value 'handlers.default' must be an array.",
         ];
 
+        yield 'handler definition is a list' => [
+            [
+                C::Handlers->value => [
+                    'default' => ['noop'],
+                ],
+            ],
+            InvalidConfigException::class,
+            "Config value 'handlers.default' must be a string-keyed map.",
+        ];
+
+        yield 'logger service definition is a list' => [
+            [
+                C::Handlers->value       => $defaultHandler,
+                C::LoggerServices->value => [
+                    'logger' => ['default'],
+                ],
+            ],
+            InvalidConfigException::class,
+            "Config value 'logger_services.logger' must be a string-keyed map.",
+        ];
+
         yield 'handler type is blank' => [
             [
                 C::Handlers->value => [

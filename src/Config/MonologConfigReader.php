@@ -21,6 +21,7 @@ use Sirix\Monolog\Handler\HandlerFactoryInterface;
 use Sirix\Monolog\Processor\BuiltInProcessorFactories;
 use Sirix\Monolog\Processor\ProcessorFactoryInterface;
 
+use function array_keys;
 use function class_exists;
 use function is_a;
 use function is_array;
@@ -93,7 +94,7 @@ final class MonologConfigReader
             $path      = ConfigKey::LoggerServices->value . '.' . $serviceId;
 
             $result[$serviceId] = is_array($serviceConfig)
-                ? $this->readLoggerServiceDefinition($serviceId, $serviceConfig)
+                ? $this->readLoggerServiceDefinition($serviceId, $this->arrayValue($serviceConfig, $path))
                 : new LoggerServiceDefinition(
                     serviceId: $serviceId,
                     channel: $this->nonEmptyString($serviceConfig, $path),
@@ -365,6 +366,12 @@ final class MonologConfigReader
     {
         if (! is_array($value)) {
             throw new InvalidConfigException("Config value '{$path}' must be an array.");
+        }
+
+        foreach (array_keys($value) as $key) {
+            if (! is_string($key)) {
+                throw new InvalidConfigException("Config value '{$path}' must be a string-keyed map.");
+            }
         }
 
         return $value;
