@@ -341,17 +341,8 @@ final class ResolutionTest extends TestCase
      */
     private function container(array $root, array $services = []): ArrayContainer
     {
-        $dependencies = (new ConfigProvider())()['dependencies'];
-
-        return new ArrayContainer(
-            services: [
-                'config' => [
-                    C::Root->value => $root,
-                ],
-                ...$services,
-            ],
-            factories: $dependencies['factories'],
-            aliases: $dependencies['aliases'],
-        );
+        return ArrayContainer::fromConfigProvider([
+            C::Root->value => $root,
+        ], (new ConfigProvider())(), $services);
     }
 }

@@ -8,8 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- Cover redactor processor options and their validation with tests.
-- Cover invalid handler, formatter and processor options, client-backed handlers without their optional libraries, config reference and type validation, the `channel` logger factory option, container-provided factories and wrapper handler options with tests.
+- Add tests for redactor options, invalid handler, formatter and processor options, client-backed handlers without their libraries, config validation, and logger and container resolution.
 
 ## [2.1.0] - 2026-11-21
 

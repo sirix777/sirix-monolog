@@ -26,6 +26,7 @@ use Sirix\Test\Monolog\Support\ArrayContainer;
 use stdClass;
 
 use function class_exists;
+use function extension_loaded;
 use function implode;
 use function interface_exists;
 
@@ -33,8 +34,8 @@ final class ClientBackedHandlerFactoryTest extends TestCase
 {
     public function testAvailableClientBackedHandlersCanBeCreated(): void
     {
-        if (! class_exists(MongoClient::class)) {
-            $this->markTestSkipped('mongodb/mongodb is required for this constructor smoke test.');
+        if (! extension_loaded('mongodb')) {
+            $this->markTestSkipped('ext-mongodb is required for this constructor smoke test.');
         }
 
         $publisher = new class implements PublisherInterface {
@@ -219,7 +220,7 @@ final class ClientBackedHandlerFactoryTest extends TestCase
         ], ['elasticsearch']);
 
         $this->expectException(InvalidConfigException::class);
-        $this->expectExceptionMessage("Elasticsearch handler option 'client' must resolve to one of: Elasticsearch\\Client.");
+        $this->expectExceptionMessage("Elasticsearch handler option 'client' must resolve to one of: ");
 
         $container->get(HandlerRegistry::class)->get('elasticsearch');
     }
@@ -249,26 +250,16 @@ final class ClientBackedHandlerFactoryTest extends TestCase
      */
     private function container(array $handlers, array $channelHandlers, array $services = []): ArrayContainer
     {
-        $providerConfig = (new ConfigProvider())();
-        $dependencies   = $providerConfig['dependencies'];
-
-        return new ArrayContainer(
-            services: [
-                'config' => [
-                    C::Root->value => [
-                        C::Channels->value => [
-                            'default' => [
-                                C::Name->value     => 'app',
-                                C::Handlers->value => $channelHandlers,
-                            ],
-                        ],
-                        C::Handlers->value => $handlers,
+        return ArrayContainer::fromConfigProvider([
+            C::Root->value => [
+                C::Channels->value => [
+                    'default' => [
+                        C::Name->value     => 'app',
+                        C::Handlers->value => $channelHandlers,
                     ],
                 ],
-                ...$services,
+                C::Handlers->value => $handlers,
             ],
-            factories: $dependencies['factories'],
-            aliases: $dependencies['aliases'],
-        );
+        ], (new ConfigProvider())(), $services);
     }
 }

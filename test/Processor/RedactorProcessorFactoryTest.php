@@ -243,7 +243,7 @@ final class RedactorProcessorFactoryTest extends TestCase
         ], $logRecord->context['user']);
     }
 
-    public function testInvalidObjectViewModeFails(): void
+    public function testInvalidObjectViewModeFailsWithResolverException(): void
     {
         $this->expectException(ConfigReaderException::class);
         $this->expectExceptionMessage('object_view_mode');

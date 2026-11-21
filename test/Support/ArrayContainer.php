@@ -22,13 +22,17 @@ final class ArrayContainer implements ContainerInterface
      */
     public function __construct(private array $services = [], private array $factories = [], private array $aliases = []) {}
 
-    public static function fromConfigProvider(array $appConfig, array $providerConfig): self
+    /**
+     * @param array<string, mixed> $services extra services next to 'config'
+     */
+    public static function fromConfigProvider(array $appConfig, array $providerConfig, array $services = []): self
     {
         $dependencies = $providerConfig['dependencies'] ?? [];
 
         return new self(
             services: [
                 'config' => $appConfig,
+                ...$services,
             ],
             factories: $dependencies['factories'] ?? [],
             aliases: $dependencies['aliases'] ?? [],

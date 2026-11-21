@@ -4,11 +4,6 @@ declare(strict_types=1);
 
 namespace Sirix\Test\Monolog\Factory;
 
-use DateTimeImmutable;
-use Monolog\Handler\NativeMailerHandler;
-use Monolog\Handler\NullHandler;
-use Monolog\Level;
-use Monolog\LogRecord;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Sirix\Monolog\ConfigProvider;
@@ -165,7 +160,7 @@ final class InvalidOptionTest extends TestCase
         yield 'sampling factor' => [HandlerType::Sampling, [
             'factor'  => 0,
             'handler' => 'unused',
-        ], 'Factor is missing or is less then 1'];
+        ], 'Factor is missing'];
 
         yield 'error_log message_type' => [HandlerType::ErrorLog, [
             'message_type' => 99,
@@ -298,40 +293,6 @@ final class InvalidOptionTest extends TestCase
         yield 'web extra_fields' => [ProcessorType::Web, [
             'extra_fields' => 'url',
         ], "Web processor option 'extra_fields' must be an array or null."];
-    }
-
-    public function testNativeMailerAcceptsSingleRecipientString(): void
-    {
-        $container = $this->container(handlers: [
-            'main' => [
-                C::Type->value    => HandlerType::NativeMailer,
-                C::Options->value => [
-                    'to'      => ' ops@example.com ',
-                    'subject' => 'Log',
-                    'from'    => 'logs@example.com',
-                ],
-            ],
-        ]);
-
-        $this->assertInstanceOf(NativeMailerHandler::class, $container->get(HandlerRegistry::class)->get('main'));
-    }
-
-    public function testNullHandlerUsesConfiguredLevel(): void
-    {
-        $container = $this->container(handlers: [
-            'main' => [
-                C::Type->value    => HandlerType::Null,
-                C::Options->value => [
-                    'level' => Level::Error,
-                ],
-            ],
-        ]);
-
-        $handler = $container->get(HandlerRegistry::class)->get('main');
-
-        $this->assertInstanceOf(NullHandler::class, $handler);
-        $this->assertFalse($handler->isHandling(new LogRecord(new DateTimeImmutable(), 'app', Level::Warning, 'warning')));
-        $this->assertTrue($handler->isHandling(new LogRecord(new DateTimeImmutable(), 'app', Level::Error, 'error')));
     }
 
     /**

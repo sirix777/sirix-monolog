@@ -7,11 +7,13 @@ namespace Sirix\Test\Monolog\Factory;
 use const LOG_PID;
 use const LOG_USER;
 
+use DateTimeImmutable;
 use Monolog\Handler\BrowserConsoleHandler;
 use Monolog\Handler\ChromePHPHandler;
 use Monolog\Handler\ErrorLogHandler;
 use Monolog\Handler\FirePHPHandler;
 use Monolog\Handler\NativeMailerHandler;
+use Monolog\Handler\NullHandler;
 use Monolog\Handler\ProcessHandler;
 use Monolog\Handler\PsrHandler;
 use Monolog\Handler\RotatingFileHandler;
@@ -23,6 +25,7 @@ use Monolog\Handler\TelegramBotHandler;
 use Monolog\Handler\TestHandler;
 use Monolog\Level;
 use Monolog\Logger;
+use Monolog\LogRecord;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
@@ -290,6 +293,43 @@ final class BasicHandlerFactoryTest extends TestCase
         $this->assertInstanceOf(HandlerRegistry::class, $registry);
         $this->assertInstanceOf(NativeMailerHandler::class, $registry->get('native_mailer'));
         $this->assertInstanceOf(SocketHandler::class, $registry->get('socket'));
+    }
+
+    public function testNativeMailerAcceptsSingleRecipientString(): void
+    {
+        $container = $this->container([
+            'native_mailer' => [
+                C::Type->value    => HandlerType::NativeMailer,
+                C::Options->value => [
+                    'to'      => ' ops@example.com ',
+                    'subject' => 'Log',
+                    'from'    => 'logs@example.com',
+                ],
+            ],
+        ], ['native_mailer']);
+
+        $handler = $container->get(HandlerRegistry::class)->get('native_mailer');
+
+        $this->assertInstanceOf(NativeMailerHandler::class, $handler);
+        $this->assertSame(['ops@example.com'], (new ReflectionClass(NativeMailerHandler::class))->getProperty('to')->getValue($handler));
+    }
+
+    public function testNullHandlerUsesConfiguredLevel(): void
+    {
+        $container = $this->container([
+            'null' => [
+                C::Type->value    => HandlerType::Null,
+                C::Options->value => [
+                    'level' => Level::Error,
+                ],
+            ],
+        ], ['null']);
+
+        $handler = $container->get(HandlerRegistry::class)->get('null');
+
+        $this->assertInstanceOf(NullHandler::class, $handler);
+        $this->assertFalse($handler->isHandling(new LogRecord(new DateTimeImmutable(), 'app', Level::Warning, 'warning')));
+        $this->assertTrue($handler->isHandling(new LogRecord(new DateTimeImmutable(), 'app', Level::Error, 'error')));
     }
 
     public function testSyslogUdpHandlerCanBeCreated(): void
