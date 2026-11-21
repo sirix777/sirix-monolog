@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Sirix\Test\Monolog\Config;
 
 use Monolog\Logger;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Sirix\Monolog\Config\MonologConfigReader;
@@ -14,8 +15,11 @@ use Sirix\Monolog\Enum\HandlerType;
 use Sirix\Monolog\Exception\InvalidConfigException;
 use Sirix\Monolog\Exception\MissingConfigException;
 use Sirix\Monolog\Exception\UnknownChannelException;
+use Sirix\Monolog\Handler\HandlerFactoryInterface;
 use Sirix\Monolog\Handler\NoopHandlerFactory;
 use Sirix\Test\Monolog\Support\CustomNoopHandlerFactory;
+use stdClass;
+use Throwable;
 
 final class MonologConfigReaderTest extends TestCase
 {
@@ -166,5 +170,115 @@ final class MonologConfigReaderTest extends TestCase
                 ],
             ],
         ]);
+    }
+
+    /**
+     * @param array<string, mixed>    $config
+     * @param class-string<Throwable> $exceptionClass
+     */
+    #[DataProvider('invalidConfigProvider')]
+    public function testInvalidConfigFailsEarly(array $config, string $exceptionClass, string $message): void
+    {
+        $this->expectException($exceptionClass);
+        $this->expectExceptionMessage($message);
+
+        (new MonologConfigReader())->read([
+            C::Root->value => $config,
+        ]);
+    }
+
+    /**
+     * @return iterable<string, array{array<string, mixed>, class-string<Throwable>, string}>
+     */
+    public static function invalidConfigProvider(): iterable
+    {
+        $defaultHandler = [
+            'default' => [
+                C::Type->value => HandlerType::Noop,
+            ],
+        ];
+
+        yield 'channel references unknown processor' => [
+            [
+                C::Channels->value => [
+                    'default' => [
+                        C::Handlers->value   => ['default'],
+                        C::Processors->value => ['missing'],
+                    ],
+                ],
+            ],
+            MissingConfigException::class,
+            "Channel 'default' references unknown processor 'missing'.",
+        ];
+
+        yield 'handler references unknown formatter' => [
+            [
+                C::Handlers->value => [
+                    'default' => [
+                        C::Type->value      => HandlerType::Noop,
+                        C::Formatter->value => 'missing',
+                    ],
+                ],
+            ],
+            MissingConfigException::class,
+            "Handler 'default' references unknown formatter 'missing'.",
+        ];
+
+        yield 'handler references unknown processor' => [
+            [
+                C::Handlers->value => [
+                    'default' => [
+                        C::Type->value       => HandlerType::Noop,
+                        C::Processors->value => ['missing'],
+                    ],
+                ],
+            ],
+            MissingConfigException::class,
+            "Handler 'default' references unknown processor 'missing'.",
+        ];
+
+        yield 'handler definition is not an array' => [
+            [
+                C::Handlers->value => [
+                    'default' => 'noop',
+                ],
+            ],
+            InvalidConfigException::class,
+            "Config value 'handlers.default' must be an array.",
+        ];
+
+        yield 'handler type is blank' => [
+            [
+                C::Handlers->value => [
+                    'default' => [
+                        C::Type->value => '   ',
+                    ],
+                ],
+            ],
+            InvalidConfigException::class,
+            "Config value 'handlers.default.type' must be a non-empty string.",
+        ];
+
+        yield 'custom handler factory class does not exist' => [
+            [
+                C::Handlers->value         => $defaultHandler,
+                C::HandlerFactories->value => [
+                    'custom' => 'Sirix\Test\Monolog\Support\MissingHandlerFactory',
+                ],
+            ],
+            InvalidConfigException::class,
+            "Config value 'handler_factories.custom' must be an existing class-string.",
+        ];
+
+        yield 'custom handler factory does not implement interface' => [
+            [
+                C::Handlers->value         => $defaultHandler,
+                C::HandlerFactories->value => [
+                    'custom' => stdClass::class,
+                ],
+            ],
+            InvalidConfigException::class,
+            "Config value 'handler_factories.custom' must implement " . HandlerFactoryInterface::class . '.',
+        ];
     }
 }
