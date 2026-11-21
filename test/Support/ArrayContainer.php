@@ -35,7 +35,10 @@ final class ArrayContainer implements ContainerInterface
         );
     }
 
-    public function get(string $id): mixed
+    /**
+     * @param string $id untyped to stay compatible with psr/container 1.0
+     */
+    public function get($id): mixed
     {
         $id = $this->aliases[$id] ?? $id;
 
@@ -53,7 +56,10 @@ final class ArrayContainer implements ContainerInterface
         return $this->services[$id];
     }
 
-    public function has(string $id): bool
+    /**
+     * @param string $id untyped to stay compatible with psr/container 1.0
+     */
+    public function has($id): bool
     {
         $id = $this->aliases[$id] ?? $id;
 
