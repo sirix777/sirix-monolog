@@ -16,10 +16,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php-version: ["8.2", "8.3", "8.4", "8.5"]
-        redaction-version: ["^2.0"]
+        php-version: ["8.3", "8.4", "8.5", "8.6"]
 
-    name: PHP ${{ matrix.php-version }} / sirix/redaction ${{ matrix.redaction-version }}
+    name: PHP ${{ matrix.php-version }}
 
     steps:
       - uses: actions/checkout@v4
@@ -28,6 +27,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php-version }}
+          extensions: mongodb
           coverage: none
           tools: composer:v2
 
@@ -35,7 +35,7 @@ jobs:
         run: composer validate --strict --no-check-lock
 
       - name: Install dependencies
-        run: composer update --with "sirix/redaction:${{ matrix.redaction-version }}" --prefer-dist --no-progress --ignore-platform-req=ext-mongodb --bump-after-update=no
+        run: composer update --prefer-dist --no-progress --bump-after-update=no
 
       - name: Install tools
         run: composer bin all install --prefer-dist --no-progress
