@@ -64,7 +64,7 @@
     "allow-plugins": {
       "bamarni/composer-bin-plugin": true
     },
-    "bump-after-update": true,
+    "bump-after-update": "dev",
     "sort-packages": true
   },
   "extra": {

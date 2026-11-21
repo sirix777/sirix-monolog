@@ -35,7 +35,7 @@ jobs:
         run: composer validate --strict --no-check-lock
 
       - name: Install dependencies
-        run: composer update --prefer-dist --no-progress --bump-after-update=no
+        run: composer update --prefer-dist --no-progress
 
       - name: Install tools
         run: composer bin all install --prefer-dist --no-progress

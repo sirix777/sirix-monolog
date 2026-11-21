@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Use the `@PHP8x3Migration` PHP CS Fixer rule set.
 - Run CI against PHP 8.3, 8.4, 8.5 and 8.6 with `ext-mongodb` installed.
 - Report all PHP errors, warnings and deprecations in the test suite.
+- Limit Composer `bump-after-update` to development dependencies so local updates no longer raise runtime constraints.
 
 ### Fixed
 - Make the test container compatible with `psr/container` 1.0, so the suite runs with the lowest supported dependencies.
