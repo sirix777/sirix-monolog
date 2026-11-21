@@ -6,7 +6,7 @@ Explicit Mezzio Monolog factory integration built around PSR-11, strict configur
 
 ## Requirements
 
-- PHP 8.2+
+- PHP 8.3–8.6
 - Monolog 3.x
 - PSR-11 compatible container
 - Mezzio config aggregation, or another container that can consume the provided factory map

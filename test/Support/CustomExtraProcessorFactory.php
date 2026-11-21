@@ -19,8 +19,8 @@ final class CustomExtraProcessorFactory implements ProcessorFactoryInterface
         $field        = $configReader->requiredNonEmptyString('field');
         $value        = $configReader->required('value');
 
-        return new class($field, $value) implements ProcessorInterface {
-            public function __construct(private readonly string $field, private readonly mixed $value) {}
+        return new readonly class($field, $value) implements ProcessorInterface {
+            public function __construct(private string $field, private mixed $value) {}
 
             public function __invoke(LogRecord $record): LogRecord
             {

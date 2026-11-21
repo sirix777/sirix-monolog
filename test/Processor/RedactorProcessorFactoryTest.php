@@ -7,7 +7,7 @@ namespace Sirix\Test\Monolog\Processor;
 use DateTimeImmutable;
 use Monolog\Level;
 use Monolog\LogRecord;
-use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 use Sirix\Monolog\Config\ProcessorDefinition;
@@ -21,12 +21,12 @@ use Sirix\Test\Monolog\Support\ArrayContainer;
 final class RedactorProcessorFactoryTest extends TestCase
 {
     private RedactorProcessorFactory $redactorProcessorFactory;
-    private ContainerInterface|MockObject $container;
+    private ContainerInterface&Stub $container;
 
     protected function setUp(): void
     {
         $this->redactorProcessorFactory = new RedactorProcessorFactory();
-        $this->container                = $this->createMock(ContainerInterface::class);
+        $this->container                = $this->createStub(ContainerInterface::class);
         $this->container->method('has')->willReturn(false);
     }
 
@@ -39,7 +39,7 @@ final class RedactorProcessorFactoryTest extends TestCase
 
     public function testUsesRedactorFromContainerWhenAvailable(): void
     {
-        $mockRedactor = $this->createMock(RedactorInterface::class);
+        $mockRedactor = $this->createStub(RedactorInterface::class);
         $mockRedactor->method('redact')->willReturn([
             'x' => 'y',
         ]);

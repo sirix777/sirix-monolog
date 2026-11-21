@@ -12,7 +12,7 @@
     "psr-11"
   ],
   "require": {
-    "php": "~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",
+    "php": "~8.3.0 || ~8.4.0 || ~8.5.0 || ~8.6.0",
     "monolog/monolog": "^3.10",
     "psr/container": "^1.0 || ^2.0.2",
     "psr/log": "^2.0 || ^3.0.2",
@@ -21,11 +21,11 @@
   "require-dev": {
     "ext-json": "*",
     "bamarni/composer-bin-plugin": "^1.9.1",
-    "graylog2/gelf-php": "^2.0.0-beta.1",
+    "graylog2/gelf-php": "^2.0.2",
     "mongodb/mongodb": "^2.1.2",
-    "phpunit/phpunit": "^11.5.56",
+    "phpunit/phpunit": "^12.5",
     "ruflin/elastica": "^7.3.2",
-    "sirix/redaction": "^2.1.2"
+    "sirix/redaction": "^2.2"
   },
   "suggest": {
     "ext-amqp": "Required when using the amqp handler with the ext-amqp exchange",
@@ -64,7 +64,7 @@
     "allow-plugins": {
       "bamarni/composer-bin-plugin": true
     },
-    "bump-after-update": true,
+    "bump-after-update": "dev",
     "sort-packages": true
   },
   "extra": {

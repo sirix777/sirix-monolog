@@ -18,8 +18,8 @@ final class AppendMessageProcessorFactory implements ProcessorFactoryInterface
         $configReader = ConfigReader::fromArray($processorDefinition->options, self::class);
         $suffix       = $configReader->requiredNonEmptyString('suffix');
 
-        return new class($suffix) implements ProcessorInterface {
-            public function __construct(private readonly string $suffix) {}
+        return new readonly class($suffix) implements ProcessorInterface {
+            public function __construct(private string $suffix) {}
 
             public function __invoke(LogRecord $record): LogRecord
             {
