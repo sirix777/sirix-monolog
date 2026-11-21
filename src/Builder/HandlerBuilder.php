@@ -10,9 +10,12 @@ use Monolog\Handler\ProcessableHandlerInterface;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Sirix\ContainerResolver\ContainerResolver;
+use Sirix\ContainerResolver\Exception\ConfigReaderException;
 use Sirix\Monolog\Config\MonologConfig;
+use Sirix\Monolog\Exception\ConfigReaderExceptionTranslator;
 use Sirix\Monolog\Exception\InvalidConfigException;
 use Sirix\Monolog\Exception\InvalidFactoryException;
+use Sirix\Monolog\Exception\MissingConfigException;
 use Sirix\Monolog\Exception\MissingServiceException;
 use Sirix\Monolog\Handler\HandlerFactoryInterface;
 use Sirix\Monolog\Handler\HandlerRegistryAwareInterface;
@@ -35,12 +38,19 @@ final class HandlerBuilder
 
     /**
      * @throws ContainerExceptionInterface
+     * @throws InvalidConfigException
+     * @throws MissingConfigException
      */
     public function build(string $handlerId): HandlerInterface
     {
         $handlerDefinition = $this->monologConfig->handler($handlerId);
         $factory           = $this->factory($handlerDefinition->type);
-        $handler           = $factory->create($this->container, $handlerDefinition);
+
+        try {
+            $handler = $factory->create($this->container, $handlerDefinition);
+        } catch (ConfigReaderException $configReaderException) {
+            throw ConfigReaderExceptionTranslator::translate("Handler '{$handlerId}' ({$handlerDefinition->type})", $configReaderException);
+        }
 
         if (null !== $handlerDefinition->formatter) {
             if (! $handler instanceof FormattableHandlerInterface) {

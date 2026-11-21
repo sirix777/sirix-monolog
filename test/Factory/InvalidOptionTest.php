@@ -160,7 +160,7 @@ final class InvalidOptionTest extends TestCase
         yield 'sampling factor' => [HandlerType::Sampling, [
             'factor'  => 0,
             'handler' => 'unused',
-        ], 'Factor is missing'];
+        ], 'Sampling handler option "factor" must be at least 1.'];
 
         yield 'error_log message_type' => [HandlerType::ErrorLog, [
             'message_type' => 99,

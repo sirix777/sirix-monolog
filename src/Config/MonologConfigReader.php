@@ -8,8 +8,10 @@ use BackedEnum;
 use Monolog\Logger;
 use Psr\Log\LoggerInterface;
 use Sirix\ContainerResolver\ConfigReader;
+use Sirix\ContainerResolver\Exception\ConfigReaderException;
 use Sirix\Monolog\Enum\ConfigKey;
 use Sirix\Monolog\Enum\HandlerType;
+use Sirix\Monolog\Exception\ConfigReaderExceptionTranslator;
 use Sirix\Monolog\Exception\InvalidConfigException;
 use Sirix\Monolog\Exception\MissingConfigException;
 use Sirix\Monolog\Formatter\BuiltInFormatterFactories;
@@ -29,8 +31,23 @@ final class MonologConfigReader
 {
     /**
      * @param array<string, mixed> $config
+     *
+     * @throws InvalidConfigException
+     * @throws MissingConfigException
      */
     public function read(array $config): MonologConfig
+    {
+        try {
+            return $this->readConfig($config);
+        } catch (ConfigReaderException $configReaderException) {
+            throw ConfigReaderExceptionTranslator::translate('Monolog config', $configReaderException);
+        }
+    }
+
+    /**
+     * @param array<string, mixed> $config
+     */
+    private function readConfig(array $config): MonologConfig
     {
         $configReader = ConfigReader::fromArray($config, self::class);
         $root         = $configReader->map(ConfigKey::Root->value, []);

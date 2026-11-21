@@ -8,8 +8,12 @@ use Monolog\Processor\ProcessorInterface;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Sirix\ContainerResolver\ContainerResolver;
+use Sirix\ContainerResolver\Exception\ConfigReaderException;
 use Sirix\Monolog\Config\MonologConfig;
+use Sirix\Monolog\Exception\ConfigReaderExceptionTranslator;
+use Sirix\Monolog\Exception\InvalidConfigException;
 use Sirix\Monolog\Exception\InvalidFactoryException;
+use Sirix\Monolog\Exception\MissingConfigException;
 use Sirix\Monolog\Processor\ProcessorFactoryInterface;
 
 final readonly class ProcessorBuilder
@@ -18,13 +22,19 @@ final readonly class ProcessorBuilder
 
     /**
      * @throws ContainerExceptionInterface
+     * @throws InvalidConfigException
+     * @throws MissingConfigException
      */
     public function build(string $processorId): ProcessorInterface
     {
         $processorDefinition = $this->monologConfig->processor($processorId);
         $factory             = $this->factory($processorDefinition->type);
 
-        return $factory->create($this->container, $processorDefinition);
+        try {
+            return $factory->create($this->container, $processorDefinition);
+        } catch (ConfigReaderException $configReaderException) {
+            throw ConfigReaderExceptionTranslator::translate("Processor '{$processorId}' ({$processorDefinition->type})", $configReaderException);
+        }
     }
 
     /**
